@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 
 spring:
   application:
@@ -22,7 +22,7 @@ spring:
 
 
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.xml
+    change-log: classpath:db/changelog/db.changelog-master.yaml
 
 kafka:
   bootstrap-servers: localhost:9092
