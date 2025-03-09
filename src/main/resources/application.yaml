@@ -1,0 +1,45 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/consort_group
+    username: consort
+    password: 2231251fsad1
+
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+kafka:
+  bootstrap-servers: localhost:9092
+  consumer-group-id: user-service-group
+  session-timeout-ms: 10000
+  max-partition-fetch-bytes: 1048576
+  max-poll-records: 500
+  max-poll-interval-ms: 300000
+  task-topic: taskTopic
+  producer:
+    enable: true
+
+redis:
+  host: consort-redis-user_service
+  port: 6379
+
+logging:
+  level:
+    root: INFO
+    org.springframework: DEBUG
