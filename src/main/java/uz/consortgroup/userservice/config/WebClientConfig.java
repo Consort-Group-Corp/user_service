@@ -3,6 +3,7 @@ package uz.consortgroup.userservice.config;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,25 +15,32 @@ import reactor.netty.tcp.TcpClient;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
+@Slf4j
 public class WebClientConfig {
     @Value("${one-id.base-url}")
     private String baseUrl;
 
-    public static final int TIMEOUT = 1000;
+    @Value("${one-id.timeout:5000}")
+    private int timeout;
 
     @Bean
     public WebClient webClientWithTimeout() {
-        final var tcpClient = TcpClient
+        TcpClient tcpClient = TcpClient
                 .create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, TIMEOUT)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout)
                 .doOnConnected(connection -> {
-                    connection.addHandlerLast(new ReadTimeoutHandler(TIMEOUT, TimeUnit.MILLISECONDS));
-                    connection.addHandlerLast(new WriteTimeoutHandler(TIMEOUT, TimeUnit.MILLISECONDS));
+                    connection.addHandlerLast(new ReadTimeoutHandler(timeout, TimeUnit.MILLISECONDS));
+                    connection.addHandlerLast(new WriteTimeoutHandler(timeout, TimeUnit.MILLISECONDS));
                 });
 
         return WebClient.builder()
                 .baseUrl(baseUrl)
                 .clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient)))
+                .filter((request, next) -> {
+                    log.info("Request: {} {}", request.method(), request.url());
+                    return next.exchange(request)
+                            .doOnNext(response -> log.info("Response status: {}", response.statusCode()));
+                })
                 .build();
     }
 }
