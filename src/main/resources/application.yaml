@@ -44,6 +44,7 @@ kafka:
     enable: true
 
 one-id:
+  timeout: 5000
   base-url: "https://sso.egov.uz"
   auth-url: "https://sso.egov.uz/sso/oauth/Authorization.do"
   token-url: "https://sso.egov.uz/sso/oauth/Token.do"

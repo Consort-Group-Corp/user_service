@@ -1,4 +1,4 @@
-package uz.consortgroup.userservice.config;
+package uz.consortgroup.userservice.config.properties;
 
 import lombok.Getter;
 import lombok.Setter;
