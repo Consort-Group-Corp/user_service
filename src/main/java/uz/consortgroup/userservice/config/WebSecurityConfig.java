@@ -24,6 +24,7 @@ import uz.consortgroup.userservice.util.JwtUtils;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig {
+
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtUtils jwtUtils;
     private final AuthEntryPointJwt unauthorizedHandler;
