@@ -6,11 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-import uz.consortgroup.userservice.dto.OneIdUserInfo;
 import uz.consortgroup.userservice.service.OneIdService;
-
-
-import java.net.URI;
 
 @RestController
 @RequiredArgsConstructor
