@@ -11,18 +11,26 @@ spring:
     username: consort
     password: 2231251fsad1
 
-
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
 
-
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.xml
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  data:
+    redis:
+      host: consort-redis-user_service
+      port: 6379
+
+logging:
+  level:
+    root: INFO
+    org.springframework: DEBUG
 
 kafka:
   bootstrap-servers: localhost:9092
@@ -35,11 +43,17 @@ kafka:
   producer:
     enable: true
 
-redis:
-  host: consort-redis-user_service
-  port: 6379
+one-id:
+  base-url: "https://sso.egov.uz"
+  auth-url: "https://sso.egov.uz/sso/oauth/Authorization.do"
+  token-url: "https://sso.egov.uz/sso/oauth/Token.do"
+  user-info-url: "https://sso.egov.uz/sso/oauth/Resource.do"
+  client-id: "your-client-id"
+  client-secret: "your-client-secret"
+  redirect-uri: "https://your-app.com/callback"
+  scope: "myportal"
+  grant-type: "authorization_code"
 
-logging:
-  level:
-    root: INFO
-    org.springframework: DEBUG
+security:
+  token: "your-secret-key-base64"
+  expiration: 86400000

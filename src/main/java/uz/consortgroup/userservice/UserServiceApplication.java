@@ -1,4 +1,4 @@
-package uz.consorgroup.userservice;
+package uz.consortgroup.userservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
