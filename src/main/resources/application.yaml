@@ -10,6 +10,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/consort_group
     username: consort
     password: 2231251fsad1
+    hikari:
+      maximum-pool-size: 10
 
   jpa:
     hibernate:
@@ -24,8 +26,8 @@ spring:
 
   data:
     redis:
-      host: consort-redis-user_service
-      port: 6379
+      host: localhost
+      port: 6381
 
 logging:
   level:
@@ -58,3 +60,12 @@ one-id:
 security:
   token: "your-secret-key-base64"
   expiration: 86400000
+
+async:
+  core-pool-size: 5
+  max-pool-size: 10
+  queue-capacity: 15
+  thread-name-prefix: user-service
+
+user-cache:
+  redis-batch-size: 500
