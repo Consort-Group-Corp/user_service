@@ -61,10 +61,17 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/**").anonymous()
-                                .requestMatchers("/parse/**").permitAll()
-                                .requestMatchers("/parse").permitAll()
-                                .anyRequest().permitAll());
+                        auth.requestMatchers("/api/v1/user/register").permitAll()
+                                .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")
+                                .requestMatchers("/mentor/**").hasRole("MENTOR")
+                                .requestMatchers("/student/**").hasRole("STUDENT")
+                                .requestMatchers("/hr/**").hasRole("HR")
+                                .requestMatchers("/moderator/**").hasRole("MODERATOR")
+                                .requestMatchers("/accountant/**").hasRole("ACCOUNTANT")
+                                .requestMatchers("/tech-support/**").hasRole("TECH_SUPPORT")
+                                .requestMatchers("/manager-course/**").hasRole("MANAGER_COURSE")
+                                .requestMatchers("/analyst/**").hasRole("ANALYST")
+                                .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());
 

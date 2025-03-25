@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import uz.consortgroup.userservice.config.properties.OneIdProperties;
 import uz.consortgroup.userservice.dto.OneIdTokenResponse;
 import uz.consortgroup.userservice.dto.OneIdUserInfo;
+import uz.consortgroup.userservice.util.OneIdConstants;
 
 import java.net.URI;
 import java.util.UUID;
@@ -24,18 +25,24 @@ public class OneIdService {
     private final OneIdProperties oneIdProperties;
     private final WebClient webClient;
 
+    /**
+     * Генерация ссылки авторизации для One ID.
+     */
     public URI generateAuthUrl() {
         log.info("Генерация ссылки авторизации для One ID");
         return UriComponentsBuilder.fromHttpUrl(oneIdProperties.getAuthUrl())
-                .queryParam("response_type", "one_code")
-                .queryParam("client_id", oneIdProperties.getClientId())
-                .queryParam("redirect_uri", oneIdProperties.getRedirectUri())
-                .queryParam("scope", oneIdProperties.getScope())
-                .queryParam("state", UUID.randomUUID().toString())
+                .queryParam(OneIdConstants.RESPONSE_TYPE, oneIdProperties.getResponseType())
+                .queryParam(OneIdConstants.CLIENT_ID, oneIdProperties.getClientId())
+                .queryParam(OneIdConstants.REDIRECT_URI, oneIdProperties.getRedirectUri())
+                .queryParam(OneIdConstants.SCOPE, oneIdProperties.getScope())
+                .queryParam(OneIdConstants.STATE, UUID.randomUUID().toString())
                 .build()
                 .toUri();
     }
 
+    /**
+     * Обработка коллбэка One ID.
+     */
     public Mono<ResponseEntity<?>> processCallback(String code) {
         log.info("Обработка коллбэка One ID, код: {}", code);
         return getToken(code)
@@ -45,8 +52,8 @@ public class OneIdService {
                         return Mono.just(ResponseEntity.badRequest().body("Ошибка: не получен токен"));
                     }
                     return getUserInfo(tokenResponse.getAccessToken())
-                            .map(userInfo -> ResponseEntity.ok().body(userInfo)) // ✅ ResponseEntity<OneIdUserInfo>
-                            .map(response -> (ResponseEntity<?>) response); // ✅ Приводим к ResponseEntity<?>
+                            .map(ResponseEntity::ok)
+                            .map(response -> (ResponseEntity<?>) response);
                 })
                 .onErrorResume(e -> {
                     log.error("Ошибка One ID: {}", e.getMessage());
@@ -54,16 +61,18 @@ public class OneIdService {
                 });
     }
 
-
+    /**
+     * Получение токена по коду авторизации.
+     */
     public Mono<OneIdTokenResponse> getToken(String authCode) {
         log.info("Запрос токена для кода: {}", authCode);
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("grant_type", oneIdProperties.getGrantType());
-        formData.add("client_id", oneIdProperties.getClientId());
-        formData.add("client_secret", oneIdProperties.getClientSecret());
-        formData.add("redirect_uri", oneIdProperties.getRedirectUri());
-        formData.add("code", authCode);
+        formData.add(OneIdConstants.GRANT_TYPE, oneIdProperties.getGrantType());
+        formData.add(OneIdConstants.CLIENT_ID, oneIdProperties.getClientId());
+        formData.add(OneIdConstants.CLIENT_SECRET, oneIdProperties.getClientSecret());
+        formData.add(OneIdConstants.REDIRECT_URI, oneIdProperties.getRedirectUri());
+        formData.add(OneIdConstants.CODE, authCode);
 
         return webClient.post()
                 .uri(oneIdProperties.getTokenUrl())
@@ -73,6 +82,9 @@ public class OneIdService {
                 .doOnError(error -> log.error("Ошибка при получении токена: {}", error.getMessage()));
     }
 
+    /**
+     * Получение информации о пользователе по токену.
+     */
     public Mono<OneIdUserInfo> getUserInfo(String accessToken) {
         log.info("Запрос данных пользователя с токеном: {}", accessToken);
 
@@ -84,6 +96,9 @@ public class OneIdService {
                 .doOnError(error -> log.error("Ошибка при получении данных пользователя: {}", error.getMessage()));
     }
 
+    /**
+     * Проверка валидности токена.
+     */
     public Mono<Boolean> validateToken(String accessToken) {
         log.info("Проверка валидности токена");
 

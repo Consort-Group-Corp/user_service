@@ -38,7 +38,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-aop")
 
     // Spring Security
     implementation("org.springframework.boot:spring-boot-starter-security")
@@ -61,7 +60,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     // Redis
-    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     // Разработка и конфигурация
     developmentOnly("org.springframework.boot:spring-boot-devtools")
