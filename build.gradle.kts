@@ -39,6 +39,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
+    //Spring Boot Mail
+    implementation ("org.springframework.boot:spring-boot-starter-mail")
+
     // Spring Security
     implementation("org.springframework.boot:spring-boot-starter-security")
 
@@ -62,9 +65,6 @@ dependencies {
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
-    // Разработка и конфигурация
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     // Тестирование
     testImplementation("org.springframework.boot:spring-boot-starter-test")

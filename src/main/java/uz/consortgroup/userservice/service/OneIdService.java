@@ -11,8 +11,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 import uz.consortgroup.userservice.config.properties.OneIdProperties;
-import uz.consortgroup.userservice.dto.OneIdTokenResponse;
-import uz.consortgroup.userservice.dto.OneIdUserInfo;
+import uz.consortgroup.userservice.dto.OneIdTokenResponseDto;
+import uz.consortgroup.userservice.dto.OneIdUserInfoDto;
 import uz.consortgroup.userservice.util.OneIdConstants;
 
 import java.net.URI;
@@ -64,7 +64,7 @@ public class OneIdService {
     /**
      * Получение токена по коду авторизации.
      */
-    public Mono<OneIdTokenResponse> getToken(String authCode) {
+    public Mono<OneIdTokenResponseDto> getToken(String authCode) {
         log.info("Запрос токена для кода: {}", authCode);
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
@@ -78,21 +78,21 @@ public class OneIdService {
                 .uri(oneIdProperties.getTokenUrl())
                 .body(BodyInserters.fromFormData(formData))
                 .retrieve()
-                .bodyToMono(OneIdTokenResponse.class)
+                .bodyToMono(OneIdTokenResponseDto.class)
                 .doOnError(error -> log.error("Ошибка при получении токена: {}", error.getMessage()));
     }
 
     /**
      * Получение информации о пользователе по токену.
      */
-    public Mono<OneIdUserInfo> getUserInfo(String accessToken) {
+    public Mono<OneIdUserInfoDto> getUserInfo(String accessToken) {
         log.info("Запрос данных пользователя с токеном: {}", accessToken);
 
         return webClient.get()
                 .uri(oneIdProperties.getUserInfoUrl())
                 .headers(headers -> headers.setBearerAuth(accessToken))
                 .retrieve()
-                .bodyToMono(OneIdUserInfo.class)
+                .bodyToMono(OneIdUserInfoDto.class)
                 .doOnError(error -> log.error("Ошибка при получении данных пользователя: {}", error.getMessage()));
     }
 

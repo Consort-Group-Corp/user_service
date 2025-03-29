@@ -7,6 +7,7 @@ import uz.consortgroup.userservice.entity.UserCacheEntity;
 import uz.consortgroup.userservice.repository.UserRedisRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -14,9 +15,8 @@ import java.util.List;
 public class UserCacheService {
     private final UserRedisRepository userRedisRepository;
 
-    public UserCacheEntity findUsersById(Long id) {
-        log.info("Searching user by id: {}", id);
-        return userRedisRepository.findById(id).orElse(null);
+    public Optional<UserCacheEntity> findUsersById(Long id) {
+        return userRedisRepository.findById(id);
     }
 
     public void saveUsersToCache(UserCacheEntity user) {

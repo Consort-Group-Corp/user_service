@@ -36,12 +36,7 @@ logging:
 
 kafka:
   bootstrap-servers: localhost:9092
-  consumer-group-id: user-service-group
-  session-timeout-ms: 10000
-  max-partition-fetch-bytes: 1048576
-  max-poll-records: 500
-  max-poll-interval-ms: 300000
-  task-topic: taskTopic
+  user-registration: user-registered-topic
   producer:
     enable: true
 
@@ -69,3 +64,4 @@ async:
 
 user-cache:
   redis-batch-size: 500
+

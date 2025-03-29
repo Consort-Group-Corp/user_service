@@ -1,5 +1,5 @@
 databaseChangeLog:
   - include:
-      file: db/changelog/changeset/V001_create_schemas.sql
+      file: db/changelog/changeset/V001_create_schema.sql
   - include:
       file: db/changelog/changeset/V002_create_users_table.sql
