@@ -10,8 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +19,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users", schema = "user_service")
+@Table(name = "users", schema = "user_schema")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -32,14 +30,14 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
     @Column(name = "first_name", nullable = false)
     private String firstName;
 
     @Column(name = "middle_name", nullable = false)
     private String middleName;
-
-    @Column(name = "last_name", nullable = false)
-    private String lastName;
 
     @Column(name = "work_place", nullable = false)
     private String workPlace;
@@ -53,6 +51,15 @@ public class User {
     @Column(name = "pinfl", nullable = false, unique = true)
     private String pinfl;
 
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    @Column(name = "is_verified", nullable = false)
+    private Boolean isVerified;
+
+    @Column(name = "verification_code")
+    private String verificationCode;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private UsersRole usersRole;
@@ -61,12 +68,13 @@ public class User {
     @Column(name = "status", nullable = false)
     private UserStatus userStatus;
 
+    @Column(name = "verification_code_expired_at")
+    private LocalDateTime verificationCodeExpiredAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime updatedAt;
 
     @Column(name = "last_login")

@@ -32,8 +32,11 @@ public class UserCacheEntity implements Serializable {
     private String email;
     private String position;
     private String pinfl;
+    private Boolean isVerified;
+    private String verificationCode;
     private UsersRole usersRole;
     private UserStatus userStatus;
+    private LocalDateTime verificationCodeExpiredAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;
