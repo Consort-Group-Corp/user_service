@@ -23,7 +23,7 @@ public class UserDetailsImpl implements UserDetails {
 
     public static UserDetailsImpl build(User user) {
         List<GrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority(user.getUsersRole().name())
+                new SimpleGrantedAuthority(user.getRole().name())
         );
 
         return new UserDetailsImpl(user.getId(), user.getEmail(), authorities);

@@ -1,23 +1,20 @@
-package uz.consortgroup.userservice.dto;
+package uz.consortgroup.userservice.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uz.consortgroup.userservice.event.EventType;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class VerificationKafkaDto {
+public class VerificationCodeResentEvent {
     private Long messageId;
     private Long userId;
-    private String firstName;
-    private String middleName;
     private String email;
-    private String verificationCode;
+    private String newVerificationCode;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private EventType eventType;

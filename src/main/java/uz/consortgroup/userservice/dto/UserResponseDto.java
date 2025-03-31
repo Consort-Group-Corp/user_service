@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uz.consortgroup.userservice.entity.UserStatus;
-import uz.consortgroup.userservice.entity.UsersRole;
+import uz.consortgroup.userservice.entity.enumeration.UserStatus;
+import uz.consortgroup.userservice.entity.enumeration.UsersRole;
 
 import java.time.LocalDateTime;
 
@@ -21,9 +21,8 @@ public class UserResponseDto {
     private String workPlace;
     private String email;
     private String position;
-    private UsersRole usersRole;
-    private UserStatus userStatus;
+    private UsersRole role;
+    private UserStatus status;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;
 }

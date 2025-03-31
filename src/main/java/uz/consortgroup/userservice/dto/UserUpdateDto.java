@@ -4,6 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uz.consortgroup.userservice.entity.enumeration.UserStatus;
+import uz.consortgroup.userservice.entity.enumeration.UsersRole;
+
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,4 +21,7 @@ public class UserUpdateDto {
     private String email;
     private String position;
     private String pinfl;
+    private UserStatus userStatus;
+    private UsersRole usersRole;
+    private LocalDateTime updatedAt;
 }

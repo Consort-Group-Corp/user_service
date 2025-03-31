@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import uz.consortgroup.userservice.entity.User;
-import uz.consortgroup.userservice.entity.UserCacheEntity;
+import uz.consortgroup.userservice.entity.cacheEntity.UserCacheEntity;
 import uz.consortgroup.userservice.mapper.UserCacheMapper;
 import uz.consortgroup.userservice.repository.UserRepository;
 import uz.consortgroup.userservice.service.UserCacheService;
@@ -55,10 +55,10 @@ public class UserCache {
                 }
 
                 List<UserCacheEntity> cacheEntities = users.stream()
-                        .map(userCacheMapper::toUserEntity)
+                        .map(userCacheMapper::toUserCache)
                         .toList();
 
-                userCacheService.saveUsersToCache(cacheEntities);
+                userCacheService.cacheUsers(cacheEntities);
                 log.info("Saved {} users to Redis during warm-up", cacheEntities.size());
 
                 lastId = users.get(users.size() - 1).getId();

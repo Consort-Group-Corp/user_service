@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/changeset/V001_create_schema.sql
   - include:
       file: db/changelog/changeset/V002_create_users_table.sql
+  - include:
+      file: db/changelog/changeset/V003_create_verification_codes_table.sql

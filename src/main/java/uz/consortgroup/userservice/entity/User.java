@@ -1,5 +1,6 @@
 package uz.consortgroup.userservice.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -15,8 +17,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uz.consortgroup.userservice.entity.enumeration.UserStatus;
+import uz.consortgroup.userservice.entity.enumeration.UsersRole;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users", schema = "user_schema")
@@ -30,55 +35,51 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "last_name", nullable = false)
+    @Column(nullable = false)
     private String lastName;
 
-    @Column(name = "first_name", nullable = false)
+    @Column(nullable = false)
     private String firstName;
 
-    @Column(name = "middle_name", nullable = false)
+    @Column(nullable = false)
     private String middleName;
 
-    @Column(name = "work_place", nullable = false)
+    @Column(nullable = false)
     private String workPlace;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "position", nullable = false)
+    @Column(nullable = false)
     private String position;
 
-    @Column(name = "pinfl", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String pinfl;
 
-    @Column(name = "password", nullable = false)
+    @Column(nullable = false)
     private String password;
 
-    @Column(name = "is_verified", nullable = false)
-    private Boolean isVerified;
-
-    @Column(name = "verification_code")
-    private String verificationCode;
+    @Column(nullable = false)
+    private Boolean isVerified = false;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private UsersRole usersRole;
+    @Column(nullable = false)
+    private UsersRole role;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private UserStatus userStatus;
+    @Column(nullable = false)
+    private UserStatus status = UserStatus.PENDING;
 
-    @Column(name = "verification_code_expired_at")
-    private LocalDateTime verificationCodeExpiredAt;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    @Column(name = "last_login")
     private LocalDateTime lastLogin;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<VerificationCode> verificationCodes;
 
     @PrePersist
     protected void onCreate() {
