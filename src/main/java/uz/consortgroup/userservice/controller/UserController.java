@@ -43,14 +43,13 @@ public class UserController {
         return ResponseEntity.ok("Verification code resent successfully");
     }
 
-
     @GetMapping("/{userId}")
-    public ResponseEntity<UserResponseDto> findUserById(@PathVariable("userId") Long userId) {
-       return ResponseEntity.ok(userService.findUserById(userId));
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable("userId") Long userId) {
+       return ResponseEntity.ok(userService.getUserById(userId));
     }
 
     @PutMapping("/{userId}")
-    public ResponseEntity<UserResponseDto> updateUserById(@PathVariable("userId") Long userId,
+    public ResponseEntity<UserUpdateDto> updateUserById(@PathVariable("userId") Long userId,
                                                         @RequestBody @Valid UserUpdateDto userUpdateDto) {
         return ResponseEntity.ok(userService.updateUserById(userId, userUpdateDto));
     }

@@ -1,4 +1,4 @@
-package uz.consortgroup.userservice.entity;
+package uz.consortgroup.userservice.entity.cacheEntity;
 
 
 import lombok.AllArgsConstructor;
@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import uz.consortgroup.userservice.entity.enumeration.UserStatus;
+import uz.consortgroup.userservice.entity.enumeration.UsersRole;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -36,7 +38,6 @@ public class UserCacheEntity implements Serializable {
     private String verificationCode;
     private UsersRole usersRole;
     private UserStatus userStatus;
-    private LocalDateTime verificationCodeExpiredAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;

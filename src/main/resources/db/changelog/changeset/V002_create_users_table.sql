@@ -9,10 +9,8 @@ CREATE TABLE IF NOT EXISTS user_schema.users (
     pinfl VARCHAR(16) NOT NULL UNIQUE,
     password VARCHAR(128) NOT NULL,
     is_verified BOOLEAN DEFAULT FALSE,
-    verification_code VARCHAR(4) DEFAULT NULL,
     role VARCHAR(50) DEFAULT NULL,
     status VARCHAR(50) DEFAULT NULL,
-    verification_expiration_date TIMESTAMP DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     last_login TIMESTAMP DEFAULT NULL

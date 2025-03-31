@@ -39,7 +39,7 @@ public class UserRegistrationDto {
     private String position;
 
     @NotBlank(message = "Pinfl is required")
-    @Size(min = 14, max = 14)
+    @Size(max = 14)
     private String pinfl;
 
     @NotBlank(message = "Password is required")

@@ -1,4 +1,4 @@
-package uz.consortgroup.userservice.entity;
+package uz.consortgroup.userservice.entity.enumeration;
 
 public enum UsersRole {
     SUPER_ADMIN,

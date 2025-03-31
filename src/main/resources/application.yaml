@@ -37,6 +37,7 @@ logging:
 kafka:
   bootstrap-servers: localhost:9092
   user-registration: user-registered-topic
+  verification-code-resent: verification-code-resent-topic
   producer:
     enable: true
 

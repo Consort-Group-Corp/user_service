@@ -1,13 +1,18 @@
 package uz.consortgroup.userservice.repository;
 
+import io.micrometer.common.lang.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uz.consortgroup.userservice.entity.User;
+import uz.consortgroup.userservice.entity.VerificationCode;
+import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
@@ -37,4 +42,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
                                   @Param("middleName") String middleName, @Param("lastName") String lastName,
                                   @Param("workPlace") String workPlace, @Param("email") String email,
                                   @Param("position") String position, @Param("pinfl") String pinfl);
+
+    @Modifying
+    @Query("UPDATE User u SET u.isVerified = :verificationStatus, u.status = :status WHERE u.id = :userId")
+    void updateVerificationStatus(@Param("userId") Long userId,
+                                  @Param("verificationStatus") boolean verificationStatus,
+                                  @Param("status") UserStatus status);
+
 }
