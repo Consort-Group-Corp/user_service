@@ -87,6 +87,7 @@ public class VerificationService {
             codeRepository.save(code);
             updateCodeInCache(code);
 
+            log.error("Invalid verification code entered for user {}", code.getUser().getId());
             throw new InvalidVerificationCodeException("Invalid verification code");
         }
     }
