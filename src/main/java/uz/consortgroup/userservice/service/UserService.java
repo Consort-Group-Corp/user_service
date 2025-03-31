@@ -69,7 +69,7 @@ public class UserService {
         log.info("User {} status updated to ACTIVE", userId);
 
         removeUserFromCache(userId);
-        cacheUser(userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found")));
+        cacheUser(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found")));
     }
 
     @Transactional
@@ -111,7 +111,7 @@ public class UserService {
         log.info("Deleting user with ID: {}", id);
 
         if (!userRepository.existsById(id)) {
-            throw new EntityNotFoundException("User not found");
+            throw new UserNotFoundException("User not found");
         }
 
         userRepository.deleteById(id);
@@ -123,9 +123,11 @@ public class UserService {
         return userCacheService.findUserById(id)
                 .map(userCacheMapper::toUserEntity)
                 .orElseGet(() -> {
-                    log.info("User with ID {} not found in cache, fetching from DB", id);
                     User user = userRepository.findById(id)
-                            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                            .orElseThrow(() -> {
+                                log.error("User with ID {} not found in database and cache", id);
+                                return new UserNotFoundException("User not found");
+                            });
                     cacheUser(user);
                     return user;
                 });
@@ -147,6 +149,7 @@ public class UserService {
 
     private void validateUserRegistration(UserRegistrationDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
+            log.error("User with email {} already exists", dto.getEmail());
             throw new UserAlreadyExistsException("User with email " + dto.getEmail() + " already exists");
         }
     }

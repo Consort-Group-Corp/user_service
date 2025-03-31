@@ -19,43 +19,43 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, String>> handleIllegalStateException(IllegalStateException ex) {
-        log.error("Ошибка: {}", ex.getMessage());
+        log.error("Exception: {}", ex.getMessage());
         return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex) {
-        log.error("Пользователь не найден: {}", ex.getMessage());
+        log.error("User not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("User not found", ex.getMessage()));
     }
 
     @ExceptionHandler(EventPublishingException.class)
     public ResponseEntity<ErrorResponse> handleEventPublishingException(EventPublishingException ex) {
-        log.error("Ошибка отправки события: {}", ex.getMessage());
+        log.error("Event publishing failed: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("Failed to send event", ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidVerificationCodeException.class)
     public ResponseEntity<ErrorResponse> handleInvalidVerificationCodeException(InvalidVerificationCodeException ex) {
-        log.error("Неверный код подтверждения: {}", ex.getMessage());
+        log.error("Invalid verification code: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Invalid verification code", ex.getMessage()));
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
-        log.error("Пользователь уже существует: {}", ex.getMessage());
+        log.error("User already exists: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("User already exists", ex.getMessage()));
     }
 
     @ExceptionHandler(VerificationCodeExpiredException.class)
     public ResponseEntity<ErrorResponse> handleVerificationCodeExpiredException(VerificationCodeExpiredException ex) {
-        log.error("Код подтверждения истек: {}", ex.getMessage());
+        log.error("Verification code expired: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Verification code expired", ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneralException(Exception ex) {
-        log.error("Неизвестная ошибка: {}", ex.getMessage(), ex);
+        log.error("Unknown exception: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Внутренняя ошибка сервера"));
     }
