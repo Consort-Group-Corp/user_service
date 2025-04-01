@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uz.consortgroup.userservice.asspect.annotation.AspectAfterReturning;
+import uz.consortgroup.userservice.asspect.annotation.LoggingAspectAfterMethod;
+import uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.entity.VerificationCode;
 import uz.consortgroup.userservice.entity.cacheEntity.VerificationCodeCacheEntity;
@@ -22,30 +25,31 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class VerificationService {
     private static final int CODE_EXPIRATION_MINUTES = 5;
-    private final VerificationCodeRepository codeRepository;
+    private final VerificationCodeRepository verificationCodeRepository;
     private final VerificationCodeCacheService verificationCodeCacheService;
     private final VerificationCodeCacheMapper verificationCodeCacheMapper;
 
+    @LoggingAspectBeforeMethod
+    @LoggingAspectAfterMethod
+    @AspectAfterReturning
     public String generateAndSaveCode(User user) {
-        int previousAttempts = codeRepository.findLastActiveCodeByUserId(user.getId())
+        int previousAttempts = verificationCodeRepository.findLastActiveCodeByUserId(user.getId())
                 .map(VerificationCode::getAttempts)
                 .orElse(0);
 
         VerificationCode newCode = createNewVerificationCode(user, previousAttempts + 1);
-        codeRepository.save(newCode);
+        verificationCodeRepository.save(newCode);
         saveCodeToCache(newCode);
-
-        log.info("Generated new verification code for user {}: {}", user.getId(), newCode.getCodeHash());
-        return newCode.getCodeHash();
+        return newCode.getVerificationCode();
     }
 
     @Transactional
+    @LoggingAspectBeforeMethod
+    @LoggingAspectAfterMethod
     public void verifyCode(User user, String inputCode) {
         VerificationCode code = getActiveCode(user);
         validateCode(code, inputCode);
         markCodeAsUsed(code);
-
-        log.info("User {} successfully verified with code {}", user.getId(), inputCode);
     }
 
     private VerificationCode getActiveCode(User user) {
@@ -58,7 +62,7 @@ public class VerificationService {
         }
 
         log.debug("Fetching verification code from DB for user {}", user.getId());
-        return codeRepository.findLastActiveCodeByUserId(user.getId())
+        return verificationCodeRepository.findLastActiveCodeByUserId(user.getId())
                 .orElseThrow(() -> new InvalidVerificationCodeException(
                         "No active verification code found for user " + user.getId()));
     }
@@ -69,22 +73,20 @@ public class VerificationService {
 
         return VerificationCode.builder()
                 .user(user)
-                .codeHash(rawCode)
+                .verificationCode(rawCode)
                 .status(VerificationCodeStatus.ACTIVE)
                 .createdAt(now)
                 .updatedAt(now)
                 .expiresAt(now.plusMinutes(CODE_EXPIRATION_MINUTES))
-                .attempts(attempts) // Количество попыток сохраняется
+                .attempts(attempts)
                 .build();
     }
 
     private void validateCode(VerificationCode code, String inputCode) {
         checkCodeExpiration(code);
 
-        if (!inputCode.equals(code.getCodeHash())) {
-            code.setAttempts(code.getAttempts() + 1);
-            code.setUpdatedAt(LocalDateTime.now());
-            codeRepository.save(code);
+        if (!inputCode.equals(code.getVerificationCode())) {
+            verificationCodeRepository.incrementAttempts(code.getId(), LocalDateTime.now());
             updateCodeInCache(code);
 
             log.error("Invalid verification code entered for user {}", code.getUser().getId());
@@ -92,24 +94,27 @@ public class VerificationService {
         }
     }
 
-
     private void checkCodeExpiration(VerificationCode code) {
         if (code.getExpiresAt().isBefore(LocalDateTime.now())) {
-            code.setStatus(VerificationCodeStatus.EXPIRED);
-            code.setUpdatedAt(LocalDateTime.now());
-            codeRepository.save(code);
+            verificationCodeRepository.updateStatus(
+                    code.getId(),
+                    VerificationCodeStatus.EXPIRED,
+                    LocalDateTime.now()
+            );
             updateCodeInCache(code);
 
+            log.error("Verification code has expired for user {}", code.getUser().getId());
             throw new VerificationCodeExpiredException("Verification code has expired");
         }
     }
 
     private void markCodeAsUsed(VerificationCode code) {
         LocalDateTime now = LocalDateTime.now();
-        code.setStatus(VerificationCodeStatus.USED);
-        code.setUsedAt(now);
-        code.setUpdatedAt(now);
-        codeRepository.save(code);
+        verificationCodeRepository.updateStatus(
+                code.getId(),
+                VerificationCodeStatus.USED,
+                now
+        );
         updateCodeInCache(code);
 
         log.info("Marked verification code {} as USED", code.getId());

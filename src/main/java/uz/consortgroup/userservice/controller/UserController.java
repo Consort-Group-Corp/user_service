@@ -37,7 +37,7 @@ public class UserController {
         return ResponseEntity.ok("User verified successfully");
     }
 
-    @PostMapping("/{userId}/resend-verification-code")
+    @PostMapping("/{userId}/new-verification-code")
     public ResponseEntity<String> resendVerificationCode(@PathVariable Long userId) {
         userService.resendVerificationCode(userId);
         return ResponseEntity.ok("Verification code resent successfully");

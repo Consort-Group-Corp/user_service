@@ -25,7 +25,7 @@ public class VerificationCodeCacheEntity implements Serializable {
     private String id;
 
     private Long userId;
-    private String codeHash;
+    private String verificationCode;
     private VerificationCodeStatus status;
     private int attempts;
     private LocalDateTime createdAt;

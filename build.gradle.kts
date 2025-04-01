@@ -38,9 +38,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation ("org.springframework.boot:spring-boot-starter-aop")
 
     //Spring Boot Mail
     implementation ("org.springframework.boot:spring-boot-starter-mail")
+
+    //
 
     // Spring Security
     implementation("org.springframework.boot:spring-boot-starter-security")

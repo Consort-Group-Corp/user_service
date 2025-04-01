@@ -41,7 +41,7 @@ public class VerificationCode {
     private User user;
 
     @Column(name = "verification_code", nullable = false, length = 60)
-    private String codeHash;
+    private String verificationCode;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -13,6 +13,7 @@ import uz.consortgroup.userservice.entity.VerificationCode;
 import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,7 +24,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
     @Query("SELECT u FROM User u WHERE u.id > :lastId ORDER BY u.id ASC")
-    Page<User> findUsersByBatch(@Param("lastId") Long lastId, Pageable pageable);
+    List<User> findUsersByBatch(@Param("lastId") Long lastId, @Param("size") int size);
 
     @Query(nativeQuery = true, value = """
                 UPDATE user_schema.users
