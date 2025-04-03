@@ -7,12 +7,19 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AbstractCacheWarmup <T, E> {
     @Value("${cache.redis-batch-size}")
     private int batchSize;
+
+    @Value("${cache.warmup.enabled:true}")
+    private boolean warmupEnabled;
+
+    @Value("${cache.warmup.timeout:30000}")
+    private int warmupTimeout;
 
     private final ThreadPoolTaskExecutor taskExecutor;
 
@@ -22,20 +29,27 @@ public abstract class AbstractCacheWarmup <T, E> {
 
     @PostConstruct
     public void init() {
-        log.info("Starting {} cache warmup", getCacheName());
-        CompletableFuture.runAsync(this::warmUpCache, taskExecutor)
-                .exceptionally(ex -> {
-                    log.error("Cache warmup failed for {}", getCacheName(), ex);
-                    return null;
-                });
+        if (warmupEnabled) {
+            log.info("Starting {} cache warmup", getCacheName());
+            CompletableFuture.runAsync(this::warmUpCache, taskExecutor)
+                    .orTimeout(warmupTimeout, TimeUnit.MILLISECONDS)
+                    .exceptionally(ex -> {
+                        log.error("Cache warmup failed for {}", getCacheName(), ex);
+                        return null;
+                    });
+        } else {
+            log.info("Cache warmup for {} is disabled", getCacheName());
+        }
     }
 
-    private void warmUpCache() {
-        try {
-            Long lastId = 0L;
-            boolean hasMore;
+    protected void warmUpCache() {
+        Long lastId = 0L;
+        boolean hasMore;
+        int maxAttempts = 3;
+        int attempt = 0;
 
-            do {
+        do {
+            try {
                 List<T> entities = fetchBatch(lastId, batchSize);
                 hasMore = !entities.isEmpty();
 
@@ -43,20 +57,27 @@ public abstract class AbstractCacheWarmup <T, E> {
                     saveToCache(entities);
                     lastId = getLastId(entities);
                     log.debug("Cached {} {}, last ID: {}", entities.size(), getCacheName(), lastId);
+                    attempt = 0;
                 }
-            } while (hasMore);
+            } catch (Exception e) {
+                attempt++;
+                if (attempt >= maxAttempts) {
+                    log.error("Max attempts reached for {} cache warmup, aborting", getCacheName(), e);
+                    hasMore = false;
+                } else {
+                    log.warn("Retry attempt {}/{} for {} cache warmup", attempt, maxAttempts, getCacheName(), e);
+                    hasMore = true;
+                }
+            }
+        } while (hasMore);
 
-            log.info("{} cache warmup completed", getCacheName());
-        } catch (Exception e) {
-            log.error("Error during {} cache warmup", getCacheName(), e);
-        }
+        log.info("{} cache warmup completed", getCacheName());
     }
 
-    private void saveToCache(List<T> entities) {
+    protected void saveToCache(List<T> entities) {
         List<E> cacheEntities = entities.stream()
                 .map(this::mapToCacheEntity)
                 .collect(Collectors.toList());
-
         saveCache(cacheEntities);
     }
 

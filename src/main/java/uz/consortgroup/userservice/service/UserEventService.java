@@ -8,7 +8,7 @@ import uz.consortgroup.userservice.event.EventType;
 import uz.consortgroup.userservice.event.UserRegistrationEvent;
 import uz.consortgroup.userservice.event.VerificationCodeResentEvent;
 import uz.consortgroup.userservice.kafka.UserRegisterKafkaProducer;
-import uz.consortgroup.userservice.kafka.VerificationCodeProducer;
+import uz.consortgroup.userservice.kafka.VerificationCodeResendProducer;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -18,13 +18,14 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 public class UserEventService {
     private final UserRegisterKafkaProducer userRegisterKafkaProducer;
-    private final VerificationCodeProducer verificationCodeProducer;
+    private final VerificationCodeResendProducer verificationCodeResendProducer;
     private final AtomicLong messageIdGenerator = new AtomicLong(0);
 
     public void sendRegistrationEvent(User user, String verificationCode) {
         UserRegistrationEvent event = UserRegistrationEvent.builder()
                 .messageId(messageIdGenerator.incrementAndGet())
                 .userId(user.getId())
+                .lastName(user.getLastName())
                 .firstName(user.getFirstName())
                 .middleName(user.getMiddleName())
                 .email(user.getEmail())
@@ -44,6 +45,6 @@ public class UserEventService {
                 .eventType(EventType.VERIFICATION_CODE_SENT)
                 .build();
 
-        verificationCodeProducer.sendVerificationCodeResendEvents(List.of(event));
+        verificationCodeResendProducer.sendVerificationCodeResendEvents(List.of(event));
     }
 }

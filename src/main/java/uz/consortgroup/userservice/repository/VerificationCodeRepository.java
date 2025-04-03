@@ -22,6 +22,7 @@ public interface VerificationCodeRepository extends JpaRepository<VerificationCo
     @Query("SELECT v FROM VerificationCode v WHERE v.user.id = :userId ORDER BY v.createdAt DESC LIMIT 1")
     Optional<VerificationCode> findLastActiveCodeByUserId(@Param("userId") Long userId);
 
+    @Modifying
     @Query("UPDATE VerificationCode v SET v.attempts = v.attempts + 1, v.updatedAt = :now WHERE v.id = :codeId")
     void incrementAttempts(@Param("codeId") Long codeId, @Param("now") LocalDateTime now);
 

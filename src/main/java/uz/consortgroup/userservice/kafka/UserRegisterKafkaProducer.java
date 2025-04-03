@@ -13,7 +13,7 @@ import java.util.List;
 public class UserRegisterKafkaProducer extends AbstractProducer {
     private final KafkaTopic kafkaTopic;
 
-    public UserRegisterKafkaProducer(KafkaTemplate kafkaTemplate, KafkaTopic kafkaTopic) {
+    public UserRegisterKafkaProducer(KafkaTemplate<String, Object> kafkaTemplate, KafkaTopic kafkaTopic) {
         super(kafkaTemplate);
         this.kafkaTopic = kafkaTopic;
     }

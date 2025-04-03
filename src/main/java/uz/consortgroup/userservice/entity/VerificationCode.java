@@ -10,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -66,22 +65,5 @@ public class VerificationCode {
     protected void onUpdate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-    }
-
-    public boolean isActive() {
-        return status == VerificationCodeStatus.ACTIVE;
-    }
-
-    public boolean isExpired() {
-        return expiresAt.isBefore(LocalDateTime.now());
-    }
-
-    public void markAsUsed() {
-        this.status = VerificationCodeStatus.USED;
-        this.usedAt = LocalDateTime.now();
-    }
-
-    public void incrementAttempts() {
-        this.attempts++;
     }
 }

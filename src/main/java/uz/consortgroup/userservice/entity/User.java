@@ -18,9 +18,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uz.consortgroup.userservice.entity.enumeration.UserRole;
 import uz.consortgroup.userservice.entity.enumeration.UserStatus;
-import uz.consortgroup.userservice.entity.enumeration.UsersRole;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -37,47 +38,51 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(nullable = false)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(nullable = false)
+    @Column(name = "middle_name", nullable = false)
     private String middleName;
 
-    @Column(nullable = false)
+    @Column(name = "born_date", nullable = false)
+    private LocalDate bornDate;
+
+    @Column(name = "work_place", nullable = false)
     private String workPlace;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "position", nullable = false)
     private String position;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "pinfl", nullable = false, unique = true)
     private String pinfl;
 
-    @Column(nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private Boolean isVerified = false;
+    @Column(name = "is_verified", nullable = false)
+    private Boolean isVerified;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UsersRole role;
+    @Column(name = "role", nullable = false)
+    private UserRole role;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserStatus status = UserStatus.PENDING;
+    @Column(name = "status", nullable = false)
+    private UserStatus status;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
+    @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

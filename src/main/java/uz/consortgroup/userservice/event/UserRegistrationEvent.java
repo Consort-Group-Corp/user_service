@@ -15,6 +15,7 @@ public class UserRegistrationEvent {
     @JsonProperty("messageId")
     private Long messageId;
     private Long userId;
+    private String lastName;
     private String firstName;
     private String middleName;
     private String email;

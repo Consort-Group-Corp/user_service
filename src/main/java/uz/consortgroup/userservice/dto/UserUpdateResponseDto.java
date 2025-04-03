@@ -5,17 +5,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 import uz.consortgroup.userservice.entity.enumeration.UserRole;
+import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 @Builder
-public class UserResponseDto {
+public class UserUpdateResponseDto {
     private Long id;
     private String lastName;
     private String firstName;
@@ -25,10 +25,9 @@ public class UserResponseDto {
     private String workPlace;
     private String email;
     private String position;
-    private UserRole role;
+    private String pinfl;
     private UserStatus status;
+    private UserRole role;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime createdAt;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime lastLoginAt;
+    private LocalDateTime updatedAt;
 }

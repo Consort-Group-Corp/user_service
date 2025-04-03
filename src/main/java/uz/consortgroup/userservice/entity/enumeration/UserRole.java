@@ -1,6 +1,6 @@
 package uz.consortgroup.userservice.entity.enumeration;
 
-public enum UsersRole {
+public enum UserRole {
     SUPER_ADMIN,
     MENTOR,
     STUDENT,

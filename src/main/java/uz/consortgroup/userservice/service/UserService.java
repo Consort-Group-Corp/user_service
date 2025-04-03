@@ -12,9 +12,10 @@ import uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod;
 import uz.consortgroup.userservice.dto.UserRegistrationDto;
 import uz.consortgroup.userservice.dto.UserResponseDto;
 import uz.consortgroup.userservice.dto.UserUpdateDto;
+import uz.consortgroup.userservice.dto.UserUpdateResponseDto;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.entity.enumeration.UserStatus;
-import uz.consortgroup.userservice.entity.enumeration.UsersRole;
+import uz.consortgroup.userservice.entity.enumeration.UserRole;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.mapper.UserCacheMapper;
 import uz.consortgroup.userservice.mapper.UserMapper;
@@ -56,9 +57,11 @@ public class UserService {
     @AspectAfterThrowing
     @LoggingAspectAfterMethod
     public void verifyUser(Long userId, String inputCode) {
+
         User user = getUserFromDbAndCache(userId);
         verificationService.verifyCode(user, inputCode);
         userRepository.updateVerificationStatus(userId, true, UserStatus.ACTIVE);
+        userRepository.updateUserRole(userId, UserRole.STUDENT);
 
         removeUserFromCache(userId);
         cacheUser(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found")));
@@ -69,6 +72,7 @@ public class UserService {
     @AspectAfterThrowing
     @LoggingAspectAfterMethod
     public void resendVerificationCode(Long userId) {
+        userServiceValidator.validateUserId(userId);
         User user = getUserFromDbAndCache(userId);
 
         String verificationCode = verificationService.generateAndSaveCode(user);
@@ -90,9 +94,11 @@ public class UserService {
     @AspectAfterReturning
     @AspectAfterThrowing
     @LoggingAspectAfterMethod
-    public UserUpdateDto updateUserById(Long userId, UserUpdateDto updateDto) {
+    public UserUpdateResponseDto updateUserById(Long userId, UserUpdateDto updateDto) {
+        userServiceValidator.checkUserRole(updateDto.getRole().name());
+        userServiceValidator.validateUserId(userId);
         User user = updateUser(userId, updateDto);
-        return userMapper.toUserUpdateDto(user);
+        return userMapper.toUserUpdateResponseDto(user);
     }
 
     @Transactional
@@ -131,15 +137,19 @@ public class UserService {
 
     private User updateUser(Long userId, UserUpdateDto updateDto) {
         return userRepository.updateUserById(userId,
-                updateDto.getFirstName(),
-                updateDto.getMiddleName(),
-                updateDto.getLastName(),
-                updateDto.getWorkPlace(),
-                updateDto.getEmail(),
-                updateDto.getPinfl(),
-                updateDto.getPosition()).orElseThrow(() -> {
-            log.error("User with ID {} not found", userId);
-            return new UserNotFoundException("User not found");});
+                        updateDto.getLastName(),
+                        updateDto.getFirstName(),
+                        updateDto.getMiddleName(),
+                        updateDto.getBornDate(),
+                        updateDto.getWorkPlace(),
+                        updateDto.getEmail(),
+                        updateDto.getPosition(),
+                        updateDto.getPinfl(),
+                        updateDto.getRole().name())
+                .orElseThrow(() -> {
+                    log.error("User with ID {} not found", userId);
+                    return new UserNotFoundException("User not found");
+                });
     }
 
 
@@ -149,11 +159,12 @@ public class UserService {
                 .lastName(dto.getLastName())
                 .middleName(dto.getMiddleName())
                 .workPlace(dto.getWorkPlace())
+                .bornDate(dto.getBornDate())
                 .email(dto.getEmail())
                 .position(dto.getPosition())
                 .pinfl(dto.getPinfl())
                 .password(passwordEncoder.encode(dto.getPassword()))
-                .role(UsersRole.STUDENT)
+                .role(UserRole.GUEST_USER)
                 .status(UserStatus.PENDING)
                 .isVerified(false)
                 .build();

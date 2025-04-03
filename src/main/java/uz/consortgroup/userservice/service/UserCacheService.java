@@ -7,6 +7,7 @@ import uz.consortgroup.userservice.asspect.annotation.AspectAfterThrowing;
 import uz.consortgroup.userservice.asspect.annotation.LoggingAspectAfterMethod;
 import uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod;
 import uz.consortgroup.userservice.entity.cacheEntity.UserCacheEntity;
+import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.repository.UserRedisRepository;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class UserCacheService {
     public Optional<UserCacheEntity> findUserById(Long id) {
         try {
             return userRedisRepository.findById(id);
-        } catch (Exception e) {
+        } catch (UserNotFoundException e) {
             return Optional.empty();
         }
     }
