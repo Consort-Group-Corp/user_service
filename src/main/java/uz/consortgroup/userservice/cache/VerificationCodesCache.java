@@ -1,9 +1,5 @@
 package uz.consortgroup.userservice.cache;
 
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import uz.consortgroup.userservice.entity.VerificationCode;
@@ -13,58 +9,47 @@ import uz.consortgroup.userservice.repository.VerificationCodeRepository;
 import uz.consortgroup.userservice.service.VerificationCodeCacheService;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Component
-@Slf4j
-@RequiredArgsConstructor
-public class VerificationCodesCache {
-    @Value("${verification.cache.batch-size:1000}")
-    private int batchSize;
+public class VerificationCodesCache extends AbstractCacheWarmup<VerificationCode, VerificationCodeCacheEntity> {
+    private static final String VERIFICATION_CODES_CACHE = "verificationCodesCache";
 
     private final VerificationCodeCacheService verificationCodeCacheService;
     private final VerificationCodeRepository verificationCodeRepository;
-    private final ThreadPoolTaskExecutor taskExecutor;
     private final VerificationCodeCacheMapper verificationCodeCacheMapper;
 
-    @PostConstruct
-    public void init() {
-        log.info("Starting verification codes cache warmup");
-        CompletableFuture.runAsync(this::warmUpCache, taskExecutor)
-                .exceptionally(ex -> {
-                    log.error("Cache warmup failed", ex);
-                    return null;
-                });
+    public VerificationCodesCache(ThreadPoolTaskExecutor taskExecutor,
+                                  VerificationCodeCacheService verificationCodeCacheService,
+                                  VerificationCodeRepository verificationCodeRepository,
+                                  VerificationCodeCacheMapper verificationCodeCacheMapper) {
+        super(taskExecutor);
+        this.verificationCodeCacheService = verificationCodeCacheService;
+        this.verificationCodeRepository = verificationCodeRepository;
+        this.verificationCodeCacheMapper = verificationCodeCacheMapper;
     }
 
-    private void warmUpCache() {
-        try {
-            Long lastId = 0L;
-            boolean hasMore;
-
-            do {
-                List<VerificationCode> codes = verificationCodeRepository.findCodesBatch(lastId, batchSize);
-                hasMore = !codes.isEmpty();
-
-                if (hasMore) {
-                    saveToCache(codes);
-                    lastId = codes.get(codes.size() - 1).getId();
-                    log.debug("Cached {} codes, last ID: {}", codes.size(), lastId);
-                }
-            } while (hasMore);
-
-            log.info("Verification codes cache warmup completed");
-        } catch (Exception e) {
-            log.error("Error during cache warmup", e);
-        }
+    @Override
+    protected List<VerificationCode> fetchBatch(Long lastId, int batchSize) {
+        return verificationCodeRepository.findCodesBatch(lastId, batchSize);
     }
 
-    private void saveToCache(List<VerificationCode> codes) {
-        List<VerificationCodeCacheEntity> cacheEntities = codes.stream()
-                .map(verificationCodeCacheMapper::toVerificationCodeCacheEntity)
-                .collect(Collectors.toList());
+    @Override
+    protected Long getLastId(List<VerificationCode> entities) {
+        return entities.get(entities.size() - 1).getId();
+    }
 
+    @Override
+    protected VerificationCodeCacheEntity mapToCacheEntity(VerificationCode entity) {
+        return verificationCodeCacheMapper.toVerificationCodeCacheEntity(entity);
+    }
+
+    @Override
+    protected void saveCache(List<VerificationCodeCacheEntity> cacheEntities) {
         verificationCodeCacheService.saveVerificationCodes(cacheEntities);
+    }
+
+    @Override
+    protected String getCacheName() {
+        return VERIFICATION_CODES_CACHE;
     }
 }

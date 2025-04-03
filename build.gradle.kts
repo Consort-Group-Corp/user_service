@@ -38,9 +38,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation ("org.springframework.boot:spring-boot-starter-aop")
+
 
     //Spring Boot Mail
     implementation ("org.springframework.boot:spring-boot-starter-mail")
+
+    //Jackson Datatype
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
     // Spring Security
     implementation("org.springframework.boot:spring-boot-starter-security")
@@ -68,6 +73,7 @@ dependencies {
 
     // Тестирование
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

@@ -1,7 +1,9 @@
 package uz.consortgroup.userservice.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,11 +14,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uz.consortgroup.userservice.dto.UserRegistrationDto;
 
 import uz.consortgroup.userservice.dto.UserResponseDto;
 import uz.consortgroup.userservice.dto.UserUpdateDto;
+import uz.consortgroup.userservice.dto.UserUpdateResponseDto;
 import uz.consortgroup.userservice.service.UserService;
 
 @RestController
@@ -26,37 +30,43 @@ import uz.consortgroup.userservice.service.UserService;
 public class UserController {
     private final UserService userService;
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ResponseEntity<UserResponseDto> registerNewUser(@RequestBody @Valid UserRegistrationDto userRegistrationDto) {
-        return ResponseEntity.ok(userService.registerNewUser(userRegistrationDto));
+    public UserResponseDto registerNewUser(@RequestBody @Valid UserRegistrationDto userRegistrationDto) {
+        return userService.registerNewUser(userRegistrationDto);
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/{userId}/verify")
-    public ResponseEntity<String> verifyUser(@PathVariable Long userId, @RequestParam String verificationCode) {
+    public String verifyUser(@PathVariable Long userId,
+                             @RequestParam @NotBlank(message = "Verification code is required") String verificationCode) {
         userService.verifyUser(userId, verificationCode);
-        return ResponseEntity.ok("User verified successfully");
+        return "User verified successfully";
     }
 
-    @PostMapping("/{userId}/resend-verification-code")
-    public ResponseEntity<String> resendVerificationCode(@PathVariable Long userId) {
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/{userId}/new-verification-code")
+    public String resendVerificationCode(@PathVariable Long userId) {
         userService.resendVerificationCode(userId);
-        return ResponseEntity.ok("Verification code resent successfully");
+        return "Verification code resent successfully";
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{userId}")
-    public ResponseEntity<UserResponseDto> getUserById(@PathVariable("userId") Long userId) {
-       return ResponseEntity.ok(userService.getUserById(userId));
+    public UserResponseDto getUserById(@PathVariable("userId") Long userId) {
+       return userService.getUserById(userId);
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{userId}")
-    public ResponseEntity<UserUpdateDto> updateUserById(@PathVariable("userId") Long userId,
-                                                        @RequestBody @Valid UserUpdateDto userUpdateDto) {
-        return ResponseEntity.ok(userService.updateUserById(userId, userUpdateDto));
+    public UserUpdateResponseDto updateUserById(@PathVariable("userId") Long userId,
+                                                @RequestBody @Valid UserUpdateDto userUpdateDto) {
+        return userService.updateUserById(userId, userUpdateDto);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable("userId") Long userId) {
+    public void deleteUserById(@PathVariable("userId") Long userId) {
         userService.deleteUserById(userId);
-        return ResponseEntity.noContent().build();
     }
 }

@@ -64,6 +64,7 @@ public class WebSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(HttpMethod.POST, "/api/v1/users/*/verify").permitAll()
+                                  .requestMatchers(HttpMethod.POST, "/api/v1/users/*/new-verification-code").permitAll()
 //                                .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")
 //                                .requestMatchers("/mentor/**").hasRole("MENTOR")
 //                                .requestMatchers("/student/**").hasRole("STUDENT")

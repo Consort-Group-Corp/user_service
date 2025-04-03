@@ -8,8 +8,6 @@ import uz.consortgroup.userservice.entity.cacheEntity.UserCacheEntity;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserCacheMapper {
-    UserResponseDto toUserResponseDto(User user);
-    User toUserEntity(UserResponseDto dto);
     UserCacheEntity toUserCache(User user);
     User toUserEntity(UserCacheEntity cacheEntity);
 }

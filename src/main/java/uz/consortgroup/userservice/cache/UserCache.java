@@ -1,12 +1,6 @@
 package uz.consortgroup.userservice.cache;
 
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import uz.consortgroup.userservice.entity.User;
@@ -16,56 +10,46 @@ import uz.consortgroup.userservice.repository.UserRepository;
 import uz.consortgroup.userservice.service.UserCacheService;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
-public class UserCache {
-    @Value("${user-cache.redis-batch-size}")
-    private int redisBatchSize;
+public class UserCache extends AbstractCacheWarmup<User, UserCacheEntity> {
+    private static final String USER_CACHE = "userCache";
+
     private final UserCacheService userCacheService;
     private final UserRepository userRepository;
-    private final ThreadPoolTaskExecutor taskExecutor;
     private final UserCacheMapper userCacheMapper;
 
-    @PostConstruct
-    public void init() {
-        log.info("UserCache initialized. Cache warming will start asynchronously");
-
-        try {
-           CompletableFuture.runAsync(this::warmUpCacheAsync, taskExecutor);
-
-        } catch (Exception e) {
-            log.error("Failed to warm up UserCache", e);
-        }
+    public UserCache(ThreadPoolTaskExecutor taskExecutor, UserCacheService userCacheService,
+                     UserRepository userRepository, UserCacheMapper userCacheMapper) {
+        super(taskExecutor);
+        this.userCacheService = userCacheService;
+        this.userRepository = userRepository;
+        this.userCacheMapper = userCacheMapper;
     }
 
-    private void warmUpCacheAsync() {
-        log.info("Starting warm-up of UserCache");
-        try {
-            Long lastId = 0L;
-            while (true) {
-                Pageable pageable = PageRequest.of(0, redisBatchSize);
-                Page<User> userPage = userRepository.findUsersByBatch(lastId, pageable);
+    @Override
+    protected List<User> fetchBatch(Long lastId, int batchSize) {
+        return userRepository.findUsersByBatch(lastId, batchSize);
+    }
 
-                List<User> users = userPage.getContent();
-                if (users.isEmpty()) {
-                    break;
-                }
+    @Override
+    protected Long getLastId(List<User> entities) {
+        return entities.get(entities.size() - 1).getId();
+    }
 
-                List<UserCacheEntity> cacheEntities = users.stream()
-                        .map(userCacheMapper::toUserCache)
-                        .toList();
+    @Override
+    protected UserCacheEntity mapToCacheEntity(User entity) {
+        return userCacheMapper.toUserCache(entity);
+    }
 
-                userCacheService.cacheUsers(cacheEntities);
-                log.info("Saved {} users to Redis during warm-up", cacheEntities.size());
+    @Override
+    protected void saveCache(List<UserCacheEntity> cacheEntities) {
+        userCacheService.cacheUsers(cacheEntities);
+    }
 
-                lastId = users.get(users.size() - 1).getId();
-            }
-            log.info("UserCache warm-up completed.");
-        } catch (Exception e) {
-            log.error("Error while warming up cache", e);
-        }
+    @Override
+    protected String getCacheName() {
+        return USER_CACHE;
     }
 }

@@ -13,11 +13,12 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public abstract class AbstractProducer {
-    private final KafkaTemplate kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     protected void sendEventToTopic(String topic, @NotNull @NotEmpty List<Object> messages) {
         try {
             messages.forEach(message -> {
+                log.info("Sending message to Kafka topic '{}': {}", topic, message);
                 kafkaTemplate.send(topic, message);
             });
 

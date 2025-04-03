@@ -1,30 +1,26 @@
 package uz.consortgroup.userservice.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uz.consortgroup.userservice.asspect.annotation.AspectAfterReturning;
+import uz.consortgroup.userservice.asspect.annotation.AspectAfterThrowing;
+import uz.consortgroup.userservice.asspect.annotation.LoggingAspectAfterMethod;
+import uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod;
 import uz.consortgroup.userservice.dto.UserRegistrationDto;
 import uz.consortgroup.userservice.dto.UserResponseDto;
 import uz.consortgroup.userservice.dto.UserUpdateDto;
+import uz.consortgroup.userservice.dto.UserUpdateResponseDto;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.entity.enumeration.UserStatus;
-import uz.consortgroup.userservice.entity.enumeration.UsersRole;
-import uz.consortgroup.userservice.event.EventType;
-import uz.consortgroup.userservice.event.UserRegistrationEvent;
-import uz.consortgroup.userservice.event.VerificationCodeResentEvent;
-import uz.consortgroup.userservice.exception.UserAlreadyExistsException;
+import uz.consortgroup.userservice.entity.enumeration.UserRole;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
-import uz.consortgroup.userservice.kafka.UserRegisterKafkaProducer;
-import uz.consortgroup.userservice.kafka.VerificationCodeProducer;
 import uz.consortgroup.userservice.mapper.UserCacheMapper;
 import uz.consortgroup.userservice.mapper.UserMapper;
 import uz.consortgroup.userservice.repository.UserRepository;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import uz.consortgroup.userservice.validator.UserServiceValidator;
 
 @Service
 @RequiredArgsConstructor
@@ -35,124 +31,127 @@ public class UserService {
     private final VerificationService verificationService;
     private final UserCacheService userCacheService;
     private final UserCacheMapper userCacheMapper;
-    private final UserRegisterKafkaProducer userRegisterKafkaProducer;
-    private final VerificationCodeProducer verificationCodeProducer;
+    private final UserEventService userEventService;
     private final PasswordEncoder passwordEncoder;
-    private final AtomicLong messageIdGenerator = new AtomicLong(0);
+    private final UserServiceValidator userServiceValidator;
 
     @Transactional
+    @LoggingAspectBeforeMethod
+    @AspectAfterThrowing
+    @AspectAfterReturning
+    @LoggingAspectAfterMethod
     public UserResponseDto registerNewUser(UserRegistrationDto dto) {
-        log.info("Registering new user with email: {}", dto.getEmail());
-        validateUserRegistration(dto);
-
+        userServiceValidator.validateUserRegistration(dto);
         User user = userRepository.save(buildUserFromDto(dto));
-        log.info("User registered with ID: {}", user.getId());
 
         String verificationCode = verificationService.generateAndSaveCode(user);
-        log.info("Generated verification code for user ID: {}", user.getId());
 
-        sendRegistrationEvent(user, verificationCode);
+        userEventService.sendRegistrationEvent(user, verificationCode);
         cacheUser(user);
 
         return userMapper.toUserResponseDto(user);
     }
 
     @Transactional
+    @LoggingAspectBeforeMethod
+    @AspectAfterThrowing
+    @LoggingAspectAfterMethod
     public void verifyUser(Long userId, String inputCode) {
-        log.info("Verifying user with ID: {}", userId);
+
         User user = getUserFromDbAndCache(userId);
-
         verificationService.verifyCode(user, inputCode);
-        log.info("User {} verification successful", userId);
-
         userRepository.updateVerificationStatus(userId, true, UserStatus.ACTIVE);
-        log.info("User {} status updated to ACTIVE", userId);
+        userRepository.updateUserRole(userId, UserRole.STUDENT);
 
         removeUserFromCache(userId);
         cacheUser(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found")));
     }
 
     @Transactional
+    @LoggingAspectBeforeMethod
+    @AspectAfterThrowing
+    @LoggingAspectAfterMethod
     public void resendVerificationCode(Long userId) {
-        log.info("Resending verification code for user ID: {}", userId);
+        userServiceValidator.validateUserId(userId);
         User user = getUserFromDbAndCache(userId);
 
         String verificationCode = verificationService.generateAndSaveCode(user);
-        log.info("Generated new verification code for user ID: {}", userId);
-
-        sendCodeResentEvent(user, verificationCode);
+        userEventService.resendVerificationCodeEvent(user, verificationCode);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
+    @LoggingAspectBeforeMethod
+    @AspectAfterReturning
+    @LoggingAspectAfterMethod
     public UserResponseDto getUserById(Long userId) {
-        log.info("Getting user with ID: {}", userId);
-
         User user = getUserFromDbAndCache(userId);
-
-        log.info("User found: {}", user.getId());
-
         return userMapper.toUserResponseDto(user);
     }
 
 
     @Transactional
-    public UserUpdateDto updateUserById(Long userId, UserUpdateDto updateDto) {
-        log.info("Updating user with ID: {}", userId);
-
+    @LoggingAspectBeforeMethod
+    @AspectAfterReturning
+    @AspectAfterThrowing
+    @LoggingAspectAfterMethod
+    public UserUpdateResponseDto updateUserById(Long userId, UserUpdateDto updateDto) {
+        userServiceValidator.checkUserRole(updateDto.getRole().name());
+        userServiceValidator.validateUserId(userId);
         User user = updateUser(userId, updateDto);
-
-        log.info("User updated: {}", user.getId());
-
-        return userMapper.toUserUpdateDto(user);
+        return userMapper.toUserUpdateResponseDto(user);
     }
 
     @Transactional
+    @LoggingAspectBeforeMethod
+    @AspectAfterThrowing
+    @LoggingAspectAfterMethod
     public void deleteUserById(Long id) {
-        log.info("Deleting user with ID: {}", id);
-
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException("User not found");
         }
 
         userRepository.deleteById(id);
         removeUserFromCache(id);
-        log.info("User {} deleted successfully", id);
     }
 
-    private User getUserFromDbAndCache(Long id) {
-        return userCacheService.findUserById(id)
+    private User getUserFromDbAndCache(Long userId) {
+        log.debug("Fetching user with ID {} from cache or DB", userId);
+
+        return userCacheService.findUserById(userId)
                 .map(userCacheMapper::toUserEntity)
                 .orElseGet(() -> {
-                    User user = userRepository.findById(id)
-                            .orElseThrow(() -> {
-                                log.error("User with ID {} not found in database and cache", id);
-                                return new UserNotFoundException("User not found");
-                            });
-                    cacheUser(user);
-                    return user;
+                    try {
+                        User user = userRepository.findById(userId)
+                                .orElseThrow(() -> {
+                                    log.error("User with ID {} not found in database", userId);
+                                    return new UserNotFoundException("User not found");
+                                });
+                        cacheUser(user);
+                        return user;
+                    } catch (Exception e) {
+                        log.error("Failed to fetch user with ID {}: {}", userId, e.getMessage());
+                        throw e;
+                    }
                 });
     }
 
     private User updateUser(Long userId, UserUpdateDto updateDto) {
         return userRepository.updateUserById(userId,
-                updateDto.getFirstName(),
-                updateDto.getMiddleName(),
-                updateDto.getLastName(),
-                updateDto.getWorkPlace(),
-                updateDto.getEmail(),
-                updateDto.getPinfl(),
-                updateDto.getPosition()).orElseThrow(() -> {
-            log.error("User with ID {} not found", userId);
-            return new UserNotFoundException("User not found");});
+                        updateDto.getLastName(),
+                        updateDto.getFirstName(),
+                        updateDto.getMiddleName(),
+                        updateDto.getBornDate(),
+                        updateDto.getWorkPlace(),
+                        updateDto.getEmail(),
+                        updateDto.getPosition(),
+                        updateDto.getPinfl(),
+                        updateDto.getRole().name())
+                .orElseThrow(() -> {
+                    log.error("User with ID {} not found", userId);
+                    return new UserNotFoundException("User not found");
+                });
     }
 
-
-    private void validateUserRegistration(UserRegistrationDto dto) {
-        if (userRepository.existsByEmail(dto.getEmail())) {
-            log.error("User with email {} already exists", dto.getEmail());
-            throw new UserAlreadyExistsException("User with email " + dto.getEmail() + " already exists");
-        }
-    }
 
     private User buildUserFromDto(UserRegistrationDto dto) {
         return User.builder()
@@ -160,11 +159,12 @@ public class UserService {
                 .lastName(dto.getLastName())
                 .middleName(dto.getMiddleName())
                 .workPlace(dto.getWorkPlace())
+                .bornDate(dto.getBornDate())
                 .email(dto.getEmail())
                 .position(dto.getPosition())
                 .pinfl(dto.getPinfl())
                 .password(passwordEncoder.encode(dto.getPassword()))
-                .role(UsersRole.STUDENT)
+                .role(UserRole.GUEST_USER)
                 .status(UserStatus.PENDING)
                 .isVerified(false)
                 .build();
@@ -178,31 +178,5 @@ public class UserService {
     private void removeUserFromCache(Long userId) {
         log.info("Removing user with ID {} from cache", userId);
         userCacheService.removeUserFromCache(userId);
-    }
-
-    private void sendRegistrationEvent(User user, String verificationCode) {
-        UserRegistrationEvent event = UserRegistrationEvent.builder()
-                .messageId(messageIdGenerator.incrementAndGet())
-                .userId(user.getId())
-                .firstName(user.getFirstName())
-                .middleName(user.getMiddleName())
-                .email(user.getEmail())
-                .verificationCode(verificationCode)
-                .eventType(EventType.USER_REGISTERED)
-                .build();
-
-        userRegisterKafkaProducer.sendUserRegisterEvents(List.of(event));
-    }
-
-    private void sendCodeResentEvent(User user, String verificationCode) {
-        VerificationCodeResentEvent event = VerificationCodeResentEvent.builder()
-                .messageId(messageIdGenerator.incrementAndGet())
-                .userId(user.getId())
-                .newVerificationCode(verificationCode)
-                .email(user.getEmail())
-                .eventType(EventType.VERIFICATION_CODE_SENT)
-                .build();
-
-        verificationCodeProducer.sendVerificationCodeResendEvents(List.of(event));
     }
 }

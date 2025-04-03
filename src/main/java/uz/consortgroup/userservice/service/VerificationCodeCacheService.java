@@ -3,6 +3,10 @@ package uz.consortgroup.userservice.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uz.consortgroup.userservice.asspect.annotation.AspectAfterReturning;
+import uz.consortgroup.userservice.asspect.annotation.AspectAfterThrowing;
+import uz.consortgroup.userservice.asspect.annotation.LoggingAspectAfterMethod;
+import uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod;
 import uz.consortgroup.userservice.entity.cacheEntity.UserCacheEntity;
 import uz.consortgroup.userservice.entity.cacheEntity.VerificationCodeCacheEntity;
 import uz.consortgroup.userservice.entity.enumeration.VerificationCodeStatus;
@@ -18,32 +22,40 @@ import java.util.Optional;
 public class VerificationCodeCacheService {
     private final VerificationCodeRedisRepository verificationCodeRedisRepository;
 
+    @LoggingAspectBeforeMethod
+    @LoggingAspectAfterMethod
+    @AspectAfterReturning
+    @AspectAfterThrowing
     public Optional<VerificationCodeCacheEntity> findCodeById(Long id) {
         try {
             return verificationCodeRedisRepository.findById(id);
         } catch (Exception e) {
-            log.error("Redis access error: {}", id, e);
             return Optional.empty();
         }
     }
 
+
+    @LoggingAspectBeforeMethod
+    @LoggingAspectAfterMethod
+    @AspectAfterThrowing
     public void saveVerificationCode(VerificationCodeCacheEntity code) {
         if (code != null && code.getId() != null) {
             try {
                 verificationCodeRedisRepository.save(code);
-                log.debug("Code cached with TTL: {}", code.getId());
             } catch (Exception e) {
-                log.error("Cache save failed: {}", code.getId(), e);
+                throw new RuntimeException(String.format("Failed to cache verification code: %s", code.getId()), e);
             }
         }
     }
 
+    @LoggingAspectBeforeMethod
+    @LoggingAspectAfterMethod
+    @AspectAfterThrowing
     public void saveVerificationCodes(List<VerificationCodeCacheEntity> codes) {
         try {
             verificationCodeRedisRepository.saveAll(codes);
-            log.debug("Codes cached with TTL: {}", codes.size());
         } catch (Exception e) {
-            log.error("Cache save failed: {}", codes.size(), e);
+            throw new RuntimeException(String.format("Failed to cache verification codes: %s", codes), e);
         }
     }
 }

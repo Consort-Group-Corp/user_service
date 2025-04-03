@@ -9,10 +9,10 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class VerificationCodeProducer extends AbstractProducer {
+public class VerificationCodeResendProducer extends AbstractProducer {
     private final KafkaTopic kafkaTopic;
 
-    public VerificationCodeProducer(KafkaTemplate kafkaTemplate, KafkaTopic kafkaTopic) {
+    public VerificationCodeResendProducer(KafkaTemplate<String, Object> kafkaTemplate, KafkaTopic kafkaTopic) {
         super(kafkaTemplate);
         this.kafkaTopic = kafkaTopic;
     }
