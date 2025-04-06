@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/changelog/changeset/V002_create_users_table.sql
   - include:
       file: db/changelog/changeset/V003_create_verification_codes_table.sql
+  - include:
+      file: db/changelog/changeset/V006_create_password_table.sql
