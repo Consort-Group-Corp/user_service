@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS user_schema.users (
     email VARCHAR(128) NOT NULL UNIQUE,
     position VARCHAR(128) NOT NULL,
     pinfl VARCHAR(16) NOT NULL UNIQUE,
+    registration_method VARCHAR(50) NOT NULL,
     is_verified BOOLEAN DEFAULT FALSE,
     role VARCHAR(50) DEFAULT NULL,
     status VARCHAR(50) DEFAULT NULL,

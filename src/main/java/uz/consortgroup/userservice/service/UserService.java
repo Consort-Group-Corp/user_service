@@ -13,6 +13,7 @@ import uz.consortgroup.userservice.dto.UserResponseDto;
 import uz.consortgroup.userservice.dto.UserUpdateDto;
 import uz.consortgroup.userservice.dto.UserUpdateResponseDto;
 import uz.consortgroup.userservice.entity.User;
+import uz.consortgroup.userservice.entity.enumeration.RegistrationMethod;
 import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 import uz.consortgroup.userservice.entity.enumeration.UserRole;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
@@ -167,6 +168,7 @@ public class UserService {
                 .email(dto.getEmail())
                 .position(dto.getPosition())
                 .pinfl(dto.getPinfl())
+                .registrationMethod(RegistrationMethod.EMAIL)
                 .role(UserRole.GUEST_USER)
                 .status(UserStatus.PENDING)
                 .isVerified(false)
@@ -182,5 +184,4 @@ public class UserService {
         log.info("Removing user with ID {} from cache", userId);
         userCacheService.removeUserFromCache(userId);
     }
-
 }

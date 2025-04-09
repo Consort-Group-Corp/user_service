@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uz.consortgroup.userservice.entity.User;
+import uz.consortgroup.userservice.event.Communication;
 import uz.consortgroup.userservice.event.EventType;
 import uz.consortgroup.userservice.event.UserRegistrationEvent;
 import uz.consortgroup.userservice.event.VerificationCodeResentEvent;
@@ -29,7 +30,10 @@ public class UserEventService {
                 .lastName(user.getLastName())
                 .firstName(user.getFirstName())
                 .middleName(user.getMiddleName())
+                .phoneNumber(user.getPhoneNumber())
+                .bornDate(user.getBornDate())
                 .email(user.getEmail())
+                .communication(Communication.EMAIL)
                 .verificationCode(verificationCode)
                 .eventType(EventType.USER_REGISTERED)
                 .build();

@@ -51,35 +51,4 @@ public class UserServiceValidator {
             throw new UserRoleNotFoundException("Role " + role + " not found in UserRole enum");
         }
     }
-
-    @LoggingAspectBeforeMethod
-    @LoggingAspectAfterMethod
-    @AspectAfterThrowing
-    public void validatePasswordChangeRequest(Long userId, String oldPassword, String newPassword) {
-
-        if (userId == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
-        }
-
-        if (oldPassword == null || oldPassword.isBlank()) {
-            throw new IllegalArgumentException("Old password cannot be empty");
-        }
-
-        if (newPassword == null || newPassword.isBlank()) {
-            throw new IllegalArgumentException("New password cannot be empty");
-        }
-
-        if (oldPassword.equals(newPassword)) {
-            throw new IllegalArgumentException("New password must be different from old password");
-        }
-
-        if (!isPasswordValid(newPassword)) {
-            throw new IllegalArgumentException("Password does not meet complexity requirements");
-        }
-    }
-
-    private boolean isPasswordValid(String password) {
-        String pattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$";
-        return password.matches(pattern);
-    }
 }
