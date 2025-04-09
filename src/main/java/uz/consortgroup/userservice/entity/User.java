@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uz.consortgroup.userservice.entity.enumeration.Language;
+import uz.consortgroup.userservice.entity.enumeration.RegistrationMethod;
 import uz.consortgroup.userservice.entity.enumeration.UserRole;
 import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 
@@ -73,6 +74,10 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Password password;
+
+    @Column(name = "registration_method", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private RegistrationMethod registrationMethod;
 
     @Column(name = "is_verified", nullable = false)
     private Boolean isVerified;

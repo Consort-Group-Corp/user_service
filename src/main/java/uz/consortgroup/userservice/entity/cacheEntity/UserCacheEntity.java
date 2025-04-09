@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import uz.consortgroup.userservice.entity.enumeration.RegistrationMethod;
 import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 import uz.consortgroup.userservice.entity.enumeration.UserRole;
 
@@ -38,6 +39,7 @@ public class UserCacheEntity implements Serializable {
     private String email;
     private String position;
     private String pinfl;
+    private RegistrationMethod registrationMethod;
     private Boolean isVerified;
     private String verificationCode;
     private UserRole role;
