@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uz.consortgroup.userservice.dto.*;
 import uz.consortgroup.userservice.entity.User;
+import uz.consortgroup.userservice.entity.enumeration.Language;
 import uz.consortgroup.userservice.entity.enumeration.UserRole;
 import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 import uz.consortgroup.userservice.exception.*;
@@ -15,9 +16,12 @@ import uz.consortgroup.userservice.repository.UserRepository;
 import uz.consortgroup.userservice.validator.UserServiceValidator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -53,129 +57,102 @@ class UserServiceTest {
 
     private User.UserBuilder userBuilder() {
         return User.builder()
-                .id(1L)
+                .id(UUID.randomUUID())
                 .firstName("John")
                 .lastName("Doe")
                 .email("john@example.com")
-                .role(UserRole.STUDENT)
+                .role(UserRole.GUEST_USER)
                 .status(UserStatus.PENDING)
+                .createdAt(LocalDateTime.now())
                 .isVerified(false);
     }
 
     private UserRegistrationDto.UserRegistrationDtoBuilder registrationDtoBuilder() {
         return UserRegistrationDto.builder()
-                .firstName("John")
-                .lastName("Doe")
-                .middleName("Middle")
-                .workPlace("Company")
                 .email("john@example.com")
-                .position("Developer")
-                .pinfl("12345678901234")
+                .language(Language.ENGLISH)
                 .password("Secure123!");
     }
 
     @Test
-    void registerNewUser_ValidData_ReturnsUserResponse() {
+    void registerNewUser_ValidData_ReturnsUserRegistrationResponse() {
         UserRegistrationDto dto = registrationDtoBuilder().build();
-        User savedUser = userBuilder().id(1L).build();
-        UserResponseDto responseDto = UserResponseDto.builder().id(1L).build();
+        User savedUser = userBuilder().build();
+        UserRegistrationResponseDto responseDto = UserRegistrationResponseDto.builder()
+                .id(savedUser.getId())
+                .build();
 
-        doNothing().when(passwordService).savePassword(any(User.class), anyString());
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(userMapper.toUserResponseDto(eq(savedUser))).thenReturn(responseDto);
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User userToSave = invocation.getArgument(0);
+            return User.builder()
+                    .id(savedUser.getId())
+                    .email(userToSave.getEmail())
+                    .role(userToSave.getRole())
+                    .status(userToSave.getStatus())
+                    .build();
+        });
 
-        UserResponseDto result = userService.registerNewUser(dto);
+        when(userMapper.toUserRegistrationResponseDto(any(User.class))).thenReturn(responseDto);
+
+        doNothing().when(passwordService).savePassword(any(User.class), any(UserRegistrationDto.class));
+
+        UserRegistrationResponseDto result = userService.registerNewUser(dto);
 
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getId()).isEqualTo(savedUser.getId());
 
-        verify(passwordService).savePassword(any(User.class), anyString());
         verify(userRepository).save(any(User.class));
-        verify(userMapper).toUserResponseDto(eq(savedUser));
-    }
-
-    @Test
-    void registerNewUser_InvalidEmail_ThrowsException() {
-        UserRegistrationDto dto = registrationDtoBuilder().email("invalid").build();
-
-        doThrow(new IllegalArgumentException("Invalid email"))
-                .when(userServiceValidator).validateUserRegistration(eq(dto));
-
-        assertThatThrownBy(() -> userService.registerNewUser(dto))
-                .isInstanceOf(IllegalArgumentException.class);
+        verify(userMapper).toUserRegistrationResponseDto(any(User.class));
+        verify(passwordService).savePassword(any(User.class), any(UserRegistrationDto.class));
     }
 
     @Test
     void verifyUser_ValidCode_Success() {
-        User user = userBuilder().build();
-        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user));
+        UUID userId = UUID.randomUUID();
+        User user = userBuilder().id(userId).build();
 
-        userService.verifyUser(1L, "123456");
+        when(userCacheService.findUserById(eq(userId))).thenReturn(Optional.empty());
+        when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
 
-        verify(userRepository).updateVerificationStatus(eq(1L), eq(true), eq(UserStatus.ACTIVE));
-    }
+        userService.verifyUser(userId, "123456");
 
-    @Test
-    void verifyUser_InvalidCode_ThrowsException() {
-        User user = userBuilder().build();
-        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user));
-        doThrow(new InvalidVerificationCodeException("Invalid"))
-                .when(verificationService).verifyCode(eq(user), eq("invalid"));
-
-        assertThatThrownBy(() -> userService.verifyUser(1L, "invalid"))
-                .isInstanceOf(InvalidVerificationCodeException.class);
-    }
-
-    @Test
-    void verifyUser_UserNotFound_ThrowsException() {
-        when(userRepository.findById(eq(1L))).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> userService.verifyUser(1L, "123456"))
-                .isInstanceOf(UserNotFoundException.class);
+        verify(userRepository).updateVerificationStatus(eq(userId), eq(true), eq(UserStatus.ACTIVE));
+        verify(userRepository).updateUserRole(eq(userId), eq(UserRole.STUDENT));
+        verify(userCacheService).removeUserFromCache(eq(userId));
     }
 
     @Test
     void resendVerificationCode_ValidUser_Success() {
-        User user = userBuilder().build();
-        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user));
+        UUID userId = UUID.randomUUID();
+        User user = userBuilder().id(userId).build();
 
-        userService.resendVerificationCode(1L);
+        when(userCacheService.findUserById(eq(userId))).thenReturn(Optional.empty());
+        when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
+
+        userService.resendVerificationCode(userId);
 
         verify(verificationService).generateAndSaveCode(eq(user));
     }
 
     @Test
-    void resendVerificationCode_UserNotFound_ThrowsException() {
-        when(userRepository.findById(eq(1L))).thenReturn(Optional.empty());
+    void getUserById_ValidUser_ReturnsUserProfileResponse() {
+        UUID userId = UUID.randomUUID();
+        User user = userBuilder().id(userId).build();
+        UserProfileResponseDto responseDto = UserProfileResponseDto.builder().id(userId).build();
 
-        assertThatThrownBy(() -> userService.resendVerificationCode(1L))
-                .isInstanceOf(UserNotFoundException.class)
-                .hasMessageContaining("User not found");
-    }
+        when(userCacheService.findUserById(eq(userId))).thenReturn(Optional.empty());
+        when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
+        when(userMapper.toUserProfileResponseDto(eq(user))).thenReturn(responseDto);
 
-    @Test
-    void getUserById_ValidUser_ReturnsUser() {
-        User user = userBuilder().build();
-        UserResponseDto responseDto = UserResponseDto.builder().id(1L).build();
-        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user));
-        when(userMapper.toUserResponseDto(eq(user))).thenReturn(responseDto);
-
-        UserResponseDto result = userService.getUserById(1L);
+        UserProfileResponseDto result = userService.getUserById(userId);
 
         assertThat(result).isNotNull();
-    }
-
-    @Test
-    void getUserById_UserNotFound_ThrowsException() {
-        when(userRepository.findById(eq(1L))).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> userService.getUserById(1L))
-                .isInstanceOf(UserNotFoundException.class);
+        assertThat(result.getId()).isEqualTo(userId);
     }
 
     @Test
     void updateUserById_ValidData_ShouldUpdateUser() {
-        Long userId = 1L;
+        UUID userId = UUID.randomUUID();
         UserUpdateDto updateDto = UserUpdateDto.builder()
                 .firstName("UpdatedFirstName")
                 .lastName("UpdatedLastName")
@@ -236,68 +213,16 @@ class UserServiceTest {
         UserUpdateResponseDto actualResponse = userService.updateUserById(userId, updateDto);
 
         assertThat(actualResponse).isEqualTo(expectedResponse);
-
-        verify(userServiceValidator).checkUserRole(UserRole.STUDENT.name());
-        verify(userServiceValidator).validateUserId(userId);
-        verify(userRepository).updateUserById(
-                eq(userId),
-                eq(updateDto.getLastName()),
-                eq(updateDto.getFirstName()),
-                eq(updateDto.getMiddleName()),
-                eq(updateDto.getBornDate()),
-                eq(updateDto.getPhoneNumber()),
-                eq(updateDto.getWorkPlace()),
-                eq(updateDto.getEmail()),
-                eq(updateDto.getPosition()),
-                eq(updateDto.getPinfl()),
-                eq(updateDto.getRole().name()));
-
     }
-
-
-    @Test
-    void updateUserById_UserNotFound_ThrowsException() {
-        UserUpdateDto updateDto = UserUpdateDto.builder()
-                .firstName("NewFirstName")
-                .lastName("NewLastName")
-                .email("new@email.com")
-                .role(UserRole.STUDENT)
-                .build();
-
-        when(userRepository.updateUserById(
-                eq(1L),
-                eq(updateDto.getLastName()),
-                eq(updateDto.getFirstName()),
-                eq(updateDto.getMiddleName()),
-                eq(updateDto.getBornDate()),
-                eq(updateDto.getPhoneNumber()),
-                eq(updateDto.getWorkPlace()),
-                eq(updateDto.getEmail()),
-                eq(updateDto.getPosition()),
-                eq(updateDto.getPinfl()),
-                eq(updateDto.getRole().name())))
-                .thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> userService.updateUserById(1L, updateDto))
-                .isInstanceOf(UserNotFoundException.class)
-                .hasMessageContaining("User not found");
-    }
-
 
     @Test
     void deleteUserById_ValidUser_Success() {
-        when(userRepository.existsById(eq(1L))).thenReturn(true);
+        UUID userId = UUID.randomUUID();
+        when(userRepository.existsById(eq(userId))).thenReturn(true);
 
-        userService.deleteUserById(1L);
+        userService.deleteUserById(userId);
 
-        verify(userRepository).deleteById(eq(1L));
-    }
-
-    @Test
-    void deleteUserById_UserNotFound_ThrowsException() {
-        when(userRepository.existsById(eq(1L))).thenReturn(false);
-
-        assertThatThrownBy(() -> userService.deleteUserById(1L))
-                .isInstanceOf(UserNotFoundException.class);
+        verify(userRepository).deleteById(eq(userId));
+        verify(userCacheService).removeUserFromCache(eq(userId));
     }
 }

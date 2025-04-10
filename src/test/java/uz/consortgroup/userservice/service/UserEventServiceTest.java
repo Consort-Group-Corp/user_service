@@ -6,83 +6,111 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uz.consortgroup.userservice.dto.UserProfileDto;
 import uz.consortgroup.userservice.entity.User;
-import uz.consortgroup.userservice.entity.enumeration.UserRole;
+import uz.consortgroup.userservice.entity.enumeration.Language;
 import uz.consortgroup.userservice.entity.enumeration.UserStatus;
-import uz.consortgroup.userservice.kafka.UserRegisterKafkaProducer;
+import uz.consortgroup.userservice.kafka.UserRegisteredProducer;
+import uz.consortgroup.userservice.kafka.UserUpdateProfileProducer;
 import uz.consortgroup.userservice.kafka.VerificationCodeResendProducer;
+
+import java.time.LocalDate;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserEventServiceTest {
+class UserEventServiceTest {
+
     @Mock
-    private UserRegisterKafkaProducer userRegisterKafkaProducer;
+    private UserUpdateProfileProducer userUpdateProfileProducer;
 
     @Mock
     private VerificationCodeResendProducer verificationCodeResendProducer;
 
+    @Mock
+    private UserRegisteredProducer userRegisteredProducer;
+
     @InjectMocks
     private UserEventService userEventService;
 
-
     private User user;
+    private final UUID userId = UUID.randomUUID();
+    private final String verificationCode = "123456";
 
     @BeforeEach
     void setUp() {
-         user = User.builder()
-                .id(1L)
-                .lastName("Ivanov")
-                .firstName("Ivan")
-                .middleName("Ivanovich")
-                .workPlace("Google")
-                .email("Ivan@gmail.com")
-                .position("Developer")
-                .pinfl("1234567890")
-                .role(UserRole.STUDENT)
+        user = User.builder()
+                .id(userId)
+                .email("test@example.com")
+                .language(Language.UZBEK)
                 .status(UserStatus.PENDING)
-                .isVerified(false)
                 .build();
     }
 
+    @Test
+    void sendUserRegisteredEvent_Success() {
+        userEventService.sendUserRegisteredEvent(user, verificationCode);
+
+        verify(userRegisteredProducer).sendUserRegisteredEvents(anyList());
+    }
 
     @Test
-    void sendRegistrationEvent_Success() {
-        String verificationCode = "1234";
-        userEventService.sendRegistrationEvent(user, verificationCode);
+    void sendUserUpdateProfileEvent_Success() {
+        UserProfileDto profileDto = UserProfileDto.builder()
+                .lastName("Smith")
+                .firstName("John")
+                .middleName("Michael")
+                .bornDate(LocalDate.now())
+                .phoneNumber("+998901234567")
+                .build();
 
-        verify(userRegisterKafkaProducer, times(1)).sendUserRegisterEvents(anyList());
+        userEventService.sendUserUpdateProfileEvent(userId, profileDto);
+
+        verify(userUpdateProfileProducer).sendUserUpdateProfileEvents(anyList());
     }
 
     @Test
     void resendVerificationCodeEvent_Success() {
-       String newVerificationCode = "1234";
-       userEventService.resendVerificationCodeEvent(user, newVerificationCode);
+        userEventService.resendVerificationCodeEvent(user, verificationCode);
 
-       verify(verificationCodeResendProducer, times(1)).sendVerificationCodeResendEvents(anyList());
+        verify(verificationCodeResendProducer).sendVerificationCodeResendEvents(anyList());
     }
 
     @Test
-    void sendRegistrationEvent_Failure() {
-        String verificationCode = "1234";
-        doThrow(new RuntimeException("Kafka send error")).when(userRegisterKafkaProducer).sendUserRegisterEvents(anyList());
+    void sendUserRegisteredEvent_ProducerFailure() {
+        doThrow(new RuntimeException("Kafka error"))
+                .when(userRegisteredProducer).sendUserRegisteredEvents(anyList());
 
-        assertThrows(RuntimeException.class, () -> userEventService.sendRegistrationEvent(user, verificationCode));
+        assertThrows(RuntimeException.class,
+                () -> userEventService.sendUserRegisteredEvent(user, verificationCode));
 
-        verify(userRegisterKafkaProducer, times(1)).sendUserRegisterEvents(anyList());
+        verify(userRegisteredProducer).sendUserRegisteredEvents(anyList());
     }
 
     @Test
-    void resendVerificationCodeEvent_Failure() {
-        String newVerificationCode = "1234";
-        doThrow(new RuntimeException("Kafka send error")).when(verificationCodeResendProducer).sendVerificationCodeResendEvents(anyList());
+    void sendUserUpdateProfileEvent_ProducerFailure() {
+        UserProfileDto profileDto = UserProfileDto.builder().build();
 
-        assertThrows(RuntimeException.class, () -> userEventService.resendVerificationCodeEvent(user, newVerificationCode));
+        doThrow(new RuntimeException("Kafka error"))
+                .when(userUpdateProfileProducer).sendUserUpdateProfileEvents(anyList());
 
-        verify(verificationCodeResendProducer, times(1)).sendVerificationCodeResendEvents(anyList());
+        assertThrows(RuntimeException.class,
+                () -> userEventService.sendUserUpdateProfileEvent(userId, profileDto));
+
+        verify(userUpdateProfileProducer).sendUserUpdateProfileEvents(anyList());
+    }
+
+    @Test
+    void resendVerificationCodeEvent_ProducerFailure() {
+        doThrow(new RuntimeException("Kafka error"))
+                .when(verificationCodeResendProducer).sendVerificationCodeResendEvents(anyList());
+
+        assertThrows(RuntimeException.class,
+                () -> userEventService.resendVerificationCodeEvent(user, verificationCode));
+
+        verify(verificationCodeResendProducer).sendVerificationCodeResendEvents(anyList());
     }
 }

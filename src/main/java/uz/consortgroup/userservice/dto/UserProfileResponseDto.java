@@ -10,14 +10,14 @@ import uz.consortgroup.userservice.entity.enumeration.UserRole;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserResponseDto {
-    private Long id;
-    private String language;
+public class UserProfileResponseDto {
+    private UUID id;
     private String lastName;
     private String firstName;
     private String middleName;
@@ -31,6 +31,8 @@ public class UserResponseDto {
     private UserStatus status;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime updatedAt;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime lastLoginAt;
 }

@@ -12,6 +12,7 @@ import uz.consortgroup.userservice.repository.UserRedisRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class UserCacheService {
 
     @LoggingAspectBeforeMethod
     @AspectAfterThrowing
-    public Optional<UserCacheEntity> findUserById(Long id) {
+    public Optional<UserCacheEntity> findUserById(UUID id) {
         try {
             return userRedisRepository.findById(id);
         } catch (UserNotFoundException e) {
@@ -60,7 +61,7 @@ public class UserCacheService {
     @LoggingAspectBeforeMethod
     @LoggingAspectAfterMethod
     @AspectAfterThrowing
-    public void removeUserFromCache(Long userId) {
+    public void removeUserFromCache(UUID userId) {
         try {
             userRedisRepository.deleteById(userId);
         } catch (Exception e) {

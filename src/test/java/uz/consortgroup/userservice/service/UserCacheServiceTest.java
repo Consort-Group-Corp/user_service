@@ -6,155 +6,146 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uz.consortgroup.userservice.entity.cacheEntity.UserCacheEntity;
-import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.repository.UserRedisRepository;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class UserCacheServiceTest {
+class UserCacheServiceTest {
+
     @Mock
     private UserRedisRepository userRedisRepository;
 
     @InjectMocks
     private UserCacheService userCacheService;
 
-    @Test
-    void findUserById_Success() {
-        Long userId = 1L;
+    private final UUID testUserId = UUID.randomUUID();
 
-        when(userRedisRepository.findById(userId)).thenReturn(Optional.of(new UserCacheEntity()));
-        Optional<UserCacheEntity> result = userCacheService.findUserById(userId);
-        assertTrue(result.isPresent());
-
-        verify(userRedisRepository, times(1)).findById(userId);
+    private UserCacheEntity buildUserCacheEntity(UUID id) {
+        return UserCacheEntity.builder()
+                .id(id)
+                .email("test@example.com")
+                .firstName("John")
+                .lastName("Doe")
+                .build();
     }
 
     @Test
-    void findUserById_Fail() {
-        Long userId = -1L;
+    void findUserById_Success() {
+        UserCacheEntity user = buildUserCacheEntity(testUserId);
 
-        when(userRedisRepository.findById(userId)).thenThrow(new UserNotFoundException("User not found"));
+        when(userRedisRepository.findById(testUserId)).thenReturn(Optional.of(user));
 
-        Optional<UserCacheEntity> result = userCacheService.findUserById(userId);
+        Optional<UserCacheEntity> result = userCacheService.findUserById(testUserId);
+
+        assertTrue(result.isPresent());
+        assertEquals(testUserId, result.get().getId());
+        verify(userRedisRepository).findById(testUserId);
+    }
+
+    @Test
+    void findUserById_NotFound() {
+        when(userRedisRepository.findById(testUserId)).thenReturn(Optional.empty());
+
+        Optional<UserCacheEntity> result = userCacheService.findUserById(testUserId);
+
         assertTrue(result.isEmpty());
-
-        verify(userRedisRepository, times(1)).findById(userId);
+        verify(userRedisRepository).findById(testUserId);
     }
 
     @Test
     void cacheUser_Success() {
-        UserCacheEntity user = new UserCacheEntity();
-        user.setId(1L);
-
-        when(userRedisRepository.save(user)).thenReturn(user);
+        UserCacheEntity user = buildUserCacheEntity(testUserId);
 
         userCacheService.cacheUser(user);
 
-        verify(userRedisRepository, times(1)).save(user);
+        verify(userRedisRepository).save(user);
     }
 
-
     @Test
-    void cacheUser_Fail_SaveException() {
-        UserCacheEntity user = new UserCacheEntity();
-        user.setId(1L);
+    void cacheUser_Failure() {
+        UserCacheEntity user = buildUserCacheEntity(testUserId);
 
-        doThrow(new RuntimeException("Redis save failed")).when(userRedisRepository).save(user);
+        doThrow(new RuntimeException("Redis error")).when(userRedisRepository).save(user);
 
-        try {
-            userCacheService.cacheUser(user);
-        } catch (RuntimeException e) {
-            assertEquals("Failed to cache user: 1", e.getMessage());
-        }
+        Exception exception = assertThrows(RuntimeException.class,
+                () -> userCacheService.cacheUser(user));
 
-        verify(userRedisRepository, times(1)).save(user);
+        assertEquals("Failed to cache user: " + testUserId, exception.getMessage());
+        verify(userRedisRepository).save(user);
     }
 
     @Test
     void cacheUser_NullUser() {
         userCacheService.cacheUser(null);
 
-        verify(userRedisRepository, times(0)).save(any(UserCacheEntity.class));
+        verify(userRedisRepository, never()).save(any());
     }
 
     @Test
-    void cacheUser_NullUserId() {
-        UserCacheEntity user = new UserCacheEntity();
-        user.setId(null);
+    void cacheUser_NullId() {
+        UserCacheEntity user = UserCacheEntity.builder().build();
 
         userCacheService.cacheUser(user);
 
-        verify(userRedisRepository, times(0)).save(user);
+        verify(userRedisRepository, never()).save(any());
     }
 
     @Test
     void cacheUsers_Success() {
-        UserCacheEntity user1 = new UserCacheEntity();
-        user1.setId(1L);
-        UserCacheEntity user2 = new UserCacheEntity();
-        user2.setId(2L);
-        List<UserCacheEntity> users = Arrays.asList(user1, user2);
-
-        when(userRedisRepository.save(user1)).thenReturn(user1);
-        when(userRedisRepository.save(user2)).thenReturn(user2);
+        UserCacheEntity user1 = buildUserCacheEntity(testUserId);
+        UserCacheEntity user2 = buildUserCacheEntity(UUID.randomUUID());
+        List<UserCacheEntity> users = List.of(user1, user2);
 
         userCacheService.cacheUsers(users);
 
-        verify(userRedisRepository, times(1)).save(user1);
-        verify(userRedisRepository, times(1)).save(user2);
+        verify(userRedisRepository).save(user1);
+        verify(userRedisRepository).save(user2);
     }
 
     @Test
-    void cacheUsers_Failure() {
-        UserCacheEntity user1 = new UserCacheEntity();
-        user1.setId(1L);
-        UserCacheEntity user2 = new UserCacheEntity();
-        user2.setId(2L);
-        List<UserCacheEntity> users = Arrays.asList(user1, user2);
+    void cacheUsers_PartialFailure() {
+        UserCacheEntity user1 = buildUserCacheEntity(testUserId);
+        UserCacheEntity user2 = buildUserCacheEntity(UUID.randomUUID());
+        List<UserCacheEntity> users = List.of(user1, user2);
 
-        when(userRedisRepository.save(user1)).thenThrow(new RuntimeException("Redis error"));
+        doThrow(new RuntimeException("Redis error")).when(userRedisRepository).save(user1);
 
-        Exception exception = assertThrows(RuntimeException.class, () -> userCacheService.cacheUsers(users));
-        assertEquals("Failed to cache users: 1", exception.getMessage());
+        Exception exception = assertThrows(RuntimeException.class,
+                () -> userCacheService.cacheUsers(users));
 
-        verify(userRedisRepository, times(1)).save(user1);
+        assertEquals("Failed to cache users: " + testUserId, exception.getMessage());
+        verify(userRedisRepository).save(user1);
         verify(userRedisRepository, never()).save(user2);
     }
 
     @Test
     void removeUserFromCache_Success() {
-        Long userId = 1L;
+        userCacheService.removeUserFromCache(testUserId);
 
-        doNothing().when(userRedisRepository).deleteById(userId);
-
-        userCacheService.removeUserFromCache(userId);
-
-        verify(userRedisRepository, times(1)).deleteById(userId);
+        verify(userRedisRepository).deleteById(testUserId);
     }
 
     @Test
     void removeUserFromCache_Failure() {
-        Long userId = 1L;
+        doThrow(new RuntimeException("Redis error"))
+                .when(userRedisRepository).deleteById(testUserId);
 
-        doThrow(new RuntimeException("Redis error")).when(userRedisRepository).deleteById(userId);
+        Exception exception = assertThrows(RuntimeException.class,
+                () -> userCacheService.removeUserFromCache(testUserId));
 
-        Exception exception = assertThrows(RuntimeException.class, () -> userCacheService.removeUserFromCache(userId));
-        assertEquals("Failed to remove user from cache: 1", exception.getMessage());
-
-        verify(userRedisRepository, times(1)).deleteById(userId);
+        assertEquals("Failed to remove user from cache: " + testUserId, exception.getMessage());
+        verify(userRedisRepository).deleteById(testUserId);
     }
 }

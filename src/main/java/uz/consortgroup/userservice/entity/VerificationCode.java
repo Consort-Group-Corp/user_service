@@ -21,6 +21,7 @@ import lombok.Setter;
 import uz.consortgroup.userservice.entity.enumeration.VerificationCodeStatus;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,8 +33,8 @@ import java.time.LocalDateTime;
 @Table(name = "verification_codes", schema = "user_schema")
 public class VerificationCode {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

@@ -1,6 +1,5 @@
 package uz.consortgroup.userservice.entity.cacheEntity;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +14,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,7 +27,7 @@ public class UserCacheEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    private Long id;
+    private UUID id;
     private String language;
     private String firstName;
     private String middleName;

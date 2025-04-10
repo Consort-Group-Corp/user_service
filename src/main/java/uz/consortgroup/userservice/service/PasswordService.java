@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import uz.consortgroup.userservice.asspect.annotation.LoggingAspectAfterMethod;
 import uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod;
+import uz.consortgroup.userservice.dto.UserRegistrationDto;
 import uz.consortgroup.userservice.entity.Password;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.repository.PasswordRepository;
@@ -20,8 +21,8 @@ public class PasswordService {
 
     @LoggingAspectBeforeMethod
     @LoggingAspectAfterMethod
-    public void savePassword(User user, String userPassword) {
-        String encodedPassword = passwordEncoder.encode(userPassword);
+    public void savePassword(User user, UserRegistrationDto userRegistrationDto) {
+        String encodedPassword = passwordEncoder.encode(userRegistrationDto.getPassword());
 
         Password password = Password.builder()
                 .user(user)

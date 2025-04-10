@@ -10,13 +10,14 @@ import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
 public class UserUpdateResponseDto {
-    private Long id;
+    private UUID id;
     private String lastName;
     private String firstName;
     private String middleName;

@@ -11,18 +11,19 @@ import uz.consortgroup.userservice.entity.enumeration.VerificationCodeStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface VerificationCodeRepository extends JpaRepository<VerificationCode, Long> {
+public interface VerificationCodeRepository extends JpaRepository<VerificationCode, UUID> {
     @Query("SELECT v FROM VerificationCode v WHERE v.id > :lastId ORDER BY v.id ASC")
-    List<VerificationCode> findCodesBatch(@Param("lastId") Long lastId, @Param("size") int size);
+    List<VerificationCode> findCodesBatch(@Param("lastId") UUID lastId, @Param("size") int size);
 
     @Query("SELECT v FROM VerificationCode v WHERE v.user.id = :userId ORDER BY v.createdAt DESC LIMIT 1")
-    Optional<VerificationCode> findLastActiveCodeByUserId(@Param("userId") Long userId);
+    Optional<VerificationCode> findLastActiveCodeByUserId(@Param("userId") UUID userId);
 
     @Modifying
     @Query("UPDATE VerificationCode v SET v.attempts = v.attempts + 1, v.updatedAt = :now WHERE v.id = :codeId")
-    void incrementAttempts(@Param("codeId") Long codeId, @Param("now") LocalDateTime now);
+    void incrementAttempts(@Param("codeId") UUID codeId, @Param("now") LocalDateTime now);
 
     @Modifying
     @Query("UPDATE VerificationCode v SET " +
@@ -30,7 +31,7 @@ public interface VerificationCodeRepository extends JpaRepository<VerificationCo
             "v.updatedAt = :now, " +
             "v.usedAt = CASE WHEN :status = uz.consortgroup.userservice.entity.enumeration.VerificationCodeStatus.USED THEN :now ELSE v.usedAt END " +
             "WHERE v.id = :codeId")
-    void updateStatus(@Param("codeId") Long codeId,
+    void updateStatus(@Param("codeId") UUID codeId,
                       @Param("status") VerificationCodeStatus status,
                       @Param("now") LocalDateTime now);
 

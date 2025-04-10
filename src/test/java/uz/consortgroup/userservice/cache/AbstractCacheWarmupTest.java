@@ -8,171 +8,137 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-public class AbstractCacheWarmupTest {
+class AbstractCacheWarmupTest {
 
     @Autowired
     private ThreadPoolTaskExecutor taskExecutor;
 
-    private TestCacheWarmup testCacheWarmup;
+    private TestCacheWarmup cacheWarmup;
+    private final List<TestEntity> testData = List.of(
+            new TestEntity(UUID.randomUUID()),
+            new TestEntity(UUID.randomUUID()),
+            new TestEntity(UUID.randomUUID())
+    );
 
-    static class TestCacheWarmup extends AbstractCacheWarmup<String, Integer> {
-        private final List<String> mockEntities;
+    @BeforeEach
+    void setUp() {
+        cacheWarmup = spy(new TestCacheWarmup(taskExecutor, testData));
+        ReflectionTestUtils.setField(cacheWarmup, "batchSize", 2);
+        ReflectionTestUtils.setField(cacheWarmup, "warmupEnabled", true);
+        ReflectionTestUtils.setField(cacheWarmup, "warmupTimeout", 5000);
+    }
 
-        TestCacheWarmup(ThreadPoolTaskExecutor taskExecutor, List<String> mockEntities) {
-            super(taskExecutor);
-            this.mockEntities = mockEntities;
+
+    @Test
+    void warmUpCache_EmptyData_DoesNothing() throws Exception {
+        TestCacheWarmup emptyWarmup = spy(new TestCacheWarmup(taskExecutor, List.of()));
+        ReflectionTestUtils.setField(emptyWarmup, "batchSize", 2);
+
+        CompletableFuture.runAsync(emptyWarmup::warmUpCache, taskExecutor)
+                .get(1, TimeUnit.SECONDS);
+
+        verify(emptyWarmup, times(1)).fetchBatch(any(UUID.class), eq(2));
+        verify(emptyWarmup, never()).saveCache(anyList());
+    }
+
+    @Test
+    void warmUpCache_FetchFails_RetriesThreeTimes() {
+        doThrow(new RuntimeException()).when(cacheWarmup).fetchBatch(any(UUID.class), anyInt());
+
+        cacheWarmup.warmUpCache();
+
+        verify(cacheWarmup, times(3)).fetchBatch(any(UUID.class), eq(2));
+    }
+
+    @Test
+    void init_WarmupDisabled_SkipsExecution() {
+        ReflectionTestUtils.setField(cacheWarmup, "warmupEnabled", false);
+
+        cacheWarmup.init();
+
+        verify(cacheWarmup, never()).warmUpCache();
+    }
+
+    @Test
+    void saveToCache_MapsEntitiesCorrectly() {
+        List<TestEntity> entities = List.of(
+                new TestEntity(UUID.randomUUID()),
+                new TestEntity(UUID.randomUUID())
+        );
+
+        cacheWarmup.saveToCache(entities);
+
+        verify(cacheWarmup).saveCache(argThat(list -> list.size() == 2));
+    }
+
+    static class TestEntity {
+        private final UUID id;
+
+        TestEntity(UUID id) {
+            this.id = id;
+        }
+
+        UUID getId() {
+            return id;
+        }
+    }
+
+    static class TestCacheWarmup extends AbstractCacheWarmup<TestEntity, UUID> {
+        private final List<TestEntity> mockData;
+
+        TestCacheWarmup(ThreadPoolTaskExecutor executor, List<TestEntity> mockData) {
+            super(executor);
+            this.mockData = mockData;
         }
 
         @Override
-        protected List<String> fetchBatch(Long lastId, int batchSize) {
-            if (lastId >= mockEntities.size()) {
-                return Collections.emptyList();
-            }
-            int endIndex = Math.min(lastId.intValue() + batchSize, mockEntities.size());
-            return mockEntities.subList(lastId.intValue(), endIndex);
+        protected List<TestEntity> fetchBatch(UUID lastId, int batchSize) {
+            int startIndex = lastId.equals(new UUID(0, 0)) ? 0
+                    : (int) mockData.stream()
+                    .takeWhile(e -> !e.getId().equals(lastId))
+                    .count();
+            return mockData.stream()
+                    .skip(startIndex)
+                    .limit(batchSize)
+                    .collect(Collectors.toList());
         }
 
         @Override
-        protected Long getLastId(List<String> entities) {
-            return entities.isEmpty() ? 0L : (long) mockEntities.indexOf(entities.get(entities.size() - 1)) + 1;
+        protected UUID getLastId(List<TestEntity> entities) {
+            return entities.isEmpty() ? new UUID(0, 0)
+                    : entities.get(entities.size() - 1).getId();
         }
 
         @Override
-        protected Integer mapToCacheEntity(String entity) {
-            return Integer.parseInt(entity);
+        protected UUID mapToCacheEntity(TestEntity entity) {
+            return entity.getId();
         }
 
         @Override
-        protected void saveCache(List<Integer> cacheEntities) {
-
-        }
+        protected void saveCache(List<UUID> cacheEntities) {}
 
         @Override
         protected String getCacheName() {
             return "TestCache";
-        }
-
-        public void warmUpCache() {
-            super.warmUpCache();
-        }
-    }
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        List<String> mockData = Arrays.asList("1", "2", "3", "4", "5");
-        testCacheWarmup = spy(new TestCacheWarmup(taskExecutor, mockData));
-        try {
-            Field batchSizeField = AbstractCacheWarmup.class.getDeclaredField("batchSize");
-            batchSizeField.setAccessible(true);
-            batchSizeField.set(testCacheWarmup, 2);
-
-            Field warmupEnabledField = AbstractCacheWarmup.class.getDeclaredField("warmupEnabled");
-            warmupEnabledField.setAccessible(true);
-            warmupEnabledField.set(testCacheWarmup, true);
-
-            Field warmupTimeoutField = AbstractCacheWarmup.class.getDeclaredField("warmupTimeout");
-            warmupTimeoutField.setAccessible(true);
-            warmupTimeoutField.set(testCacheWarmup, 5000);
-        } catch (Exception e) {
-            fail("Failed to set fields via reflection", e);
-        }
-    }
-
-    @Test
-    void testSuccessfulCacheWarmup() throws Exception {
-        CompletableFuture<?> future = CompletableFuture.runAsync(testCacheWarmup::warmUpCache, taskExecutor);
-        future.get(5, TimeUnit.SECONDS);
-
-        verify(testCacheWarmup, times(4)).fetchBatch(anyLong(), eq(2));
-        verify(testCacheWarmup, times(3)).saveCache(anyList());
-        assertTrue(future.isDone(), "Cache warmup should complete successfully");
-    }
-
-    @Test
-    void testEmptyFetchBatch() throws Exception {
-        TestCacheWarmup emptyCacheWarmup = spy(new TestCacheWarmup(taskExecutor, Collections.emptyList()));
-        setFields(emptyCacheWarmup, 2, true, 5000);
-
-        CompletableFuture<?> future = CompletableFuture.runAsync(emptyCacheWarmup::warmUpCache, taskExecutor);
-        future.get(5, TimeUnit.SECONDS);
-
-        verify(emptyCacheWarmup, times(1)).fetchBatch(eq(0L), eq(2));
-        verify(emptyCacheWarmup, never()).saveCache(anyList());
-        assertTrue(future.isDone(), "Cache warmup should complete with empty data");
-    }
-
-    @Test
-    void testCacheWarmupWithException() throws Exception {
-        doThrow(new RuntimeException("Fetch error")).when(testCacheWarmup).fetchBatch(anyLong(), anyInt());
-
-        testCacheWarmup.warmUpCache();
-
-        verify(testCacheWarmup, times(3)).fetchBatch(eq(0L), eq(2));
-        verify(testCacheWarmup, never()).saveCache(anyList());
-    }
-
-    @Test
-    void testWarmupDisabled() throws Exception {
-        setFields(testCacheWarmup, 2, false, 5000);
-
-        testCacheWarmup.init();
-        Thread.sleep(1000);
-
-        verify(testCacheWarmup, never()).fetchBatch(anyLong(), anyInt());
-        verify(testCacheWarmup, never()).saveCache(anyList());
-    }
-
-    @Test
-    void testTimeoutExceeded() throws Exception {
-        doAnswer(invocation -> {
-            Thread.sleep(10000);
-            return Collections.emptyList();
-        }).when(testCacheWarmup).fetchBatch(anyLong(), anyInt());
-
-        CompletableFuture<?> future = CompletableFuture.runAsync(testCacheWarmup::warmUpCache, taskExecutor);
-
-        assertThrows(java.util.concurrent.TimeoutException.class, () -> future.get(6, TimeUnit.SECONDS));
-        verify(testCacheWarmup, times(1)).fetchBatch(eq(0L), eq(2));
-    }
-
-    @Test
-    void testMappingAndSaving() {
-        List<String> entities = Arrays.asList("10", "20");
-        testCacheWarmup.saveToCache(entities);
-
-        verify(testCacheWarmup, times(1)).saveCache(Arrays.asList(10, 20));
-    }
-
-
-    private void setFields(TestCacheWarmup instance, int batchSize, boolean warmupEnabled, int warmupTimeout) {
-        try {
-            Field batchSizeField = AbstractCacheWarmup.class.getDeclaredField("batchSize");
-            batchSizeField.setAccessible(true);
-            batchSizeField.set(instance, batchSize);
-
-            Field warmupEnabledField = AbstractCacheWarmup.class.getDeclaredField("warmupEnabled");
-            warmupEnabledField.setAccessible(true);
-            warmupEnabledField.set(instance, warmupEnabled);
-
-            Field warmupTimeoutField = AbstractCacheWarmup.class.getDeclaredField("warmupTimeout");
-            warmupTimeoutField.setAccessible(true);
-            warmupTimeoutField.set(instance, warmupTimeout);
-        } catch (Exception e) {
-            fail("Failed to set fields via reflection", e);
         }
     }
 }

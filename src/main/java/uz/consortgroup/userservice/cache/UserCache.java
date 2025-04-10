@@ -10,6 +10,7 @@ import uz.consortgroup.userservice.repository.UserRepository;
 import uz.consortgroup.userservice.service.UserCacheService;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -29,12 +30,12 @@ public class UserCache extends AbstractCacheWarmup<User, UserCacheEntity> {
     }
 
     @Override
-    protected List<User> fetchBatch(Long lastId, int batchSize) {
+    protected List<User> fetchBatch(UUID lastId, int batchSize) {
         return userRepository.findUsersByBatch(lastId, batchSize);
     }
 
     @Override
-    protected Long getLastId(List<User> entities) {
+    protected UUID getLastId(List<User> entities) {
         return entities.get(entities.size() - 1).getId();
     }
 
