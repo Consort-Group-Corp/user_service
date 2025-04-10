@@ -55,7 +55,7 @@ public class UserController {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/{userId}/profile")
+    @PutMapping("/{userId}/profile")
     public UserProfileResponseDto fillUserProfile(@PathVariable UUID userId, @RequestBody @Valid UserProfileDto userProfileDto) {
         return userService.fillUserProfile(userId, userProfileDto);
     }
