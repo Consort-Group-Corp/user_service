@@ -102,12 +102,13 @@ class UserControllerTest {
 
         when(userService.fillUserProfile(any(UUID.class), any(UserProfileDto.class))).thenReturn(response);
 
-        mockMvc.perform(post(BASE_URL + "/{userId}/profile", testUserId)
+        mockMvc.perform(put(BASE_URL + "/{userId}/profile", testUserId)  // Изменено с post на put
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(testUserId.toString()));
     }
+
 
     @Test
     @WithMockUser
@@ -237,7 +238,7 @@ class UserControllerTest {
         UserProfileDto invalidDto = new UserProfileDto();
         invalidDto.setPhoneNumber("invalid");
 
-        mockMvc.perform(post(BASE_URL + "/{userId}/profile", testUserId)
+        mockMvc.perform(put(BASE_URL + "/{userId}/profile", testUserId)  // Изменено с post на put
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest());
@@ -251,7 +252,7 @@ class UserControllerTest {
         when(userService.fillUserProfile(any(UUID.class), any(UserProfileDto.class)))
                 .thenThrow(new UserNotFoundException("User not found"));
 
-        mockMvc.perform(post(BASE_URL + "/{userId}/profile", testUserId)
+        mockMvc.perform(put(BASE_URL + "/{userId}/profile", testUserId)  // Изменено с post на put
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validDto)))
                 .andExpect(status().isNotFound());
