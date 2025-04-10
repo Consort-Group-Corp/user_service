@@ -16,10 +16,11 @@ import uz.consortgroup.userservice.repository.VerificationCodeRepository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -41,7 +42,7 @@ class VerificationServiceTest {
     @InjectMocks
     private VerificationService verificationService;
 
-    private User createTestUser(Long id) {
+    private User createTestUser(UUID id) {
         return User.builder()
                 .id(id)
                 .firstName("Test")
@@ -50,7 +51,7 @@ class VerificationServiceTest {
                 .build();
     }
 
-    private VerificationCode createTestCode(Long id, User user, String codeValue) {
+    private VerificationCode createTestCode(UUID id, User user, String codeValue) {
         LocalDateTime now = LocalDateTime.now();
         return VerificationCode.builder()
                 .id(id)
@@ -66,18 +67,19 @@ class VerificationServiceTest {
 
     @Test
     void generateAndSaveCode_ShouldGenerateAndSaveNewCode() {
-        User user = createTestUser(1L);
+        UUID userId = UUID.randomUUID();
+        User user = createTestUser(userId);
         String expectedCode = "1234";
-        
+
         when(verificationCodeRepository.findLastActiveCodeByUserId(user.getId()))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
         when(verificationCodeRepository.save(any(VerificationCode.class)))
-            .thenAnswer(invocation -> {
-                VerificationCode code = invocation.getArgument(0);
-                code.setId(1L);
-                code.setVerificationCode(expectedCode);
-                return code;
-            });
+                .thenAnswer(invocation -> {
+                    VerificationCode code = invocation.getArgument(0);
+                    code.setId(UUID.randomUUID());
+                    code.setVerificationCode(expectedCode);
+                    return code;
+                });
 
         String result = verificationService.generateAndSaveCode(user);
 
@@ -88,20 +90,16 @@ class VerificationServiceTest {
 
     @Test
     void verifyCode_ValidCode_ShouldNotThrowException() {
-        User user = createTestUser(1L);
+        UUID userId = UUID.randomUUID();
+        User user = createTestUser(userId);
         String inputCode = "1234";
-        VerificationCode code = createTestCode(1L, user, inputCode);
+        VerificationCode code = createTestCode(UUID.randomUUID(), user, inputCode);
         VerificationCodeCacheEntity cacheEntity = new VerificationCodeCacheEntity();
-        VerificationCodeCacheEntity updatedCacheEntity = new VerificationCodeCacheEntity();
 
         when(verificationCodeCacheService.findCodeById(user.getId()))
                 .thenReturn(Optional.of(cacheEntity));
-
         when(verificationCodeCacheMapper.toVerificationCode(cacheEntity))
                 .thenReturn(code);
-
-        when(verificationCodeCacheMapper.toVerificationCodeCacheEntity(code))
-                .thenReturn(updatedCacheEntity);
 
         assertThatNoException()
                 .isThrownBy(() -> verificationService.verifyCode(user, inputCode));
@@ -110,14 +108,13 @@ class VerificationServiceTest {
                 eq(code.getId()),
                 eq(VerificationCodeStatus.USED),
                 any(LocalDateTime.class));
-
-        verify(verificationCodeCacheService).saveVerificationCode(updatedCacheEntity);
     }
 
     @Test
     void verifyCode_InvalidCode_ShouldThrowInvalidVerificationCodeException() {
-        User user = createTestUser(1L);
-        VerificationCode code = createTestCode(1L, user, "1234");
+        UUID userId = UUID.randomUUID();
+        User user = createTestUser(userId);
+        VerificationCode code = createTestCode(UUID.randomUUID(), user, "1234");
         VerificationCodeCacheEntity cacheEntity = new VerificationCodeCacheEntity();
 
         when(verificationCodeCacheService.findCodeById(user.getId()))
@@ -135,18 +132,16 @@ class VerificationServiceTest {
 
     @Test
     void verifyCode_ExpiredCode_ShouldThrowVerificationCodeExpiredException() {
-        User user = createTestUser(1L);
-        VerificationCode code = createTestCode(1L, user, "1234");
+        UUID userId = UUID.randomUUID();
+        User user = createTestUser(userId);
+        VerificationCode code = createTestCode(UUID.randomUUID(), user, "1234");
         code.setExpiresAt(LocalDateTime.now().minusMinutes(1));
         VerificationCodeCacheEntity cacheEntity = new VerificationCodeCacheEntity();
-        VerificationCodeCacheEntity updatedCacheEntity = new VerificationCodeCacheEntity();
 
         when(verificationCodeCacheService.findCodeById(user.getId()))
                 .thenReturn(Optional.of(cacheEntity));
         when(verificationCodeCacheMapper.toVerificationCode(cacheEntity))
                 .thenReturn(code);
-        when(verificationCodeCacheMapper.toVerificationCodeCacheEntity(code))
-                .thenReturn(updatedCacheEntity);
 
         assertThatThrownBy(() -> verificationService.verifyCode(user, "1234"))
                 .isInstanceOf(VerificationCodeExpiredException.class);
@@ -155,41 +150,42 @@ class VerificationServiceTest {
                 eq(code.getId()),
                 eq(VerificationCodeStatus.EXPIRED),
                 any(LocalDateTime.class));
-        verify(verificationCodeCacheService).saveVerificationCode(updatedCacheEntity);
     }
 
     @Test
     void verifyCode_NoActiveCode_ShouldThrowInvalidVerificationCodeException() {
-        User user = createTestUser(1L);
+        UUID userId = UUID.randomUUID();
+        User user = createTestUser(userId);
 
         when(verificationCodeCacheService.findCodeById(user.getId()))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
         when(verificationCodeRepository.findLastActiveCodeByUserId(user.getId()))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> verificationService.verifyCode(user, "1234"))
-            .isInstanceOf(InvalidVerificationCodeException.class)
-            .hasMessageContaining("No active verification code found");
+                .isInstanceOf(InvalidVerificationCodeException.class)
+                .hasMessageContaining("No active verification code found");
     }
 
     @Test
     void generateAndSaveCode_WithPreviousAttempts_ShouldIncrementAttempts() {
-        User user = createTestUser(1L);
-        VerificationCode previousCode = createTestCode(1L, user, "1111");
+        UUID userId = UUID.randomUUID();
+        User user = createTestUser(userId);
+        VerificationCode previousCode = createTestCode(UUID.randomUUID(), user, "1111");
         previousCode.setAttempts(2);
 
         when(verificationCodeRepository.findLastActiveCodeByUserId(user.getId()))
-            .thenReturn(Optional.of(previousCode));
+                .thenReturn(Optional.of(previousCode));
         when(verificationCodeRepository.save(any(VerificationCode.class)))
-            .thenAnswer(invocation -> {
-                VerificationCode code = invocation.getArgument(0);
-                code.setId(2L);
-                return code;
-            });
+                .thenAnswer(invocation -> {
+                    VerificationCode code = invocation.getArgument(0);
+                    code.setId(UUID.randomUUID());
+                    return code;
+                });
 
         verificationService.generateAndSaveCode(user);
 
-        verify(verificationCodeRepository).save(argThat(code -> 
-            code.getAttempts() == 3));
+        verify(verificationCodeRepository).save(argThat(code ->
+                code.getAttempts() == 3));
     }
 }

@@ -7,15 +7,16 @@ import uz.consortgroup.userservice.entity.User;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 
 public class UserDetailsImpl implements UserDetails {
 
-    private Long id;
+    private UUID id;
     private String email;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(Long id, String email, Collection<? extends GrantedAuthority> authorities) {
+    public UserDetailsImpl(UUID id, String email, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.email = email;
         this.authorities = authorities;

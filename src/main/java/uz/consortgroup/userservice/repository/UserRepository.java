@@ -12,16 +12,38 @@ import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT u FROM User u WHERE u.email = :email")
     Optional<User> findByEmail(@Param("email") String email);
 
     boolean existsByEmail(String email);
 
     @Query("SELECT u FROM User u WHERE u.id > :lastId ORDER BY u.id ASC")
-    List<User> findUsersByBatch(@Param("lastId") Long lastId, @Param("size") int size);
+    List<User> findUsersByBatch(@Param("lastId") UUID lastId, @Param("size") int size);
+
+    @Query(nativeQuery = true, value = """
+     UPDATE user_schema.users
+     SET last_name = COALESCE(:lastName, last_name),
+         first_name = COALESCE(:firstName, first_name),
+         middle_name = COALESCE(:middleName, middle_name),
+         born_date = COALESCE(:bornDate, born_date), 
+         phone_number = COALESCE(:phoneNumber, phone_number),
+         work_place = COALESCE(:workPlace, work_place),
+         position = COALESCE(:position, position),
+         pinfl = COALESCE(:pinfl, pinfl),
+         updated_at = NOW()
+     WHERE id = :id
+     RETURNING *
+""")
+    Optional<User> updateUserProfileById(@Param("id") UUID id, @Param("lastName") String lastName,
+                                         @Param("firstName") String firstName, @Param("middleName") String middleName,
+                                         @Param("bornDate") LocalDate bornDate, @Param("phoneNumber") String phoneNumber,
+                                         @Param("workPlace") String workPlace, @Param("position") String position,
+                                         @Param("pinfl") String pinfl);
+
 
     @Query(nativeQuery = true, value = """
                 UPDATE user_schema.users
@@ -39,7 +61,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
                 WHERE id = :id
                 RETURNING *
             """)
-    Optional<User> updateUserById(@Param("id") long id, @Param("lastName") String lastName,
+    Optional<User> updateUserById(@Param("id") UUID id, @Param("lastName") String lastName,
                                   @Param("firstName") String firstName, @Param("middleName") String middleName,
                                   @Param("bornDate") LocalDate bornDate, @Param("phoneNumber") String phoneNumber,
                                   @Param("workPlace") String workPlace, @Param("email") String email,
@@ -47,15 +69,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Modifying
     @Query("UPDATE User u SET u.isVerified = :verificationStatus, u.status = :status WHERE u.id = :userId")
-    void updateVerificationStatus(@Param("userId") Long userId,
+    void updateVerificationStatus(@Param("userId") UUID userId,
                                   @Param("verificationStatus") boolean verificationStatus,
                                   @Param("status") UserStatus status);
 
     @Modifying
     @Query("UPDATE User u SET u.role = :role WHERE u.id = :userId")
-    void updateUserRole(@Param("userId") Long userId, @Param("role") UserRole role);
+    void updateUserRole(@Param("userId") UUID userId, @Param("role") UserRole role);
 
     @Modifying
     @Query("UPDATE User u SET u.password = :password WHERE u.id = :userId")
-    void changePassword(@Param("userId") Long userId, @Param("password") String password);
+    void changePassword(@Param("userId") UUID userId, @Param("password") String password);
 }

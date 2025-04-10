@@ -9,8 +9,10 @@ import lombok.Setter;
 import org.springframework.data.redis.core.RedisHash;
 import uz.consortgroup.userservice.entity.enumeration.VerificationCodeStatus;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,10 +21,12 @@ import java.time.LocalDateTime;
 @Setter
 @RedisHash(value = "verification_codes_from_cache", timeToLive = 300)
 public class VerificationCodeCacheEntity implements Serializable {
-    @Id
-    private Long id;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
-    private Long userId;
+    @Id
+    private UUID id;
+    private UUID userId;
     private String verificationCode;
     private VerificationCodeStatus status;
     private int attempts;

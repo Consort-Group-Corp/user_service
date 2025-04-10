@@ -6,12 +6,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
-public abstract class AbstractCacheWarmup <T, E> {
+public abstract class AbstractCacheWarmup<T, E> {
     @Value("${cache.redis-batch-size}")
     private int batchSize;
 
@@ -43,7 +44,7 @@ public abstract class AbstractCacheWarmup <T, E> {
     }
 
     protected void warmUpCache() {
-        Long lastId = 0L;
+        UUID lastId = new UUID(0L, 0L);
         boolean hasMore;
         int maxAttempts = 3;
         int attempt = 0;
@@ -81,8 +82,8 @@ public abstract class AbstractCacheWarmup <T, E> {
         saveCache(cacheEntities);
     }
 
-    protected abstract List<T> fetchBatch(Long lastId, int batchSize);
-    protected abstract Long getLastId(List<T> entities);
+    protected abstract List<T> fetchBatch(UUID lastId, int batchSize);
+    protected abstract UUID getLastId(List<T> entities);
     protected abstract E mapToCacheEntity(T entity);
     protected abstract void saveCache(List<E> cacheEntities);
     protected abstract String getCacheName();

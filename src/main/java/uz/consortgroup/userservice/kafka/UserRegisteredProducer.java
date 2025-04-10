@@ -9,22 +9,21 @@ import java.util.List;
 
 @Slf4j
 @Component
-
-public class UserRegisterKafkaProducer extends AbstractProducer {
+public class UserRegisteredProducer extends AbstractProducer {
     private final KafkaTopic kafkaTopic;
 
-    public UserRegisterKafkaProducer(KafkaTemplate<String, Object> kafkaTemplate, KafkaTopic kafkaTopic) {
+    public UserRegisteredProducer(KafkaTemplate<String, Object> kafkaTemplate, KafkaTopic kafkaTopic) {
         super(kafkaTemplate);
         this.kafkaTopic = kafkaTopic;
     }
 
-    public void sendUserRegisterEvents(List<Object> messages) {
+    public void sendUserRegisteredEvents(List<Object> messages) {
         log.info("Sending {} messages to Kafka topic '{}'", messages.size(), getTopic());
         sendEventToTopic(getTopic(), messages);
     }
 
     @Override
     protected String getTopic() {
-        return kafkaTopic.getUserRegisteredTopic();
+        return kafkaTopic.getUserRegistrationTopic();
     }
 }

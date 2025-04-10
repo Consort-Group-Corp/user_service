@@ -12,6 +12,7 @@ import uz.consortgroup.userservice.repository.VerificationCodeRedisRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -23,14 +24,13 @@ public class VerificationCodeCacheService {
     @LoggingAspectAfterMethod
     @AspectAfterReturning
     @AspectAfterThrowing
-    public Optional<VerificationCodeCacheEntity> findCodeById(Long id) {
+    public Optional<VerificationCodeCacheEntity> findCodeById(UUID id) {
         try {
             return verificationCodeRedisRepository.findById(id);
         } catch (Exception e) {
             return Optional.empty();
         }
     }
-
 
     @LoggingAspectBeforeMethod
     @LoggingAspectAfterMethod

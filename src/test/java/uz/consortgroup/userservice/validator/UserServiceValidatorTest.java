@@ -5,15 +5,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uz.consortgroup.userservice.dto.UserProfileDto;
 import uz.consortgroup.userservice.dto.UserRegistrationDto;
+import uz.consortgroup.userservice.entity.enumeration.Language;
 import uz.consortgroup.userservice.entity.enumeration.UserRole;
 import uz.consortgroup.userservice.exception.UserAlreadyExistsException;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.exception.UserRoleNotFoundException;
 import uz.consortgroup.userservice.repository.UserRepository;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import java.time.LocalDate;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,11 +30,30 @@ public class UserServiceValidatorTest {
     @InjectMocks
     private UserServiceValidator userServiceValidator;
 
+    private UserProfileDto createValidUserProfileDto() {
+        return UserProfileDto.builder()
+                .lastName("Doe")
+                .firstName("John")
+                .middleName("Middle")
+                .bornDate(LocalDate.of(1990, 1, 1))
+                .phoneNumber("+998901234567")
+                .workPlace("Company")
+                .position("Developer")
+                .pinfl("12345678901234")
+                .build();
+    }
+
+    private UserRegistrationDto createValidUserRegistrationDto() {
+        return UserRegistrationDto.builder()
+                .email("test@example.com")
+                .password("Password123!")
+                .language(Language.ENGLISH)
+                .build();
+    }
+
     @Test
     void validateUserRegistration_WhenEmailNotExists_ShouldNotThrowException() {
-        UserRegistrationDto dto = UserRegistrationDto.builder()
-                .email("new@example.com")
-                .build();
+        UserRegistrationDto dto = createValidUserRegistrationDto();
 
         when(userRepository.existsByEmail(dto.getEmail())).thenReturn(false);
 
@@ -41,23 +65,20 @@ public class UserServiceValidatorTest {
 
     @Test
     void validateUserRegistration_WhenEmailExists_ShouldThrowUserAlreadyExistsException() {
-        String email = "existing@example.com";
-        UserRegistrationDto dto = UserRegistrationDto.builder()
-                .email(email)
-                .build();
+        UserRegistrationDto dto = createValidUserRegistrationDto();
 
-        when(userRepository.existsByEmail(email)).thenReturn(true);
+        when(userRepository.existsByEmail(dto.getEmail())).thenReturn(true);
 
         assertThatThrownBy(() -> userServiceValidator.validateUserRegistration(dto))
                 .isInstanceOf(UserAlreadyExistsException.class)
                 .hasMessageContaining("already exists");
 
-        verify(userRepository).existsByEmail(email);
+        verify(userRepository).existsByEmail(dto.getEmail());
     }
 
     @Test
     void validateUserId_WhenUserIdIsValid_ShouldNotThrowException() {
-        Long userId = 1L;
+        UUID userId = UUID.randomUUID();
 
         assertThatNoException()
                 .isThrownBy(() -> userServiceValidator.validateUserId(userId));
@@ -65,7 +86,7 @@ public class UserServiceValidatorTest {
 
     @Test
     void validateUserId_WhenUserIdIsNull_ShouldThrowUserNotFoundException() {
-        Long userId = null;
+        UUID userId = null;
 
         assertThatThrownBy(() -> userServiceValidator.validateUserId(userId))
                 .isInstanceOf(UserNotFoundException.class)

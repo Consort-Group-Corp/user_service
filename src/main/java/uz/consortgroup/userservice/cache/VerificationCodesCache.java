@@ -9,6 +9,7 @@ import uz.consortgroup.userservice.repository.VerificationCodeRepository;
 import uz.consortgroup.userservice.service.VerificationCodeCacheService;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class VerificationCodesCache extends AbstractCacheWarmup<VerificationCode, VerificationCodeCacheEntity> {
@@ -29,12 +30,12 @@ public class VerificationCodesCache extends AbstractCacheWarmup<VerificationCode
     }
 
     @Override
-    protected List<VerificationCode> fetchBatch(Long lastId, int batchSize) {
+    protected List<VerificationCode> fetchBatch(UUID lastId, int batchSize) {
         return verificationCodeRepository.findCodesBatch(lastId, batchSize);
     }
 
     @Override
-    protected Long getLastId(List<VerificationCode> entities) {
+    protected UUID getLastId(List<VerificationCode> entities) {
         return entities.get(entities.size() - 1).getId();
     }
 

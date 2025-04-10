@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,8 +30,8 @@ import java.time.LocalDateTime;
 @Table(name = "passwords", schema = "user_schema")
 public class Password {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)

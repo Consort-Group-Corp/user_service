@@ -8,7 +8,10 @@ import org.springframework.stereotype.Component;
 @Getter
 public class KafkaTopic {
     @Value("${kafka.user-registration}")
-    private String userRegisteredTopic;
+    private String userRegistrationTopic;
+
+    @Value("${kafka.user-update-profile}")
+    private String userUpdateProfileTopic;
 
     @Value("${kafka.verification-code-resent}")
     private String verificationCodeResentTopic;

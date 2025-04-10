@@ -12,9 +12,10 @@ import uz.consortgroup.userservice.repository.VerificationCodeRedisRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,7 +27,7 @@ class VerificationCodeCacheServiceTest {
     @InjectMocks
     private VerificationCodeCacheService verificationCodeCacheService;
 
-    private VerificationCodeCacheEntity createTestCode(Long id, Long userId, String code) {
+    private VerificationCodeCacheEntity createTestCode(UUID id, UUID userId, String code) {
         return VerificationCodeCacheEntity.builder()
                 .id(id)
                 .userId(userId)
@@ -41,12 +42,11 @@ class VerificationCodeCacheServiceTest {
 
     @Test
     void findCodeById_ExistingCode_ShouldReturnCode() {
-        Long codeId = 1L;
-        Long userId = 1L;
+        UUID codeId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         VerificationCodeCacheEntity code = createTestCode(codeId, userId, "ABCD");
 
-        when(verificationCodeRedisRepository.findById(codeId))
-                .thenReturn(Optional.of(code));
+        when(verificationCodeRedisRepository.findById(codeId)).thenReturn(Optional.of(code));
 
         Optional<VerificationCodeCacheEntity> result = verificationCodeCacheService.findCodeById(codeId);
 
@@ -58,9 +58,8 @@ class VerificationCodeCacheServiceTest {
 
     @Test
     void findCodeById_NonExistingCode_ShouldReturnEmpty() {
-        Long codeId = 1L;
-        when(verificationCodeRedisRepository.findById(codeId))
-                .thenReturn(Optional.empty());
+        UUID codeId = UUID.randomUUID();
+        when(verificationCodeRedisRepository.findById(codeId)).thenReturn(Optional.empty());
 
         Optional<VerificationCodeCacheEntity> result = verificationCodeCacheService.findCodeById(codeId);
 
@@ -70,8 +69,8 @@ class VerificationCodeCacheServiceTest {
 
     @Test
     void saveVerificationCode_ValidCode_ShouldSaveSuccessfully() {
-        Long userId = 1L;
-        Long codeId = 1L;
+        UUID userId = UUID.randomUUID();
+        UUID codeId = UUID.randomUUID();
         VerificationCodeCacheEntity code = createTestCode(codeId, userId, "ABCD");
 
         verificationCodeCacheService.saveVerificationCode(code);
@@ -81,11 +80,11 @@ class VerificationCodeCacheServiceTest {
 
     @Test
     void saveVerificationCodes_ValidCodes_ShouldSaveSuccessfully() {
-        Long userId1 = 1L;
-        Long userId2 = 2L;
+        UUID userId1 = UUID.randomUUID();
+        UUID userId2 = UUID.randomUUID();
         List<VerificationCodeCacheEntity> codes = List.of(
-                createTestCode(1L, userId1, "CODE1"),
-                createTestCode(2L, userId2, "CODE2")
+                createTestCode(UUID.randomUUID(), userId1, "CODE1"),
+                createTestCode(UUID.randomUUID(), userId2, "CODE2")
         );
 
         verificationCodeCacheService.saveVerificationCodes(codes);
@@ -95,11 +94,10 @@ class VerificationCodeCacheServiceTest {
 
     @Test
     void saveVerificationCode_RepositoryThrowsException_ShouldThrowRuntimeException() {
-        Long userId = 1L;
-        VerificationCodeCacheEntity code = createTestCode(1L, userId, "ABCD");
+        UUID userId = UUID.randomUUID();
+        VerificationCodeCacheEntity code = createTestCode(UUID.randomUUID(), userId, "ABCD");
 
-        when(verificationCodeRedisRepository.save(code))
-                .thenThrow(new RuntimeException("DB error"));
+        when(verificationCodeRedisRepository.save(code)).thenThrow(new RuntimeException("DB error"));
 
         assertThatThrownBy(() -> verificationCodeCacheService.saveVerificationCode(code))
                 .isInstanceOf(RuntimeException.class)
@@ -107,5 +105,4 @@ class VerificationCodeCacheServiceTest {
 
         verify(verificationCodeRedisRepository).save(code);
     }
-
 }

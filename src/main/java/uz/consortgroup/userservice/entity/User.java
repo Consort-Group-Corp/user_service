@@ -26,6 +26,7 @@ import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users", schema = "user_schema")
@@ -37,52 +38,53 @@ import java.util.List;
 @Builder
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(columnDefinition = "uuid")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "language", nullable = false)
     @Enumerated(EnumType.STRING)
     private Language language;
 
-    @Column(name = "last_name", nullable = false)
+    @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "first_name", nullable = false)
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "middle_name", nullable = false)
+    @Column(name = "middle_name")
     private String middleName;
 
-    @Column(name = "phone_number", nullable = false, unique = true)
-    private String phoneNumber;
-
-    @Column(name = "born_date", nullable = false)
+    @Column(name = "born_date")
     private LocalDate bornDate;
 
-    @Column(name = "work_place", nullable = false)
+    @Column(name = "phone_number", unique = true)
+    private String phoneNumber;
+
+    @Column(name = "work_place")
     private String workPlace;
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "position", nullable = false)
+    @Column(name = "position")
     private String position;
 
-    @Column(name = "pinfl", nullable = false, unique = true)
+    @Column(name = "pinfl", unique = true)
     private String pinfl;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Password password;
 
-    @Column(name = "is_verified", nullable = false)
+    @Column(name = "is_verified")
     private Boolean isVerified;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
+    @Column(name = "role")
     private UserRole role;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status")
     private UserStatus status;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -99,9 +101,7 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
+        this.createdAt = LocalDateTime.now();
     }
 
     @PreUpdate
