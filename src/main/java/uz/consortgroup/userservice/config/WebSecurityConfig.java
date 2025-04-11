@@ -63,7 +63,7 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers(HttpMethod.POST, "/api/v1/users/*/verify").permitAll()
+                        auth.requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification").permitAll()
                                   .requestMatchers(HttpMethod.POST, "/api/v1/users/*/new-verification-code").permitAll()
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/users/*/new-password").permitAll()
 //                                .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")

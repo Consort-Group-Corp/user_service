@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -71,7 +70,7 @@ class UserControllerTest {
     void verifyUser_Success() throws Exception {
         doNothing().when(userService).verifyUser(any(UUID.class), anyString());
 
-        mockMvc.perform(post(BASE_URL + "/{userId}/verify", testUserId)
+        mockMvc.perform(post(BASE_URL + "/{userId}/verification", testUserId)
                         .param("verificationCode", "123456"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("User verified successfully"));
@@ -197,7 +196,7 @@ class UserControllerTest {
         doThrow(new InvalidVerificationCodeException("Invalid code"))
                 .when(userService).verifyUser(any(UUID.class), anyString());
 
-        mockMvc.perform(post(BASE_URL + "/{userId}/verify", testUserId)
+        mockMvc.perform(post(BASE_URL + "/{userId}/verification", testUserId)
                         .param("verificationCode", "invalid"))
                 .andExpect(status().isBadRequest());
     }
@@ -208,7 +207,7 @@ class UserControllerTest {
         doThrow(new VerificationCodeExpiredException("Code expired"))
                 .when(userService).verifyUser(any(UUID.class), anyString());
 
-        mockMvc.perform(post(BASE_URL + "/{userId}/verify", testUserId)
+        mockMvc.perform(post(BASE_URL + "/{userId}/verification", testUserId)
                         .param("verificationCode", "expired"))
                 .andExpect(status().isBadRequest());
     }
@@ -216,7 +215,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void verifyUser_MissingCode_ShouldReturnBadRequest() throws Exception {
-        mockMvc.perform(post(BASE_URL + "/{userId}/verify", testUserId))
+        mockMvc.perform(post(BASE_URL + "/{userId}/verification", testUserId))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Required request parameter 'verificationCode' " +
                         "for method parameter type String is not present"));

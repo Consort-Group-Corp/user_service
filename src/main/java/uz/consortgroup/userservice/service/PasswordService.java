@@ -18,7 +18,6 @@ public class PasswordService {
     private final PasswordRepository passwordRepository;
     private final PasswordEncoder passwordEncoder;
 
-
     @LoggingAspectBeforeMethod
     @LoggingAspectAfterMethod
     public void savePassword(User user, UserRegistrationDto userRegistrationDto) {

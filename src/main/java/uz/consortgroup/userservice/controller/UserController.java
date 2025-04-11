@@ -40,7 +40,7 @@ public class UserController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/{userId}/verify")
+    @PostMapping("/{userId}/verification")
     public String verifyUser(@PathVariable UUID userId,
                              @RequestParam @NotBlank(message = "Verification code is required") String verificationCode) {
         userService.verifyUser(userId, verificationCode);

@@ -24,7 +24,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = "user")
 @Builder
 @Entity
 @Table(name = "passwords", schema = "user_schema")
