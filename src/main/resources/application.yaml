@@ -42,6 +42,7 @@ kafka:
   producer:
     enable: true
 
+
 one-id:
   timeout: 5000
   base-url: "https://sso.egov.uz"
