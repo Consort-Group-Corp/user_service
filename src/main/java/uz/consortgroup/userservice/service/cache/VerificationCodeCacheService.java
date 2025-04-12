@@ -1,4 +1,4 @@
-package uz.consortgroup.userservice.service;
+package uz.consortgroup.userservice.service.cache;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

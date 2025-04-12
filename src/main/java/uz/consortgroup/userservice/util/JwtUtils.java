@@ -64,4 +64,13 @@ public class JwtUtils {
 
         return false;
     }
+
+    public String generatePasswordResetToken(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() + jetExpirationMs))
+                .signWith(key(), SignatureAlgorithm.HS256)
+                .compact();
+    }
 }

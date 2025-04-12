@@ -7,7 +7,7 @@ import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.entity.cacheEntity.UserCacheEntity;
 import uz.consortgroup.userservice.mapper.UserCacheMapper;
 import uz.consortgroup.userservice.repository.UserRepository;
-import uz.consortgroup.userservice.service.UserCacheService;
+import uz.consortgroup.userservice.service.cache.UserCacheService;
 
 import java.util.List;
 import java.util.UUID;

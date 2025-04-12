@@ -15,12 +15,15 @@ import uz.consortgroup.userservice.dto.UserRegistrationResponseDto;
 import uz.consortgroup.userservice.dto.UserUpdateDto;
 import uz.consortgroup.userservice.dto.UserUpdateResponseDto;
 import uz.consortgroup.userservice.entity.User;
-import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 import uz.consortgroup.userservice.entity.enumeration.UserRole;
+import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
-import uz.consortgroup.userservice.mapper.UserCacheMapper;
 import uz.consortgroup.userservice.mapper.UserMapper;
 import uz.consortgroup.userservice.repository.UserRepository;
+import uz.consortgroup.userservice.service.cache.UserCacheService;
+import uz.consortgroup.userservice.service.event.UserEventService;
+import uz.consortgroup.userservice.service.operation.PasswordOperations;
+import uz.consortgroup.userservice.service.operation.UserOperationsService;
 import uz.consortgroup.userservice.validator.UserServiceValidator;
 
 import java.time.LocalDateTime;
@@ -34,10 +37,10 @@ public class UserService {
     private final UserMapper userMapper;
     private final VerificationService verificationService;
     private final UserCacheService userCacheService;
-    private final UserCacheMapper userCacheMapper;
     private final UserEventService userEventService;
     private final UserServiceValidator userServiceValidator;
-    private final PasswordService passwordService;
+    private final PasswordOperations passwordOperations;
+    private final UserOperationsService userOperationService;
 
     @Transactional
     @LoggingAspectBeforeMethod
@@ -49,7 +52,7 @@ public class UserService {
         User user = createUser(userRegistrationDto);
 
         userRepository.save(user);
-        passwordService.savePassword(user, userRegistrationDto);
+        passwordOperations.savePassword(user, userRegistrationDto.getPassword());
 
         String verificationCode = verificationService.generateAndSaveCode(user);
 
@@ -62,13 +65,13 @@ public class UserService {
     @AspectAfterThrowing
     @LoggingAspectAfterMethod
     public void verifyUser(UUID userId, String inputCode) {
-        User user = getUserFromDbAndCache(userId);
+        User user = userOperationService.getUserFromDbAndCache(userId);
         verificationService.verifyCode(user, inputCode);
         userRepository.updateVerificationStatus(userId, true, UserStatus.ACTIVE);
         userRepository.updateUserRole(userId, UserRole.STUDENT);
 
         removeUserFromCache(userId);
-        cacheUser(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found")));
+        userOperationService.cacheUser(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found")));
     }
 
     @Transactional
@@ -77,7 +80,7 @@ public class UserService {
     @LoggingAspectAfterMethod
     public void resendVerificationCode(UUID userId) {
         userServiceValidator.validateUserId(userId);
-        User user = getUserFromDbAndCache(userId);
+        User user = userOperationService.getUserFromDbAndCache(userId);
 
         String verificationCode = verificationService.generateAndSaveCode(user);
         userEventService.resendVerificationCodeEvent(user, verificationCode);
@@ -100,7 +103,7 @@ public class UserService {
     @AspectAfterReturning
     @LoggingAspectAfterMethod
     public UserProfileResponseDto getUserById(UUID userId) {
-        User user = getUserFromDbAndCache(userId);
+        User user = userOperationService.getUserFromDbAndCache(userId);
         return userMapper.toUserProfileResponseDto(user);
     }
 
@@ -129,27 +132,6 @@ public class UserService {
         removeUserFromCache(id);
     }
 
-
-    private User getUserFromDbAndCache(UUID userId) {
-        log.debug("Fetching user with ID {} from cache or DB", userId);
-
-        return userCacheService.findUserById(userId)
-                .map(userCacheMapper::toUserEntity)
-                .orElseGet(() -> {
-                    try {
-                        User user = userRepository.findById(userId)
-                                .orElseThrow(() -> {
-                                    log.error("User with ID {} not found in database", userId);
-                                    return new UserNotFoundException("User not found");
-                                });
-                        cacheUser(user);
-                        return user;
-                    } catch (Exception e) {
-                        log.error("Failed to fetch user with ID {}: {}", userId, e.getMessage());
-                        throw e;
-                    }
-                });
-    }
 
     private static User createUser(UserRegistrationDto userRegistrationDto) {
         return User.builder()
@@ -194,11 +176,6 @@ public class UserService {
                     userNotFoundLog(userId);
                     return new UserNotFoundException("User not found");
                 });
-    }
-
-    private void cacheUser(User user) {
-        log.info("Caching user with ID: {}", user.getId());
-        userCacheService.cacheUser(userCacheMapper.toUserCache(user));
     }
 
     private void removeUserFromCache(UUID userId) {

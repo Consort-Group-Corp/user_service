@@ -30,7 +30,8 @@ public class KafkaProducerConfig {
         props.put(JsonSerializer.TYPE_MAPPINGS,
                 "user_registered:uz.consortgroup.userservice.event.UserRegisteredEvent," +
                 "verification_code_resent:uz.consortgroup.userservice.event.VerificationCodeResentEvent," +
-                        "user_profile_update:uz.consortgroup.userservice.event.UserProfileUpdateEvent");
+                        "user_profile_update:uz.consortgroup.userservice.event.UserProfileUpdateEvent," +
+                        "password_reset_requested:uz.consortgroup.userservice.event.PasswordResetRequestedEvent");
 
         return new DefaultKafkaProducerFactory<>(props);
     }

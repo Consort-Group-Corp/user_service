@@ -10,9 +10,11 @@ import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.entity.enumeration.Language;
 import uz.consortgroup.userservice.entity.enumeration.UserRole;
 import uz.consortgroup.userservice.entity.enumeration.UserStatus;
-import uz.consortgroup.userservice.exception.*;
 import uz.consortgroup.userservice.mapper.*;
 import uz.consortgroup.userservice.repository.UserRepository;
+import uz.consortgroup.userservice.service.cache.UserCacheService;
+import uz.consortgroup.userservice.service.event.UserEventService;
+import uz.consortgroup.userservice.service.operation.UserOperationsService;
 import uz.consortgroup.userservice.validator.UserServiceValidator;
 
 import java.time.LocalDate;
@@ -48,6 +50,9 @@ class UserServiceTest {
 
     @Mock
     private PasswordService passwordService;
+
+    @Mock
+    private UserOperationsService userOperationsService;
 
     @Mock
     private UserServiceValidator userServiceValidator;
@@ -94,7 +99,7 @@ class UserServiceTest {
 
         when(userMapper.toUserRegistrationResponseDto(any(User.class))).thenReturn(responseDto);
 
-        doNothing().when(passwordService).savePassword(any(User.class), any(UserRegistrationDto.class));
+        doNothing().when(passwordService).savePassword(any(User.class), anyString());
 
         UserRegistrationResponseDto result = userService.registerNewUser(dto);
 
@@ -103,7 +108,7 @@ class UserServiceTest {
 
         verify(userRepository).save(any(User.class));
         verify(userMapper).toUserRegistrationResponseDto(any(User.class));
-        verify(passwordService).savePassword(any(User.class), any(UserRegistrationDto.class));
+        verify(passwordService).savePassword(any(User.class), anyString());
     }
 
     @Test
@@ -111,7 +116,6 @@ class UserServiceTest {
         UUID userId = UUID.randomUUID();
         User user = userBuilder().id(userId).build();
 
-        when(userCacheService.findUserById(eq(userId))).thenReturn(Optional.empty());
         when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
 
         userService.verifyUser(userId, "123456");
@@ -126,12 +130,17 @@ class UserServiceTest {
         UUID userId = UUID.randomUUID();
         User user = userBuilder().id(userId).build();
 
-        when(userCacheService.findUserById(eq(userId))).thenReturn(Optional.empty());
-        when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
+        doNothing().when(userServiceValidator).validateUserId(eq(userId));
+
+        when(userOperationsService.getUserFromDbAndCache(eq(userId))).thenReturn(user);
+        when(verificationService.generateAndSaveCode(eq(user))).thenReturn("verificationCode");
+
+        doNothing().when(userEventService).resendVerificationCodeEvent(eq(user), eq("verificationCode"));
 
         userService.resendVerificationCode(userId);
 
-        verify(verificationService).generateAndSaveCode(eq(user));
+        verify(verificationService).generateAndSaveCode(eq(user));  // Проверяем, что метод вызвался с правильным пользователем
+        verify(userEventService).resendVerificationCodeEvent(eq(user), eq("verificationCode"));
     }
 
     @Test
@@ -140,15 +149,19 @@ class UserServiceTest {
         User user = userBuilder().id(userId).build();
         UserProfileResponseDto responseDto = UserProfileResponseDto.builder().id(userId).build();
 
-        when(userCacheService.findUserById(eq(userId))).thenReturn(Optional.empty());
-        when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
-        when(userMapper.toUserProfileResponseDto(eq(user))).thenReturn(responseDto);
+
+        when(userOperationsService.getUserFromDbAndCache(userId)).thenReturn(user);
+        when(userMapper.toUserProfileResponseDto(user)).thenReturn(responseDto);
 
         UserProfileResponseDto result = userService.getUserById(userId);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(userId);
+
+        verify(userOperationsService).getUserFromDbAndCache(userId);
+        verify(userMapper).toUserProfileResponseDto(user);
     }
+
 
     @Test
     void updateUserById_ValidData_ShouldUpdateUser() {
