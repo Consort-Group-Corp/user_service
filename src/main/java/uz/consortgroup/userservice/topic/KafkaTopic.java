@@ -15,4 +15,7 @@ public class KafkaTopic {
 
     @Value("${kafka.verification-code-resent}")
     private String verificationCodeResentTopic;
+
+    @Value("${kafka.password-reset-request}")
+    private String passwordResetRequestTopic;
 }

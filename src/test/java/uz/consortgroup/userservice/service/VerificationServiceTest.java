@@ -13,6 +13,7 @@ import uz.consortgroup.userservice.exception.InvalidVerificationCodeException;
 import uz.consortgroup.userservice.exception.VerificationCodeExpiredException;
 import uz.consortgroup.userservice.mapper.VerificationCodeCacheMapper;
 import uz.consortgroup.userservice.repository.VerificationCodeRepository;
+import uz.consortgroup.userservice.service.cache.VerificationCodeCacheService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;

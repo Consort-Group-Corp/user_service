@@ -39,9 +39,12 @@ kafka:
   user-registration: user-registered-topic
   user-update-profile: user-update-profile-topic
   verification-code-resent: verification-code-resent-topic
+  password-reset-request: password-reset-request-topic
   producer:
     enable: true
 
+app:
+  link: http://localhost:8081/index.html
 
 one-id:
   timeout: 5000
@@ -56,8 +59,8 @@ one-id:
   grant-type: "authorization_code"
 
 security:
-  token: "your-secret-key-base64"
-  expiration: 86400000
+  token: wUIBjx3G1C1Ee+eIXtt/zVIFkS40lhoan0HgHriNERBL08Vv2Bwb92is6gZUGEzANhMXulAPHD9li4TmKrdDoA==
+  expiration: 3600000
 
 async:
   core-pool-size: 5

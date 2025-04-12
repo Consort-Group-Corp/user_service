@@ -14,7 +14,11 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import uz.consortgroup.userservice.entity.enumeration.UserRole;
+import uz.consortgroup.userservice.exception.EventPublishingException;
+import uz.consortgroup.userservice.exception.InvalidPasswordException;
+import uz.consortgroup.userservice.exception.InvalidTokenException;
 import uz.consortgroup.userservice.exception.InvalidVerificationCodeException;
+import uz.consortgroup.userservice.exception.PasswordMismatchException;
 import uz.consortgroup.userservice.exception.UserAlreadyExistsException;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.exception.UserRoleNotFoundException;
@@ -107,6 +111,27 @@ public class GlobalExceptionHandler {
         log.error("UserRoleNotFoundException: ", ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid role", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidPasswordException(InvalidPasswordException ex) {
+        log.error("InvalidPasswordException: ", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid password", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException ex) {
+        log.error("InvalidTokenException: ", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid token", ex.getMessage()));
+    }
+
+    @ExceptionHandler(PasswordMismatchException.class)
+    public ResponseEntity<ErrorResponse> handlePasswordMismatchException(PasswordMismatchException ex) {
+        log.error("PasswordMismatchException: ", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Password mismatch", ex.getMessage()));
     }
 
     // JSON and Data Integrity Handlers

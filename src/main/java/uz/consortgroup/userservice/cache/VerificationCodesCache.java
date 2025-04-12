@@ -6,7 +6,7 @@ import uz.consortgroup.userservice.entity.VerificationCode;
 import uz.consortgroup.userservice.entity.cacheEntity.VerificationCodeCacheEntity;
 import uz.consortgroup.userservice.mapper.VerificationCodeCacheMapper;
 import uz.consortgroup.userservice.repository.VerificationCodeRepository;
-import uz.consortgroup.userservice.service.VerificationCodeCacheService;
+import uz.consortgroup.userservice.service.cache.VerificationCodeCacheService;
 
 import java.util.List;
 import java.util.UUID;

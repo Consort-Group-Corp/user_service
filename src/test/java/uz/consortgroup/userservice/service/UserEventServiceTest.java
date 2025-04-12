@@ -13,6 +13,7 @@ import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 import uz.consortgroup.userservice.kafka.UserRegisteredProducer;
 import uz.consortgroup.userservice.kafka.UserUpdateProfileProducer;
 import uz.consortgroup.userservice.kafka.VerificationCodeResendProducer;
+import uz.consortgroup.userservice.service.event.UserEventService;
 
 import java.time.LocalDate;
 import java.util.UUID;

@@ -1,10 +1,9 @@
-package uz.consortgroup.userservice.service;
+package uz.consortgroup.userservice.service.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uz.consortgroup.userservice.dto.UserProfileDto;
-import uz.consortgroup.userservice.dto.UserProfileResponseDto;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.event.EventType;
 import uz.consortgroup.userservice.event.UserProfileUpdateEvent;

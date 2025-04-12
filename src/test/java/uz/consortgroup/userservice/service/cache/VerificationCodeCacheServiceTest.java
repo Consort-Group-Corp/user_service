@@ -1,4 +1,4 @@
-package uz.consortgroup.userservice.service;
+package uz.consortgroup.userservice.service.cache;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
