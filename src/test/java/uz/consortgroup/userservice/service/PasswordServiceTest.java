@@ -75,7 +75,7 @@ class PasswordServiceTest {
         
         verify(userOperations).findUserById(userId);
         verify(passwordOperationsService).generatePasswordResetToken(user.getEmail());
-        verify(passwordEventService).sendPasswordEvent(user.getEmail(), token);
+        verify(passwordEventService).sendPasswordEvent(user.getEmail(), userId, token);
     }
 
     @Test

@@ -10,6 +10,7 @@ import uz.consortgroup.userservice.event.PasswordResetRequestedEvent;
 import uz.consortgroup.userservice.kafka.PasswordResetProducer;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -26,12 +27,13 @@ class PasswordEventServiceTest {
     @Test
     void sendPasswordEvent_ShouldSendEventWithCorrectData() {
         String email = "test@example.com";
+        UUID userId = UUID.randomUUID();
         String token = "test-token";
         String expectedLink = "http://localhost?token=test-token";
 
         ReflectionTestUtils.setField(passwordEventService, "link", "http://localhost");
 
-        passwordEventService.sendPasswordEvent(email, token);
+        passwordEventService.sendPasswordEvent(email, userId, token);
 
         verify(passwordResetProducer).sendPasswordRequestEvents(argThat(events -> {
             if (events.size() != 1) return false;
@@ -46,8 +48,8 @@ class PasswordEventServiceTest {
     @Test
     void sendPasswordEvent_ShouldGenerateUniqueMessageIds() {
 
-        passwordEventService.sendPasswordEvent("email1@test.com", "token1");
-        passwordEventService.sendPasswordEvent("email2@test.com", "token2");
+        passwordEventService.sendPasswordEvent("email1@test.com", UUID.randomUUID(),"token1");
+        passwordEventService.sendPasswordEvent("email2@test.com", UUID.randomUUID(), "token2");
 
         verify(passwordResetProducer, times(2)).sendPasswordRequestEvents(anyList());
     }
