@@ -6,12 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
 public class PasswordResetRequestedEvent {
     private Long messageId;
+    private UUID userId;
     private String email;
     private String token;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
