@@ -98,7 +98,7 @@ public class UserService {
         return userMapper.toUserProfileResponseDto(user);
     }
 
-    @Transactional(readOnly = true)
+
     @LoggingAspectBeforeMethod
     @AspectAfterReturning
     @LoggingAspectAfterMethod

@@ -33,6 +33,9 @@ public class PasswordService implements PasswordOperations {
     private final PasswordValidator passwordValidator;
 
     @Override
+    @Transactional
+    @LoggingAspectBeforeMethod
+    @LoggingAspectAfterMethod
     public void savePassword(User user, String rawPassword) {
         String encodedPassword = passwordOperationsService.encodePassword(rawPassword);
         Password password = passwordOperationsService.createPassword(user, encodedPassword);
