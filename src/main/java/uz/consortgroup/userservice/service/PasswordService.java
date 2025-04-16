@@ -49,7 +49,7 @@ public class PasswordService implements PasswordOperations {
         User user = userOperations.findUserById(userId);
         String userEmail = user.getEmail();
         String token = passwordOperationsService.generatePasswordResetToken(userEmail);
-        passwordEventService.sendPasswordEvent(userEmail, userId, token);
+        passwordEventService.sendPasswordEvent(userEmail, userId, token, user.getLanguage());
     }
 
     @Transactional

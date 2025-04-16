@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import uz.consortgroup.userservice.entity.enumeration.Language;
 import uz.consortgroup.userservice.event.PasswordResetRequestedEvent;
 import uz.consortgroup.userservice.kafka.PasswordResetProducer;
 
@@ -33,7 +34,7 @@ class PasswordEventServiceTest {
 
         ReflectionTestUtils.setField(passwordEventService, "link", "http://localhost");
 
-        passwordEventService.sendPasswordEvent(email, userId, token);
+        passwordEventService.sendPasswordEvent(email, userId, token, Language.ENGLISH);
 
         verify(passwordResetProducer).sendPasswordRequestEvents(argThat(events -> {
             if (events.size() != 1) return false;
@@ -48,8 +49,8 @@ class PasswordEventServiceTest {
     @Test
     void sendPasswordEvent_ShouldGenerateUniqueMessageIds() {
 
-        passwordEventService.sendPasswordEvent("email1@test.com", UUID.randomUUID(),"token1");
-        passwordEventService.sendPasswordEvent("email2@test.com", UUID.randomUUID(), "token2");
+        passwordEventService.sendPasswordEvent("email1@test.com", UUID.randomUUID(),"token1", Language.ENGLISH);
+        passwordEventService.sendPasswordEvent("email2@test.com", UUID.randomUUID(), "token2", Language.ENGLISH);
 
         verify(passwordResetProducer, times(2)).sendPasswordRequestEvents(anyList());
     }

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uz.consortgroup.userservice.entity.enumeration.Language;
 
 import java.util.UUID;
 
@@ -20,4 +21,6 @@ public class PasswordResetRequestedEvent {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private EventType eventType;
     private String resetLink;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private Language language;
 }
