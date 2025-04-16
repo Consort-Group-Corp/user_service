@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uz.consortgroup.userservice.dto.UpdatePasswordRequestDto;
 import uz.consortgroup.userservice.entity.Password;
 import uz.consortgroup.userservice.entity.User;
+import uz.consortgroup.userservice.entity.enumeration.Language;
 import uz.consortgroup.userservice.exception.InvalidTokenException;
 import uz.consortgroup.userservice.exception.PasswordMismatchException;
 import uz.consortgroup.userservice.repository.PasswordRepository;
@@ -65,6 +66,8 @@ class PasswordServiceTest {
     void requestPasswordReset_ShouldGenerateTokenAndSendEvent() {
         UUID userId = UUID.randomUUID();
         User user = new User();
+        user.setLanguage(Language.ENGLISH);
+
         user.setEmail("test@example.com");
         String token = "generatedToken";
         
@@ -75,7 +78,7 @@ class PasswordServiceTest {
         
         verify(userOperations).findUserById(userId);
         verify(passwordOperationsService).generatePasswordResetToken(user.getEmail());
-        verify(passwordEventService).sendPasswordEvent(user.getEmail(), userId, token);
+        verify(passwordEventService).sendPasswordEvent(user.getEmail(), userId, token, Language.ENGLISH);
     }
 
     @Test
