@@ -30,6 +30,18 @@ public class UserOperationsService implements UserOperations {
         return getUserFromDbAndCache(userId);
     }
 
+    @Transactional
+    @Override
+    public User findUserByEmail(String email) {
+        return getUserEmailFromDbAndCache(email);
+    }
+
+    @Override
+    public void saveUser(User user) {
+        userCacheService.cacheUser(userCacheMapper.toUserCache(user));
+        userRepository.save(user);
+    }
+
 
     @Transactional
     @LoggingAspectBeforeMethod
@@ -46,7 +58,26 @@ public class UserOperationsService implements UserOperations {
                         cacheUser(user);
                         return user;
                     } catch (Exception e) {
-                        throw e;
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    @Transactional
+    @LoggingAspectBeforeMethod
+    @LoggingAspectAfterMethod
+    @AspectAfterThrowing
+    @AspectAfterReturning
+    public User getUserEmailFromDbAndCache(String email) {
+        return userCacheService.findUserByEmail(email)
+                .map(userCacheMapper::toUserEntity)
+                .orElseGet(() -> {
+                    try {
+                        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+                        cacheUser(user);
+                        return user;
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
                     }
                 });
     }

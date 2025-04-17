@@ -7,6 +7,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uz.consortgroup.userservice.asspect.annotation.AspectAfterReturning;
+import uz.consortgroup.userservice.asspect.annotation.AspectAfterThrowing;
+import uz.consortgroup.userservice.asspect.annotation.LoggingAspectAfterMethod;
+import uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.repository.UserRepository;
@@ -19,16 +23,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     @Transactional
+    @LoggingAspectBeforeMethod
+    @LoggingAspectAfterMethod
+    @AspectAfterThrowing
+    @AspectAfterReturning
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        log.info("Searching user by email: {}", email);
-
         User user = userRepository.findByEmail(email).orElseThrow(
-                () -> {
-                    log.error("User with email {} not found", email);
-                    return new UserNotFoundException("");
-                });
-
-        log.info("User found: {}", user.getEmail());
+                () -> new UserNotFoundException(String.format("User with email %s not found", email)));
 
         return UserDetailsImpl.build(user);
     }

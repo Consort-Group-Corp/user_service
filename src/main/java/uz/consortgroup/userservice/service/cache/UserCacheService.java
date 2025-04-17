@@ -68,4 +68,14 @@ public class UserCacheService {
             throw new RuntimeException(String.format("Failed to remove user from cache: %s", userId), e);
         }
     }
+
+    @LoggingAspectBeforeMethod
+    @LoggingAspectAfterMethod
+    public Optional<UserCacheEntity> findUserByEmail(String email) {
+       try {
+          return userRedisRepository.findByEmail(email);
+       } catch (UserNotFoundException e) {
+           return Optional.empty();
+       }
+    }
 }
