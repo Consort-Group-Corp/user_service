@@ -15,7 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import uz.consortgroup.userservice.entity.enumeration.UserRole;
 import uz.consortgroup.userservice.service.impl.UserDetailsServiceImpl;
+import uz.consortgroup.userservice.service.impl.super_admin.SuperAdminDetailsServiceImpl;
 import uz.consortgroup.userservice.util.AuthEntryPointJwt;
 import uz.consortgroup.userservice.util.AuthTokenFilter;
 import uz.consortgroup.userservice.util.JwtUtils;
@@ -28,12 +30,13 @@ import uz.consortgroup.userservice.util.JwtUtils;
 public class WebSecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
+    private final SuperAdminDetailsServiceImpl superAdminDetailsService;
     private final JwtUtils jwtUtils;
     private final AuthEntryPointJwt unauthorizedHandler;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
-        return new AuthTokenFilter(jwtUtils, userDetailsService);
+        return new AuthTokenFilter(jwtUtils, userDetailsService, superAdminDetailsService);
     }
 
     @Bean
@@ -41,6 +44,7 @@ public class WebSecurityConfig {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 
         authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setUserDetailsService(superAdminDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
 
         return authProvider;
@@ -67,6 +71,9 @@ public class WebSecurityConfig {
                                   .requestMatchers(HttpMethod.POST, "/api/v1/users/*/new-verification-code").permitAll()
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/users/*/new-password").permitAll()
                                 .requestMatchers(HttpMethod.POST, "api/v1/password/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                                .requestMatchers(HttpMethod.GET, "api/v1/super-admin/**").hasAuthority(UserRole.SUPER_ADMIN.name())
+                                .requestMatchers(HttpMethod.POST, "api/v1/super-admin/**").hasAuthority(UserRole.SUPER_ADMIN.name())
 //                                .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")
 //                                .requestMatchers("/mentor/**").hasRole("MENTOR")
 //                                .requestMatchers("/student/**").hasRole("STUDENT")

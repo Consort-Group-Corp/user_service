@@ -6,4 +6,6 @@ import java.util.UUID;
 
 public interface UserOperations {
     User findUserById(UUID userId);
+    User findUserByEmail(String email);
+    void saveUser(User user);
 }
