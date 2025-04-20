@@ -72,7 +72,6 @@ public class WebSecurityConfig {
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/users/*/new-password").permitAll()
                                 .requestMatchers(HttpMethod.POST, "api/v1/password/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-                                .requestMatchers(HttpMethod.GET, "api/v1/super-admin/**").hasAuthority(UserRole.SUPER_ADMIN.name())
                                 .requestMatchers(HttpMethod.POST, "api/v1/super-admin/**").hasAuthority(UserRole.SUPER_ADMIN.name())
 //                                .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")
 //                                .requestMatchers("/mentor/**").hasRole("MENTOR")

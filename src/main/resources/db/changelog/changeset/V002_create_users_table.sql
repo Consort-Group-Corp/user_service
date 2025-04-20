@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS user_schema.users (
     position VARCHAR(128) DEFAULT NULL,
     pinfl VARCHAR(16) DEFAULT NULL UNIQUE,
     is_verified BOOLEAN DEFAULT FALSE,
-    is_super_admin BOOLEAN DEFAULT FALSE,
     role VARCHAR(50) DEFAULT NULL,
     status VARCHAR(50) DEFAULT NULL,
     created_at TIMESTAMP NOT NULL,

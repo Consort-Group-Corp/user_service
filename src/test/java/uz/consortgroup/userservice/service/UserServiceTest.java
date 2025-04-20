@@ -132,7 +132,7 @@ class UserServiceTest {
 
         doNothing().when(userServiceValidator).validateUserId(eq(userId));
 
-        when(userOperationsService.getUserFromDbAndCache(eq(userId))).thenReturn(user);
+        when(userOperationsService.getUserFromDbAndCacheById(eq(userId))).thenReturn(user);
         when(verificationService.generateAndSaveCode(eq(user))).thenReturn("verificationCode");
 
         doNothing().when(userEventService).resendVerificationCodeEvent(eq(user), eq("verificationCode"));
@@ -150,7 +150,7 @@ class UserServiceTest {
         UserProfileResponseDto responseDto = UserProfileResponseDto.builder().id(userId).build();
 
 
-        when(userOperationsService.getUserFromDbAndCache(userId)).thenReturn(user);
+        when(userOperationsService.getUserFromDbAndCacheById(userId)).thenReturn(user);
         when(userMapper.toUserProfileResponseDto(user)).thenReturn(responseDto);
 
         UserProfileResponseDto result = userService.getUserById(userId);
@@ -158,7 +158,7 @@ class UserServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(userId);
 
-        verify(userOperationsService).getUserFromDbAndCache(userId);
+        verify(userOperationsService).getUserFromDbAndCacheById(userId);
         verify(userMapper).toUserProfileResponseDto(user);
     }
 

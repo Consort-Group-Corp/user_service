@@ -1,26 +1,27 @@
-package uz.consortgroup.userservice.event;
+package uz.consortgroup.userservice.event.admin;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uz.consortgroup.userservice.entity.enumeration.Language;
+import uz.consortgroup.userservice.entity.enumeration.UserRole;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-public class PasswordResetRequestedEvent {
+public class UserCreatedEvent {
     private UUID messageId;
+    private UUID adminId;
     private UUID userId;
     private String email;
-    private String token;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private EventType eventType;
-    private String resetLink;
+    private UserRole role;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Language language;
+    private ActionType actionType;
+    private LocalDateTime createdAt;
 }

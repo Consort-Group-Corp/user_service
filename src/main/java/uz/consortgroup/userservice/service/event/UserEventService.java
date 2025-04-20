@@ -24,11 +24,10 @@ public class UserEventService {
     private final UserUpdateProfileProducer userUpdateProfileProducer;
     private final VerificationCodeResendProducer verificationCodeResendProducer;
     private final UserRegisteredProducer userRegisteredProducer;
-    private final AtomicLong messageIdGenerator = new AtomicLong(0);
 
     public void sendUserRegisteredEvent(User user, String verificationCode) {
         UserRegisteredEvent event = UserRegisteredEvent.builder()
-                        .messageId(messageIdGenerator.incrementAndGet())
+                        .messageId(UUID.randomUUID())
                         .userId(user.getId())
                         .language(user.getLanguage())
                         .email(user.getEmail())
@@ -41,7 +40,7 @@ public class UserEventService {
 
     public void sendUserUpdateProfileEvent(UUID userId, UserProfileDto userProfileDto) {
         UserProfileUpdateEvent event = UserProfileUpdateEvent.builder()
-                .messageId(messageIdGenerator.incrementAndGet())
+                .messageId(UUID.randomUUID())
                 .userId(userId)
                 .lastName(userProfileDto.getLastName())
                 .firstName(userProfileDto.getFirstName())
@@ -56,7 +55,7 @@ public class UserEventService {
 
     public void resendVerificationCodeEvent(User user, String verificationCode) {
         VerificationCodeResentEvent event = VerificationCodeResentEvent.builder()
-                .messageId(messageIdGenerator.incrementAndGet())
+                .messageId(UUID.randomUUID())
                 .language(user.getLanguage())
                 .userId(user.getId())
                 .newVerificationCode(verificationCode)

@@ -31,7 +31,8 @@ public class KafkaProducerConfig {
                 "user_registered:uz.consortgroup.userservice.event.UserRegisteredEvent," +
                 "verification_code_resent:uz.consortgroup.userservice.event.VerificationCodeResentEvent," +
                         "user_profile_update:uz.consortgroup.userservice.event.UserProfileUpdateEvent," +
-                        "password_reset_requested:uz.consortgroup.userservice.event.PasswordResetRequestedEvent");
+                        "password_reset_requested:uz.consortgroup.userservice.event.PasswordResetRequestedEvent," +
+                        "user_created:uz.consortgroup.userservice.event.admin.UserCreatedEvent");
 
         return new DefaultKafkaProducerFactory<>(props);
     }

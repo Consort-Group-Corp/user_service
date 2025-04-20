@@ -16,8 +16,9 @@ import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
-    @Query("SELECT u FROM User u WHERE u.email = :email")
+    @Query("SELECT u FROM User u WHERE LOWER(u.email) = LOWER(:email)")
     Optional<User> findByEmail(@Param("email") String email);
+
 
     boolean existsByEmail(String email);
 
@@ -73,9 +74,13 @@ public interface UserRepository extends JpaRepository<User, UUID> {
                                   @Param("verificationStatus") boolean verificationStatus,
                                   @Param("status") UserStatus status);
 
+
     @Modifying
     @Query("UPDATE User u SET u.role = :role WHERE u.id = :userId")
-    void updateUserRole(@Param("userId") UUID userId, @Param("role") UserRole role);
+    int updateUserRole(@Param("userId") UUID userId, @Param("role") UserRole role);
+
+
+
 
     @Modifying
     @Query("UPDATE User u SET u.password = :password WHERE u.id = :userId")

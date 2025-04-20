@@ -16,7 +16,7 @@ import java.util.UUID;
 @Builder
 public class UserProfileUpdateEvent {
     @JsonProperty("messageId")
-    private Long messageId;
+    private UUID messageId;
     private UUID userId;
     private String lastName;
     private String firstName;

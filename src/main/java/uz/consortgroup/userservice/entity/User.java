@@ -79,9 +79,6 @@ public class User {
     @Column(name = "is_verified")
     private Boolean isVerified;
 
-    @Column(name = "is_super_admin")
-    private Boolean isSuperAdmin;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private UserRole role;

@@ -18,4 +18,7 @@ public class KafkaTopic {
 
     @Value("${kafka.password-reset-request}")
     private String passwordResetRequestTopic;
+
+    @Value("${kafka.user-created}")
+    private String userCreatedTopic;
 }

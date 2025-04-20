@@ -14,10 +14,9 @@ import uz.consortgroup.userservice.repository.SuperAdminRepository;
 public class SuperAdminDetailsServiceImpl implements UserDetailsService {
     private final SuperAdminRepository superAdminRepository;
 
-
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        SuperAdmin superAdmin = superAdminRepository.findByEmail(email).orElseThrow(
+        SuperAdmin superAdmin = superAdminRepository.findUserByEmail(email).orElseThrow(
                 () -> new UserNotFoundException(String.format("SuperAdmin with email %s not found", email)));
 
         return SuperAdminDetailsImpl.buildSuperAdmin(superAdmin);

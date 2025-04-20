@@ -14,8 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRegisteredEvent {
-    @JsonProperty("messageId")
-    private Long messageId;
+    private UUID messageId;
     @JsonProperty("userId")
     private UUID userId;
     @JsonProperty("language")
