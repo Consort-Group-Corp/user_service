@@ -19,13 +19,11 @@ public class PasswordEventService {
     @Value("${app.link}")
     private String link;
 
-    private final AtomicLong messageIdGenerator = new AtomicLong(0);
-
     public void sendPasswordEvent(String email, UUID userId, String token, Language language) {
         String resetLink = generateResetLink(token);
 
         PasswordResetRequestedEvent event = PasswordResetRequestedEvent.builder()
-                .messageId(messageIdGenerator.incrementAndGet())
+                .messageId(UUID.randomUUID())
                 .userId(userId)
                 .email(email)
                 .token(token)

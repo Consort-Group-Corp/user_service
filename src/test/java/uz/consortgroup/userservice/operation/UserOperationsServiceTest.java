@@ -81,7 +81,7 @@ class UserOperationsServiceTest {
     }
 
     @Test
-    void getUserFromDbAndCache_ShouldReturnUserFromCache() {
+    void getUserFromDbAndCache_ShouldReturnUserFromCacheById() {
         UUID userId = UUID.randomUUID();
         UserCacheEntity cachedUser = new UserCacheEntity();
         User user = new User();
@@ -89,7 +89,7 @@ class UserOperationsServiceTest {
         when(userCacheService.findUserById(userId)).thenReturn(Optional.of(cachedUser));
         when(userCacheMapper.toUserEntity(cachedUser)).thenReturn(user);
 
-        User result = userOperationsService.getUserFromDbAndCache(userId);
+        User result = userOperationsService.getUserFromDbAndCacheById(userId);
 
         assertEquals(user, result);
         verify(userCacheService).findUserById(userId);
@@ -98,13 +98,13 @@ class UserOperationsServiceTest {
     }
 
     @Test
-    void getUserFromDbAndCache_ShouldReturnUserFromDbAndCacheWhenNotInCache() {
+    void getUserFromDbAndCache_ShouldReturnUserFromDbAndCacheWhenNotInCacheById() {
         UUID userId = UUID.randomUUID();
         User dbUser = new User();
         when(userCacheService.findUserById(userId)).thenReturn(Optional.empty());
         when(userRepository.findById(userId)).thenReturn(Optional.of(dbUser));
 
-        User result = userOperationsService.getUserFromDbAndCache(userId);
+        User result = userOperationsService.getUserFromDbAndCacheById(userId);
 
         assertEquals(dbUser, result);
         verify(userCacheService).findUserById(userId);
@@ -113,13 +113,13 @@ class UserOperationsServiceTest {
     }
 
     @Test
-    void getUserFromDbAndCache_ShouldThrowExceptionWhenUserNotFound() {
+    void getUserFromDbAndCache_ShouldThrowExceptionWhenUserNotFoundById() {
         UUID userId = UUID.randomUUID();
         when(userCacheService.findUserById(userId)).thenReturn(Optional.empty());
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> {
-            userOperationsService.getUserFromDbAndCache(userId);
+            userOperationsService.getUserFromDbAndCacheById(userId);
         });
 
         verify(userCacheService).findUserById(userId);

@@ -1,6 +1,7 @@
 package uz.consortgroup.userservice.util;
 
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -11,7 +12,9 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
+import uz.consortgroup.userservice.entity.enumeration.UserRole;
 import uz.consortgroup.userservice.service.impl.UserDetailsImpl;
 
 import java.security.Key;
@@ -27,15 +30,25 @@ public class JwtUtils {
     private int jetExpirationMs;
 
     public String generateJwtToken(Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        String username = authentication.getName();
+
+        String userType = authentication.getAuthorities().stream()
+                .findFirst()
+                .map(GrantedAuthority::getAuthority)
+                .orElse("");
+
+        Date now = new Date();
+        Date exp = new Date(now.getTime() + jetExpirationMs);
 
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jetExpirationMs))
+                .setSubject(username)
+                .claim("userType", userType)
+                .setIssuedAt(now)
+                .setExpiration(exp)
                 .signWith(key(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
 
     private Key key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jetSecret));
@@ -63,6 +76,16 @@ public class JwtUtils {
         }
 
         return false;
+    }
+
+    public <T> T getClaimFromJwtToken(String token, String claimName, Class<T> clazz) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get(claimName, clazz);
     }
 
     public String generatePasswordResetToken(String email) {

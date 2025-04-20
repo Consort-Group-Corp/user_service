@@ -2,6 +2,7 @@ package uz.consortgroup.userservice.service.event;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,6 +21,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,16 +50,20 @@ class UserEventServiceTest {
 
         userEventService.sendUserRegisteredEvent(user, verificationCode);
 
-        UserRegisteredEvent expectedEvent = UserRegisteredEvent.builder()
-                .messageId(1L)
-                .userId(user.getId())
-                .language(user.getLanguage())
-                .email(user.getEmail())
-                .verificationCode(verificationCode)
-                .eventType(EventType.USER_REGISTERED)
-                .build();
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<Object>> captor = ArgumentCaptor.forClass(List.class);
+        verify(userRegisteredProducer).sendUserRegisteredEvents(captor.capture());
 
-        verify(userRegisteredProducer).sendUserRegisteredEvents(List.of(expectedEvent));
+        List<Object> events = captor.getValue();
+        assertEquals(1, events.size());
+
+        UserRegisteredEvent event = (UserRegisteredEvent) events.get(0);
+        assertEquals(user.getId(), event.getUserId());
+        assertEquals(user.getLanguage(), event.getLanguage());
+        assertEquals(user.getEmail(), event.getEmail());
+        assertEquals(verificationCode, event.getVerificationCode());
+        assertEquals(EventType.USER_REGISTERED, event.getEventType());
+        assertNotNull(event.getMessageId());
     }
 
     @Test
@@ -71,18 +78,22 @@ class UserEventServiceTest {
 
         userEventService.sendUserUpdateProfileEvent(userId, userProfileDto);
 
-        UserProfileUpdateEvent expectedEvent = UserProfileUpdateEvent.builder()
-                .messageId(1L)
-                .userId(userId)
-                .lastName(userProfileDto.getLastName())
-                .firstName(userProfileDto.getFirstName())
-                .middleName(userProfileDto.getMiddleName())
-                .bornDate(userProfileDto.getBornDate())
-                .phoneNumber(userProfileDto.getPhoneNumber())
-                .eventType(EventType.USER_PROFILE_UPDATED)
-                .build();
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<Object>> captor = ArgumentCaptor.forClass(List.class);
+        verify(userUpdateProfileProducer).sendUserUpdateProfileEvents(captor.capture());
 
-        verify(userUpdateProfileProducer).sendUserUpdateProfileEvents(List.of(expectedEvent));
+        List<Object> events = captor.getValue();
+        assertEquals(1, events.size());
+
+        UserProfileUpdateEvent event = (UserProfileUpdateEvent) events.get(0);
+        assertEquals(userId, event.getUserId());
+        assertEquals("Doe", event.getLastName());
+        assertEquals("John", event.getFirstName());
+        assertEquals("Middle", event.getMiddleName());
+        assertEquals(LocalDate.of(1990, 1, 1), event.getBornDate());
+        assertEquals("+1234567890", event.getPhoneNumber());
+        assertEquals(EventType.USER_PROFILE_UPDATED, event.getEventType());
+        assertNotNull(event.getMessageId());
     }
 
     @Test
@@ -95,20 +106,24 @@ class UserEventServiceTest {
 
         userEventService.resendVerificationCodeEvent(user, verificationCode);
 
-        VerificationCodeResentEvent expectedEvent = VerificationCodeResentEvent.builder()
-                .messageId(1L)
-                .language(user.getLanguage())
-                .userId(user.getId())
-                .newVerificationCode(verificationCode)
-                .email(user.getEmail())
-                .eventType(EventType.VERIFICATION_CODE_SENT)
-                .build();
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<Object>> captor = ArgumentCaptor.forClass(List.class);
+        verify(verificationCodeResendProducer).sendVerificationCodeResendEvents(captor.capture());
 
-        verify(verificationCodeResendProducer).sendVerificationCodeResendEvents(List.of(expectedEvent));
+        List<Object> events = captor.getValue();
+        assertEquals(1, events.size());
+
+        VerificationCodeResentEvent event = (VerificationCodeResentEvent) events.get(0);
+        assertEquals(user.getId(), event.getUserId());
+        assertEquals(user.getLanguage(), event.getLanguage());
+        assertEquals(user.getEmail(), event.getEmail());
+        assertEquals(verificationCode, event.getNewVerificationCode());
+        assertEquals(EventType.VERIFICATION_CODE_SENT, event.getEventType());
+        assertNotNull(event.getMessageId());
     }
 
     @Test
-    void sendMultipleEvents_ShouldIncrementMessageId() {
+    void sendMultipleEvents_ShouldSendEachSeparately() {
         User user1 = new User();
         user1.setId(UUID.randomUUID());
         user1.setLanguage(Language.ENGLISH);
@@ -122,26 +137,20 @@ class UserEventServiceTest {
         userEventService.sendUserRegisteredEvent(user1, "111111");
         userEventService.sendUserRegisteredEvent(user2, "222222");
 
-        UserRegisteredEvent expectedEvent1 = UserRegisteredEvent.builder()
-                .messageId(1L)
-                .userId(user1.getId())
-                .language(user1.getLanguage())
-                .email(user1.getEmail())
-                .verificationCode("111111")
-                .eventType(EventType.USER_REGISTERED)
-                .build();
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<Object>> captor = ArgumentCaptor.forClass(List.class);
+        verify(userRegisteredProducer, times(2)).sendUserRegisteredEvents(captor.capture());
+        List<List<Object>> allCalls = captor.getAllValues();
 
-        UserRegisteredEvent expectedEvent2 = UserRegisteredEvent.builder()
-                .messageId(2L)
-                .userId(user2.getId())
-                .language(user2.getLanguage())
-                .email(user2.getEmail())
-                .verificationCode("222222")
-                .eventType(EventType.USER_REGISTERED)
-                .build();
+        assertEquals(2, allCalls.size());
 
-        verify(userRegisteredProducer).sendUserRegisteredEvents(List.of(expectedEvent1));
-        verify(userRegisteredProducer).sendUserRegisteredEvents(List.of(expectedEvent2));
+        UserRegisteredEvent event1 = (UserRegisteredEvent) allCalls.get(0).get(0);
+        assertEquals(user1.getId(), event1.getUserId());
+        assertEquals("111111", event1.getVerificationCode());
+
+        UserRegisteredEvent event2 = (UserRegisteredEvent) allCalls.get(1).get(0);
+        assertEquals(user2.getId(), event2.getUserId());
+        assertEquals("222222", event2.getVerificationCode());
     }
 
     @Test
@@ -151,17 +160,21 @@ class UserEventServiceTest {
 
         userEventService.sendUserUpdateProfileEvent(userId, userProfileDto);
 
-        UserProfileUpdateEvent expectedEvent = UserProfileUpdateEvent.builder()
-                .messageId(1L)
-                .userId(userId)
-                .lastName(null)
-                .firstName(null)
-                .middleName(null)
-                .bornDate(null)
-                .phoneNumber(null)
-                .eventType(EventType.USER_PROFILE_UPDATED)
-                .build();
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<Object>> captor = ArgumentCaptor.forClass(List.class);
+        verify(userUpdateProfileProducer).sendUserUpdateProfileEvents(captor.capture());
 
-        verify(userUpdateProfileProducer).sendUserUpdateProfileEvents(List.of(expectedEvent));
+        List<Object> events = captor.getValue();
+        assertEquals(1, events.size());
+
+        UserProfileUpdateEvent event = (UserProfileUpdateEvent) events.get(0);
+        assertEquals(userId, event.getUserId());
+        assertNull(event.getFirstName());
+        assertNull(event.getLastName());
+        assertNull(event.getMiddleName());
+        assertNull(event.getPhoneNumber());
+        assertNull(event.getBornDate());
+        assertEquals(EventType.USER_PROFILE_UPDATED, event.getEventType());
+        assertNotNull(event.getMessageId());
     }
 }

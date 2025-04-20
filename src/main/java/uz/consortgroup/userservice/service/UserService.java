@@ -65,7 +65,7 @@ public class UserService {
     @AspectAfterThrowing
     @LoggingAspectAfterMethod
     public void verifyUser(UUID userId, String inputCode) {
-        User user = userOperationService.getUserFromDbAndCache(userId);
+        User user = userOperationService.getUserFromDbAndCacheById(userId);
         verificationService.verifyCode(user, inputCode);
         userRepository.updateVerificationStatus(userId, true, UserStatus.ACTIVE);
         userRepository.updateUserRole(userId, UserRole.STUDENT);
@@ -80,7 +80,7 @@ public class UserService {
     @LoggingAspectAfterMethod
     public void resendVerificationCode(UUID userId) {
         userServiceValidator.validateUserId(userId);
-        User user = userOperationService.getUserFromDbAndCache(userId);
+        User user = userOperationService.getUserFromDbAndCacheById(userId);
 
         String verificationCode = verificationService.generateAndSaveCode(user);
         userEventService.resendVerificationCodeEvent(user, verificationCode);
@@ -103,7 +103,7 @@ public class UserService {
     @AspectAfterReturning
     @LoggingAspectAfterMethod
     public UserProfileResponseDto getUserById(UUID userId) {
-        User user = userOperationService.getUserFromDbAndCache(userId);
+        User user = userOperationService.getUserFromDbAndCacheById(userId);
         return userMapper.toUserProfileResponseDto(user);
     }
 

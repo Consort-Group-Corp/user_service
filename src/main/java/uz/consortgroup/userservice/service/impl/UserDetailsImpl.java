@@ -1,5 +1,6 @@
 package uz.consortgroup.userservice.service.impl;
 
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -7,28 +8,24 @@ import uz.consortgroup.userservice.entity.User;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
-
+@AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
+    private final String email;
+    private final String password;
+    private final Collection<? extends GrantedAuthority> authorities;
 
-    private UUID id;
-    private String email;
-    private Collection<? extends GrantedAuthority> authorities;
-
-    public UserDetailsImpl(UUID id, String email, Collection<? extends GrantedAuthority> authorities) {
-        this.id = id;
-        this.email = email;
-        this.authorities = authorities;
-    }
 
     public static UserDetailsImpl build(User user) {
+        String password = user.getPassword().toString();
+
         List<GrantedAuthority> authorities = List.of(
                 new SimpleGrantedAuthority(user.getRole().name())
         );
 
-        return new UserDetailsImpl(user.getId(), user.getEmail(), authorities);
+        return new UserDetailsImpl(user.getEmail(), password, authorities);
     }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -37,7 +34,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getPassword() {
-        return null;
+        return password;
     }
 
     @Override

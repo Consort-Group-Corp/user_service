@@ -15,7 +15,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class VerificationCodeResentEvent {
-    private Long messageId;
+    @JsonProperty("messageId")
+    private UUID messageId;
     private UUID userId;
     private String email;
     private String newVerificationCode;
