@@ -8,8 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import uz.consortgroup.userservice.dto.UpdatePasswordRequestDto;
-import uz.consortgroup.userservice.service.PasswordService;
+import uz.consortgroup.core.api.v1.dto.user.request.UpdatePasswordRequestDto;
+import uz.consortgroup.userservice.service.password.PasswordServiceImpl;
 
 import java.util.UUID;
 
@@ -30,13 +30,13 @@ class PasswordControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private PasswordService passwordService;
+    private PasswordServiceImpl passwordServiceImpl;
 
     @Test
     @WithMockUser
     void resetPassword_ShouldReturnSuccessMessage() throws Exception {
         UUID userId = UUID.randomUUID();
-        doNothing().when(passwordService).requestPasswordReset(userId);
+        doNothing().when(passwordServiceImpl).requestPasswordReset(userId);
 
         mockMvc.perform(post("/api/v1/password/{userId}/recovery", userId))
                 .andExpect(status().isOk())
@@ -47,7 +47,7 @@ class PasswordControllerTest {
     @WithMockUser
     void resetPassword_ShouldHandleServiceException() throws Exception {
         UUID userId = UUID.randomUUID();
-        doThrow(new RuntimeException("Error")).when(passwordService).requestPasswordReset(userId);
+        doThrow(new RuntimeException("Error")).when(passwordServiceImpl).requestPasswordReset(userId);
 
         mockMvc.perform(post("/api/v1/password/{userId}/recovery", userId))
                 .andExpect(status().is5xxServerError());
@@ -59,7 +59,7 @@ class PasswordControllerTest {
         UUID userId = UUID.randomUUID();
         String token = "valid-token";
 
-        doNothing().when(passwordService).updatePassword(eq(userId), any(UpdatePasswordRequestDto.class), eq(token));
+        doNothing().when(passwordServiceImpl).updatePassword(eq(userId), any(UpdatePasswordRequestDto.class), eq(token));
 
         mockMvc.perform(put("/api/v1/password/{userId}/new-password", userId)
                         .param("token", token)
@@ -92,7 +92,7 @@ class PasswordControllerTest {
         request.setConfirmPassword("newPassword123");
 
         doThrow(new RuntimeException("Invalid token"))
-                .when(passwordService).updatePassword(userId, request, token);
+                .when(passwordServiceImpl).updatePassword(userId, request, token);
 
         mockMvc.perform(put("/api/v1/password/{userId}/new-password", userId)
                         .param("token", token)

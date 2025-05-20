@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uz.consortgroup.userservice.dto.UpdatePasswordRequestDto;
+import uz.consortgroup.core.api.v1.dto.user.request.UpdatePasswordRequestDto;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.exception.InvalidTokenException;
 import uz.consortgroup.userservice.service.operation.PasswordOperationsService;

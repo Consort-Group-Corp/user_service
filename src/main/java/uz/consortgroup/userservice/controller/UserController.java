@@ -15,14 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uz.consortgroup.userservice.dto.UserProfileDto;
-
-import uz.consortgroup.userservice.dto.UserProfileResponseDto;
-import uz.consortgroup.userservice.dto.UserRegistrationDto;
-import uz.consortgroup.userservice.dto.UserRegistrationResponseDto;
-import uz.consortgroup.userservice.dto.UserUpdateDto;
-import uz.consortgroup.userservice.dto.UserUpdateResponseDto;
-import uz.consortgroup.userservice.service.UserService;
+import uz.consortgroup.core.api.v1.dto.user.request.UserProfileRequestDto;
+import uz.consortgroup.core.api.v1.dto.user.request.UserRegistrationRequestDto;
+import uz.consortgroup.core.api.v1.dto.user.request.UserUpdateRequestDto;
+import uz.consortgroup.core.api.v1.dto.user.response.UserProfileResponseDto;
+import uz.consortgroup.core.api.v1.dto.user.response.UserRegistrationResponseDto;
+import uz.consortgroup.core.api.v1.dto.user.response.UserUpdateResponseDto;
+import uz.consortgroup.userservice.service.user.UserService;
 
 import java.util.UUID;
 
@@ -35,8 +34,8 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public UserRegistrationResponseDto registerUser(@RequestBody @Valid UserRegistrationDto userRegistrationDto) {
-        return userService.registerNewUser(userRegistrationDto);
+    public UserRegistrationResponseDto registerUser(@RequestBody @Valid UserRegistrationRequestDto userRegistrationRequestDto) {
+        return userService.registerNewUser(userRegistrationRequestDto);
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -56,8 +55,8 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PutMapping("/{userId}/profile")
-    public UserProfileResponseDto fillUserProfile(@PathVariable UUID userId, @RequestBody @Valid UserProfileDto userProfileDto) {
-        return userService.fillUserProfile(userId, userProfileDto);
+    public UserProfileResponseDto fillUserProfile(@PathVariable UUID userId, @RequestBody @Valid UserProfileRequestDto userProfileRequestDto) {
+        return userService.fillUserProfile(userId, userProfileRequestDto);
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -69,8 +68,8 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{userId}")
     public UserUpdateResponseDto updateUserById(@PathVariable("userId") UUID userId,
-                                                @RequestBody @Valid UserUpdateDto userUpdateDto) {
-        return userService.updateUserById(userId, userUpdateDto);
+                                                @RequestBody @Valid UserUpdateRequestDto userUpdateRequestDto) {
+        return userService.updateUserById(userId, userUpdateRequestDto);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

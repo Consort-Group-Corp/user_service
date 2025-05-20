@@ -14,7 +14,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ExceptionLoggingAspect {
 
-    @AfterThrowing(pointcut = "@annotation(uz.consortgroup.userservice.asspect.annotation.AspectAfterThrowing)", throwing = "ex")
+    @AfterThrowing(
+            pointcut = "@annotation(uz.consortgroup.userservice.asspect.annotation.AspectAfterThrowing) || @annotation(uz.consortgroup.userservice.asspect.annotation.AllAspect)",
+            throwing = "ex"
+    )
     public void logAfterThrowing(JoinPoint joinPoint, Throwable ex) {
         String methodName = joinPoint.getSignature().getName();
         String className = joinPoint.getTarget().getClass().getSimpleName();

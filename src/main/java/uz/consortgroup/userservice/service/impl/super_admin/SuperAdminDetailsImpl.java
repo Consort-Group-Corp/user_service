@@ -31,12 +31,10 @@ public class SuperAdminDetailsImpl implements UserDetails {
     }
 
     public static SuperAdminDetailsImpl buildSuperAdmin(SuperAdmin superAdmin) {
-        String password = superAdmin.getPasswordHash();
-
+        String password = superAdmin.getPasswordHash() != null ? superAdmin.getPasswordHash() : "";
         List<GrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority(superAdmin.getUserRole().name())
+                new SimpleGrantedAuthority(superAdmin.getUserRole() != null ? superAdmin.getUserRole().name() : "SUPER_ADMIN")
         );
-
         return new SuperAdminDetailsImpl(superAdmin.getEmail(), password, authorities);
     }
 }

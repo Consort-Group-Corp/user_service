@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.VerificationCodeStatus;
 import uz.consortgroup.userservice.entity.VerificationCode;
-import uz.consortgroup.userservice.entity.enumeration.VerificationCodeStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,11 +29,13 @@ public interface VerificationCodeRepository extends JpaRepository<VerificationCo
     @Query("UPDATE VerificationCode v SET " +
             "v.status = :status, " +
             "v.updatedAt = :now, " +
-            "v.usedAt = CASE WHEN :status = uz.consortgroup.userservice.entity.enumeration.VerificationCodeStatus.USED THEN :now ELSE v.usedAt END " +
+            "v.usedAt = CASE WHEN :statusName = 'USED' THEN :now ELSE v.usedAt END " +
             "WHERE v.id = :codeId")
     void updateStatus(@Param("codeId") UUID codeId,
                       @Param("status") VerificationCodeStatus status,
+                      @Param("statusName") String statusName,
                       @Param("now") LocalDateTime now);
+
 
     @Modifying
     @Query("UPDATE VerificationCode v SET " +

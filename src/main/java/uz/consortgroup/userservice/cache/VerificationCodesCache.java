@@ -6,7 +6,7 @@ import uz.consortgroup.userservice.entity.VerificationCode;
 import uz.consortgroup.userservice.entity.cacheEntity.VerificationCodeCacheEntity;
 import uz.consortgroup.userservice.mapper.VerificationCodeCacheMapper;
 import uz.consortgroup.userservice.repository.VerificationCodeRepository;
-import uz.consortgroup.userservice.service.cache.VerificationCodeCacheService;
+import uz.consortgroup.userservice.service.cache.VerificationCodeCacheServiceImpl;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,16 +15,16 @@ import java.util.UUID;
 public class VerificationCodesCache extends AbstractCacheWarmup<VerificationCode, VerificationCodeCacheEntity> {
     private static final String VERIFICATION_CODES_CACHE = "verificationCodesCache";
 
-    private final VerificationCodeCacheService verificationCodeCacheService;
+    private final VerificationCodeCacheServiceImpl verificationCodeCacheServiceImpl;
     private final VerificationCodeRepository verificationCodeRepository;
     private final VerificationCodeCacheMapper verificationCodeCacheMapper;
 
     public VerificationCodesCache(ThreadPoolTaskExecutor taskExecutor,
-                                  VerificationCodeCacheService verificationCodeCacheService,
+                                  VerificationCodeCacheServiceImpl verificationCodeCacheServiceImpl,
                                   VerificationCodeRepository verificationCodeRepository,
                                   VerificationCodeCacheMapper verificationCodeCacheMapper) {
         super(taskExecutor);
-        this.verificationCodeCacheService = verificationCodeCacheService;
+        this.verificationCodeCacheServiceImpl = verificationCodeCacheServiceImpl;
         this.verificationCodeRepository = verificationCodeRepository;
         this.verificationCodeCacheMapper = verificationCodeCacheMapper;
     }
@@ -46,7 +46,7 @@ public class VerificationCodesCache extends AbstractCacheWarmup<VerificationCode
 
     @Override
     protected void saveCache(List<VerificationCodeCacheEntity> cacheEntities) {
-        verificationCodeCacheService.saveVerificationCodes(cacheEntities);
+        verificationCodeCacheServiceImpl.saveVerificationCodes(cacheEntities);
     }
 
     @Override

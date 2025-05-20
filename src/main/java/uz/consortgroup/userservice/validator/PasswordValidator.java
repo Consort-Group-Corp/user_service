@@ -2,7 +2,7 @@ package uz.consortgroup.userservice.validator;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import uz.consortgroup.userservice.dto.UpdatePasswordRequestDto;
+import uz.consortgroup.core.api.v1.dto.user.request.UpdatePasswordRequestDto;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.exception.InvalidTokenException;
 import uz.consortgroup.userservice.service.operation.PasswordOperationsService;
