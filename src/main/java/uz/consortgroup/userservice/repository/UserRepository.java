@@ -5,9 +5,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.UserStatus;
 import uz.consortgroup.userservice.entity.User;
-import uz.consortgroup.userservice.entity.enumeration.UserRole;
-import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -80,9 +80,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     int updateUserRole(@Param("userId") UUID userId, @Param("role") UserRole role);
 
 
-
-
     @Modifying
     @Query("UPDATE User u SET u.password = :password WHERE u.id = :userId")
     void changePassword(@Param("userId") UUID userId, @Param("password") String password);
+
+    @Query("SELECT u.id FROM User u WHERE u.email = :email")
+    UUID findUserIdByEmail(@Param("email") String email);
 }

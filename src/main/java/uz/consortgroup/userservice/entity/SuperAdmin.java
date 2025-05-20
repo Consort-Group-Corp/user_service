@@ -15,9 +15,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uz.consortgroup.userservice.entity.enumeration.Language;
-import uz.consortgroup.userservice.entity.enumeration.SuperAdminStatus;
-import uz.consortgroup.userservice.entity.enumeration.UserRole;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.Language;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.SuperAdminStatus;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

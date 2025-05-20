@@ -1,6 +1,6 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.4.3"
+    id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -20,10 +20,29 @@ configurations {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
+extra["springCloudVersion"] = "2024.0.1"
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+    }
+}
+
+
 dependencies {
+    //Feign
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+    implementation("io.github.openfeign.form:feign-form-spring:3.8.0")
+
+    // core-api-dto
+    implementation("uz.consortgroup:core-api-dto:0.0.2")
+
+    //Eureka
+    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 
     // Lombok
     compileOnly("org.projectlombok:lombok")

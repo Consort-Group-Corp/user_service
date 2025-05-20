@@ -14,11 +14,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
-import uz.consortgroup.userservice.entity.enumeration.UserRole;
 import uz.consortgroup.userservice.service.impl.UserDetailsImpl;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -30,6 +30,8 @@ public class JwtUtils {
     private int jetExpirationMs;
 
     public String generateJwtToken(Authentication authentication) {
+        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+
         String username = authentication.getName();
 
         String userType = authentication.getAuthorities().stream()
@@ -37,12 +39,15 @@ public class JwtUtils {
                 .map(GrantedAuthority::getAuthority)
                 .orElse("");
 
+        UUID userId = userPrincipal.getId();
+
         Date now = new Date();
         Date exp = new Date(now.getTime() + jetExpirationMs);
 
         return Jwts.builder()
                 .setSubject(username)
                 .claim("userType", userType)
+                .claim("userId", userId.toString())
                 .setIssuedAt(now)
                 .setExpiration(exp)
                 .signWith(key(), SignatureAlgorithm.HS256)

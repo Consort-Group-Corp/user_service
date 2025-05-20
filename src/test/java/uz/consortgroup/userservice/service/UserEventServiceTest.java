@@ -6,14 +6,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uz.consortgroup.userservice.dto.UserProfileDto;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.Language;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.UserStatus;
+import uz.consortgroup.core.api.v1.dto.user.request.UserProfileRequestDto;
 import uz.consortgroup.userservice.entity.User;
-import uz.consortgroup.userservice.entity.enumeration.Language;
-import uz.consortgroup.userservice.entity.enumeration.UserStatus;
 import uz.consortgroup.userservice.kafka.UserRegisteredProducer;
 import uz.consortgroup.userservice.kafka.UserUpdateProfileProducer;
 import uz.consortgroup.userservice.kafka.VerificationCodeResendProducer;
-import uz.consortgroup.userservice.service.event.UserEventService;
+import uz.consortgroup.userservice.service.event.user.UserEventService;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -60,7 +60,7 @@ class UserEventServiceTest {
 
     @Test
     void sendUserUpdateProfileEvent_Success() {
-        UserProfileDto profileDto = UserProfileDto.builder()
+        UserProfileRequestDto profileDto = UserProfileRequestDto.builder()
                 .lastName("Smith")
                 .firstName("John")
                 .middleName("Michael")
@@ -93,7 +93,7 @@ class UserEventServiceTest {
 
     @Test
     void sendUserUpdateProfileEvent_ProducerFailure() {
-        UserProfileDto profileDto = UserProfileDto.builder().build();
+        UserProfileRequestDto profileDto = UserProfileRequestDto.builder().build();
 
         doThrow(new RuntimeException("Kafka error"))
                 .when(userUpdateProfileProducer).sendUserUpdateProfileEvents(anyList());

@@ -14,7 +14,7 @@ import java.util.Arrays;
 @Slf4j
 public class MethodLoggingAspect {
 
-    @Before("@annotation(uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod)")
+    @Before("@annotation(uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod) || @annotation(uz.consortgroup.userservice.asspect.annotation.AllAspect)")
     public void loggingBeforeMethod(JoinPoint joinPoint) {
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();
@@ -25,7 +25,7 @@ public class MethodLoggingAspect {
         }
     }
 
-    @After("@annotation(uz.consortgroup.userservice.asspect.annotation.LoggingAspectAfterMethod)")
+    @After("@annotation(uz.consortgroup.userservice.asspect.annotation.LoggingAspectAfterMethod) || @annotation(uz.consortgroup.userservice.asspect.annotation.AllAspect)")
     public void loggingAfterMethod(JoinPoint joinPoint) {
         log.info("Finished method {}", joinPoint.getSignature().getName());
     }

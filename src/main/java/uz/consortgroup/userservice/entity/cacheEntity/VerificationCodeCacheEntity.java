@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.redis.core.RedisHash;
-import uz.consortgroup.userservice.entity.enumeration.VerificationCodeStatus;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.VerificationCodeStatus;
 
 import java.io.Serial;
 import java.io.Serializable;

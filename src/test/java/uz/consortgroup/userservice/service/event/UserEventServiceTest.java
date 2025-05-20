@@ -6,16 +6,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uz.consortgroup.userservice.dto.UserProfileDto;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.Language;
+import uz.consortgroup.core.api.v1.dto.user.request.UserProfileRequestDto;
 import uz.consortgroup.userservice.entity.User;
-import uz.consortgroup.userservice.entity.enumeration.Language;
-import uz.consortgroup.userservice.event.EventType;
-import uz.consortgroup.userservice.event.UserProfileUpdateEvent;
-import uz.consortgroup.userservice.event.UserRegisteredEvent;
-import uz.consortgroup.userservice.event.VerificationCodeResentEvent;
+import uz.consortgroup.userservice.event.user.EventType;
+import uz.consortgroup.userservice.event.user.UserProfileUpdateEvent;
+import uz.consortgroup.userservice.event.user.UserRegisteredEvent;
+import uz.consortgroup.userservice.event.user.VerificationCodeResentEvent;
 import uz.consortgroup.userservice.kafka.UserRegisteredProducer;
 import uz.consortgroup.userservice.kafka.UserUpdateProfileProducer;
 import uz.consortgroup.userservice.kafka.VerificationCodeResendProducer;
+import uz.consortgroup.userservice.service.event.user.UserEventService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -69,14 +70,14 @@ class UserEventServiceTest {
     @Test
     void sendUserUpdateProfileEvent_ShouldSendEvent() {
         UUID userId = UUID.randomUUID();
-        UserProfileDto userProfileDto = new UserProfileDto();
-        userProfileDto.setLastName("Doe");
-        userProfileDto.setFirstName("John");
-        userProfileDto.setMiddleName("Middle");
-        userProfileDto.setBornDate(LocalDate.of(1990, 1, 1));
-        userProfileDto.setPhoneNumber("+1234567890");
+        UserProfileRequestDto userProfileRequestDto = new UserProfileRequestDto();
+        userProfileRequestDto.setLastName("Doe");
+        userProfileRequestDto.setFirstName("John");
+        userProfileRequestDto.setMiddleName("Middle");
+        userProfileRequestDto.setBornDate(LocalDate.of(1990, 1, 1));
+        userProfileRequestDto.setPhoneNumber("+1234567890");
 
-        userEventService.sendUserUpdateProfileEvent(userId, userProfileDto);
+        userEventService.sendUserUpdateProfileEvent(userId, userProfileRequestDto);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<Object>> captor = ArgumentCaptor.forClass(List.class);
@@ -156,9 +157,9 @@ class UserEventServiceTest {
     @Test
     void sendUserUpdateProfileEvent_WithNullFields_ShouldSendEvent() {
         UUID userId = UUID.randomUUID();
-        UserProfileDto userProfileDto = new UserProfileDto();
+        UserProfileRequestDto userProfileRequestDto = new UserProfileRequestDto();
 
-        userEventService.sendUserUpdateProfileEvent(userId, userProfileDto);
+        userEventService.sendUserUpdateProfileEvent(userId, userProfileRequestDto);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<Object>> captor = ArgumentCaptor.forClass(List.class);

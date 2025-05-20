@@ -4,8 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.userservice.entity.SuperAdmin;
-import uz.consortgroup.userservice.entity.enumeration.UserRole;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -9,21 +9,37 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import uz.consortgroup.userservice.dto.*;
-import uz.consortgroup.userservice.entity.enumeration.Language;
-import uz.consortgroup.userservice.entity.enumeration.UserRole;
-import uz.consortgroup.userservice.entity.enumeration.UserStatus;
-import uz.consortgroup.userservice.exception.*;
-import uz.consortgroup.userservice.service.UserService;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.Language;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.UserStatus;
+import uz.consortgroup.core.api.v1.dto.user.request.UserProfileRequestDto;
+import uz.consortgroup.core.api.v1.dto.user.request.UserRegistrationRequestDto;
+import uz.consortgroup.core.api.v1.dto.user.request.UserUpdateRequestDto;
+import uz.consortgroup.core.api.v1.dto.user.response.UserProfileResponseDto;
+import uz.consortgroup.core.api.v1.dto.user.response.UserRegistrationResponseDto;
+import uz.consortgroup.core.api.v1.dto.user.response.UserUpdateResponseDto;
+import uz.consortgroup.userservice.exception.InvalidVerificationCodeException;
+import uz.consortgroup.userservice.exception.UserAlreadyExistsException;
+import uz.consortgroup.userservice.exception.UserNotFoundException;
+import uz.consortgroup.userservice.exception.VerificationCodeExpiredException;
+import uz.consortgroup.userservice.service.user.UserServiceImpl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -36,7 +52,7 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private UserService userService;
+    private UserServiceImpl userServiceImpl;
 
     private final UUID testUserId = UUID.randomUUID();
     private final String BASE_URL = "/api/v1/users";
@@ -44,7 +60,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void registerUser_Success() throws Exception {
-        UserRegistrationDto request = new UserRegistrationDto();
+        UserRegistrationRequestDto request = new UserRegistrationRequestDto();
         request.setEmail("test@example.com");
         request.setPassword("Password123!");
         request.setLanguage(Language.UZBEK);
@@ -55,7 +71,7 @@ class UserControllerTest {
                 .language(request.getLanguage())
                 .build();
 
-        when(userService.registerNewUser(any(UserRegistrationDto.class))).thenReturn(response);
+        when(userServiceImpl.registerNewUser(any(UserRegistrationRequestDto.class))).thenReturn(response);
 
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -68,7 +84,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void verifyUser_Success() throws Exception {
-        doNothing().when(userService).verifyUser(any(UUID.class), anyString());
+        doNothing().when(userServiceImpl).verifyUser(any(UUID.class), anyString());
 
         mockMvc.perform(post(BASE_URL + "/{userId}/verification", testUserId)
                         .param("verificationCode", "123456"))
@@ -79,7 +95,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void resendVerificationCode_Success() throws Exception {
-        doNothing().when(userService).resendVerificationCode(any(UUID.class));
+        doNothing().when(userServiceImpl).resendVerificationCode(any(UUID.class));
 
         mockMvc.perform(post(BASE_URL + "/{userId}/new-verification-code", testUserId))
                 .andExpect(status().isOk())
@@ -89,7 +105,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void fillUserProfile_Success() throws Exception {
-        UserProfileDto request = createValidProfileDto();
+        UserProfileRequestDto request = createValidProfileDto();
         UserProfileResponseDto response = UserProfileResponseDto.builder()
                 .id(testUserId)
                 .lastName(request.getLastName())
@@ -99,7 +115,7 @@ class UserControllerTest {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        when(userService.fillUserProfile(any(UUID.class), any(UserProfileDto.class))).thenReturn(response);
+        when(userServiceImpl.fillUserProfile(any(UUID.class), any(UserProfileRequestDto.class))).thenReturn(response);
 
         mockMvc.perform(put(BASE_URL + "/{userId}/profile", testUserId)  // Изменено с post на put
                         .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +137,7 @@ class UserControllerTest {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        when(userService.getUserById(any(UUID.class))).thenReturn(response);
+        when(userServiceImpl.getUserById(any(UUID.class))).thenReturn(response);
 
         mockMvc.perform(get(BASE_URL + "/{userId}", testUserId))
                 .andExpect(status().isOk())
@@ -131,7 +147,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void updateUser_Success() throws Exception {
-        UserUpdateDto request = createValidUpdateDto();
+        UserUpdateRequestDto request = createValidUpdateDto();
         UserUpdateResponseDto response = UserUpdateResponseDto.builder()
                 .id(testUserId)
                 .lastName(request.getLastName())
@@ -140,7 +156,7 @@ class UserControllerTest {
                 .role(request.getRole())
                 .build();
 
-        when(userService.updateUserById(any(UUID.class), any(UserUpdateDto.class))).thenReturn(response);
+        when(userServiceImpl.updateUserById(any(UUID.class), any(UserUpdateRequestDto.class))).thenReturn(response);
 
         mockMvc.perform(put(BASE_URL + "/{userId}", testUserId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -152,7 +168,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void deleteUser_Success() throws Exception {
-        doNothing().when(userService).deleteUserById(any(UUID.class));
+        doNothing().when(userServiceImpl).deleteUserById(any(UUID.class));
 
         mockMvc.perform(delete(BASE_URL + "/{userId}", testUserId))
                 .andExpect(status().isNoContent());
@@ -162,7 +178,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void registerUser_InvalidEmail_ShouldReturnBadRequest() throws Exception {
-        UserRegistrationDto invalidDto = new UserRegistrationDto();
+        UserRegistrationRequestDto invalidDto = new UserRegistrationRequestDto();
         invalidDto.setEmail("invalid-email");
         invalidDto.setPassword("Password123!");
         invalidDto.setLanguage(Language.UZBEK);
@@ -176,12 +192,12 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void registerUser_ExistingEmail_ShouldReturnConflict() throws Exception {
-        UserRegistrationDto validDto = new UserRegistrationDto();
+        UserRegistrationRequestDto validDto = new UserRegistrationRequestDto();
         validDto.setEmail("existing@example.com");
         validDto.setPassword("Password123!");
         validDto.setLanguage(Language.UZBEK);
 
-        when(userService.registerNewUser(any(UserRegistrationDto.class)))
+        when(userServiceImpl.registerNewUser(any(UserRegistrationRequestDto.class)))
                 .thenThrow(new UserAlreadyExistsException("Email already exists"));
 
         mockMvc.perform(post(BASE_URL)
@@ -194,7 +210,7 @@ class UserControllerTest {
     @WithMockUser
     void verifyUser_InvalidCode_ShouldReturnBadRequest() throws Exception {
         doThrow(new InvalidVerificationCodeException("Invalid code"))
-                .when(userService).verifyUser(any(UUID.class), anyString());
+                .when(userServiceImpl).verifyUser(any(UUID.class), anyString());
 
         mockMvc.perform(post(BASE_URL + "/{userId}/verification", testUserId)
                         .param("verificationCode", "invalid"))
@@ -205,7 +221,7 @@ class UserControllerTest {
     @WithMockUser
     void verifyUser_ExpiredCode_ShouldReturnBadRequest() throws Exception {
         doThrow(new VerificationCodeExpiredException("Code expired"))
-                .when(userService).verifyUser(any(UUID.class), anyString());
+                .when(userServiceImpl).verifyUser(any(UUID.class), anyString());
 
         mockMvc.perform(post(BASE_URL + "/{userId}/verification", testUserId)
                         .param("verificationCode", "expired"))
@@ -225,7 +241,7 @@ class UserControllerTest {
     @WithMockUser
     void resendVerificationCode_UserNotFound_ShouldReturnNotFound() throws Exception {
         doThrow(new UserNotFoundException("User not found"))
-                .when(userService).resendVerificationCode(any(UUID.class));
+                .when(userServiceImpl).resendVerificationCode(any(UUID.class));
 
         mockMvc.perform(post(BASE_URL + "/{userId}/new-verification-code", UUID.randomUUID()))
                 .andExpect(status().isNotFound());
@@ -234,7 +250,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void fillUserProfile_InvalidData_ShouldReturnBadRequest() throws Exception {
-        UserProfileDto invalidDto = new UserProfileDto();
+        UserProfileRequestDto invalidDto = new UserProfileRequestDto();
         invalidDto.setPhoneNumber("invalid");
 
         mockMvc.perform(put(BASE_URL + "/{userId}/profile", testUserId)  // Изменено с post на put
@@ -246,9 +262,9 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void fillUserProfile_UserNotFound_ShouldReturnNotFound() throws Exception {
-        UserProfileDto validDto = createValidProfileDto();
+        UserProfileRequestDto validDto = createValidProfileDto();
 
-        when(userService.fillUserProfile(any(UUID.class), any(UserProfileDto.class)))
+        when(userServiceImpl.fillUserProfile(any(UUID.class), any(UserProfileRequestDto.class)))
                 .thenThrow(new UserNotFoundException("User not found"));
 
         mockMvc.perform(put(BASE_URL + "/{userId}/profile", testUserId)  // Изменено с post на put
@@ -260,7 +276,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void getUserById_NotFound_ShouldReturnNotFound() throws Exception {
-        when(userService.getUserById(any(UUID.class)))
+        when(userServiceImpl.getUserById(any(UUID.class)))
                 .thenThrow(new UserNotFoundException("User not found"));
 
         mockMvc.perform(get(BASE_URL + "/{userId}", UUID.randomUUID()))
@@ -270,7 +286,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     void updateUser_InvalidRole_ShouldReturnBadRequest() throws Exception {
-        UserUpdateDto invalidDto = createValidUpdateDto();
+        UserUpdateRequestDto invalidDto = createValidUpdateDto();
         invalidDto.setRole(null);
 
         mockMvc.perform(put(BASE_URL + "/{userId}", testUserId)
@@ -283,14 +299,14 @@ class UserControllerTest {
     @WithMockUser
     void deleteUser_UserNotFound_ShouldReturnNotFound() throws Exception {
         doThrow(new UserNotFoundException("User not found"))
-                .when(userService).deleteUserById(any(UUID.class));
+                .when(userServiceImpl).deleteUserById(any(UUID.class));
 
         mockMvc.perform(delete(BASE_URL + "/{userId}", UUID.randomUUID()))
                 .andExpect(status().isNotFound());
     }
 
-    private UserProfileDto createValidProfileDto() {
-        return UserProfileDto.builder()
+    private UserProfileRequestDto createValidProfileDto() {
+        return UserProfileRequestDto.builder()
                 .lastName("Doe")
                 .firstName("John")
                 .middleName("Middle")
@@ -302,8 +318,8 @@ class UserControllerTest {
                 .build();
     }
 
-    private UserUpdateDto createValidUpdateDto() {
-        return UserUpdateDto.builder()
+    private UserUpdateRequestDto createValidUpdateDto() {
+        return UserUpdateRequestDto.builder()
                 .lastName("Doe")
                 .firstName("John")
                 .middleName("Middle")

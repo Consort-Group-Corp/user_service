@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uz.consortgroup.userservice.dto.super_admin.UserChangeRequestDto;
-import uz.consortgroup.userservice.dto.super_admin.UserCreateDto;
-import uz.consortgroup.userservice.dto.super_admin.UserResponseDto;
-import uz.consortgroup.userservice.service.SuperAdminService;
+import uz.consortgroup.core.api.v1.dto.user.super_admin.UserChangeRequestDto;
+import uz.consortgroup.core.api.v1.dto.user.super_admin.UserCreateDto;
+import uz.consortgroup.core.api.v1.dto.user.super_admin.UserResponseDto;
+import uz.consortgroup.userservice.service.super_admin.SuperAdminService;
 
 @RestController
 @RequiredArgsConstructor

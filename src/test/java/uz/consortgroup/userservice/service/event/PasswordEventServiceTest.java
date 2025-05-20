@@ -6,15 +6,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import uz.consortgroup.userservice.entity.enumeration.Language;
-import uz.consortgroup.userservice.event.PasswordResetRequestedEvent;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.Language;
+import uz.consortgroup.userservice.event.user.PasswordResetRequestedEvent;
 import uz.consortgroup.userservice.kafka.PasswordResetProducer;
+import uz.consortgroup.userservice.service.event.user.PasswordEventService;
 
-import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class PasswordEventServiceTest {

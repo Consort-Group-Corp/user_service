@@ -19,6 +19,9 @@ public class KafkaTopic {
     @Value("${kafka.password-reset-request}")
     private String passwordResetRequestTopic;
 
-    @Value("${kafka.user-created}")
-    private String userCreatedTopic;
+    @Value("${kafka.super-admin-action}")
+    private String superAdminActionTopic;
+
+    @Value("${kafka.mentor-action}")
+    private String mentorActionTopic;
 }

@@ -9,7 +9,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class SuccessLoggingAspect {
-    @AfterReturning(pointcut = "@annotation(uz.consortgroup.userservice.asspect.annotation.AspectAfterReturning)", returning = "result")
+    @AfterReturning(
+            pointcut = "@annotation(uz.consortgroup.userservice.asspect.annotation.AspectAfterReturning) || @annotation(uz.consortgroup.userservice.asspect.annotation.AllAspect)",
+            returning = "result"
+    )
     public void logAfterReturning(Object result) {
         log.info("Method executed successfully. Result: {}", result);
     }

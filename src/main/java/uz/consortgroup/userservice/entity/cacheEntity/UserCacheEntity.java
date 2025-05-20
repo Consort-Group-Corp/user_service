@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
-import uz.consortgroup.userservice.entity.enumeration.UserStatus;
-import uz.consortgroup.userservice.entity.enumeration.UserRole;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.UserStatus;
 
 import java.io.Serial;
 import java.io.Serializable;

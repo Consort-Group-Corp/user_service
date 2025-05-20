@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import uz.consortgroup.userservice.entity.enumeration.VerificationCodeStatus;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.VerificationCodeStatus;
 import uz.consortgroup.userservice.repository.VerificationCodeRepository;
 
 import java.time.LocalDateTime;

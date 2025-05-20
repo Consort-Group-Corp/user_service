@@ -29,6 +29,12 @@ spring:
       host: localhost
       port: 6381
 
+  servlet:
+    multipart:
+      max-file-size: 1000MB
+      max-request-size: 1000MB
+
+
 logging:
   level:
     root: INFO
@@ -40,12 +46,28 @@ kafka:
   user-update-profile: user-update-profile-topic
   verification-code-resent: verification-code-resent-topic
   password-reset-request: password-reset-request-topic
-  user-created: user-created-by-admin-topic
+  super-admin-action: super-admin-action-topic
+  mentor-action: mentor-action-topic
   producer:
     enable: true
 
 app:
   link: http://localhost:8081/index.html
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
 
 one-id:
   timeout: 5000
@@ -72,3 +94,6 @@ async:
 cache:
   redis-batch-size: 500
 
+course:
+  service:
+     url: http://localhost:8084

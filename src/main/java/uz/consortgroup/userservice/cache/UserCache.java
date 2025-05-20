@@ -7,7 +7,7 @@ import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.entity.cacheEntity.UserCacheEntity;
 import uz.consortgroup.userservice.mapper.UserCacheMapper;
 import uz.consortgroup.userservice.repository.UserRepository;
-import uz.consortgroup.userservice.service.cache.UserCacheService;
+import uz.consortgroup.userservice.service.cache.UserCacheServiceImpl;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,14 +17,14 @@ import java.util.UUID;
 public class UserCache extends AbstractCacheWarmup<User, UserCacheEntity> {
     private static final String USER_CACHE = "userCache";
 
-    private final UserCacheService userCacheService;
+    private final UserCacheServiceImpl userCacheServiceImpl;
     private final UserRepository userRepository;
     private final UserCacheMapper userCacheMapper;
 
-    public UserCache(ThreadPoolTaskExecutor taskExecutor, UserCacheService userCacheService,
+    public UserCache(ThreadPoolTaskExecutor taskExecutor, UserCacheServiceImpl userCacheServiceImpl,
                      UserRepository userRepository, UserCacheMapper userCacheMapper) {
         super(taskExecutor);
-        this.userCacheService = userCacheService;
+        this.userCacheServiceImpl = userCacheServiceImpl;
         this.userRepository = userRepository;
         this.userCacheMapper = userCacheMapper;
     }
@@ -46,7 +46,7 @@ public class UserCache extends AbstractCacheWarmup<User, UserCacheEntity> {
 
     @Override
     protected void saveCache(List<UserCacheEntity> cacheEntities) {
-        userCacheService.cacheUsers(cacheEntities);
+        userCacheServiceImpl.cacheUsers(cacheEntities);
     }
 
     @Override
