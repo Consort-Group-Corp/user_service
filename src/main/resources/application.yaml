@@ -69,17 +69,14 @@ management:
       exposure:
         include: health,info
 
-one-id:
-  timeout: 5000
-  base-url: "https://sso.egov.uz"
-  auth-url: "https://sso.egov.uz/sso/oauth/Authorization.do"
-  token-url: "https://sso.egov.uz/sso/oauth/Token.do"
-  user-info-url: "https://sso.egov.uz/sso/oauth/Resource.do"
-  client-id: "your-client-id"
-  client-secret: "your-client-secret"
-  redirect-uri: "https://your-app.com/callback"
-  scope: "myportal"
-  grant-type: "authorization_code"
+oneid:
+  base-url: https://sso.egov.uz/sso/oauth/Authorization.do
+  client-id: CLIENT_ID
+  client-secret: CLIENT_SECRET
+  redirect-uri: http://localhost:8080/api/v1/oneid/callback
+  token-url: https://sso.egov.uz/sso/oauth/Token.do
+  profile-url: https://sso.egov.uz/sso/oauth/userinfo
+  time-out: 5000
 
 security:
   token: wUIBjx3G1C1Ee+eIXtt/zVIFkS40lhoan0HgHriNERBL08Vv2Bwb92is6gZUGEzANhMXulAPHD9li4TmKrdDoA==

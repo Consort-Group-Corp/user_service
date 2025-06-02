@@ -1,4 +1,4 @@
-package uz.consortgroup.userservice.config;
+package uz.consortgroup.userservice.config.webclient;
 
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
@@ -17,10 +17,10 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @Slf4j
 public class WebClientConfig {
-    @Value("${one-id.base-url}")
+    @Value("${oneid.base-url}")
     private String baseUrl;
 
-    @Value("${one-id.timeout:5000}")
+    @Value("${oneid.time-out}")
     private int timeout;
 
     @Bean

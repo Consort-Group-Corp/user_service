@@ -23,6 +23,7 @@ import uz.consortgroup.core.api.v1.dto.user.enumeration.Language;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserStatus;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -72,6 +73,24 @@ public class User {
 
     @Column(name = "pinfl", unique = true)
     private String pinfl;
+
+    @Column(name = "oneid_user_id", unique = true)
+    private String oneIdUserId;
+
+    @Column(name = "oneid_access_token")
+    private String oneIdAccessToken;
+
+    @Column(name = "oneid_refresh_token")
+    private String oneIdRefreshToken;
+
+    @Column(name = "oneid_access_expires_at")
+    private Instant oneIdExpiresAt;
+
+    @Column(name = "oneid_token_issued_at")
+    private Instant oneIdTokenIssuedAt;
+
+    @Column(name = "oneid_token_updated_at")
+    private Instant oneIdTokenUpdatedAt;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Password password;

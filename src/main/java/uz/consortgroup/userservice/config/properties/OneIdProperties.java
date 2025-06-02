@@ -8,15 +8,12 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = "one-id")
+@ConfigurationProperties(prefix = "oneid")
 public class OneIdProperties {
-    private String authUrl;
-    private String tokenUrl;
-    private String userInfoUrl;
+    private String baseUrl;
     private String clientId;
     private String clientSecret;
     private String redirectUri;
-    private String scope;
-    private String grantType;
-    private String responseType;
+    private String tokenUrl;
+    private String profileUrl;
 }
