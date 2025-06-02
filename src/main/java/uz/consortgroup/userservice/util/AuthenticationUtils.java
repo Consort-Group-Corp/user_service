@@ -3,6 +3,7 @@ package uz.consortgroup.userservice.util;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +34,22 @@ public class AuthenticationUtils {
 
         String jwt = jwtUtils.generateJwtToken(authentication);
         String authority = userDetails.getAuthorities().stream()
+                .findFirst()
+                .map(GrantedAuthority::getAuthority)
+                .orElseThrow();
+
+        UserRole role = UserRole.valueOf(authority);
+
+        return JwtResponse.builder()
+                .token(jwt)
+                .role(role)
+                .build();
+    }
+
+    @AllAspect
+    public JwtResponse performAuthentication(String email, Authentication authentication) {
+        String jwt = jwtUtils.generateJwtToken(authentication);
+        String authority = authentication.getAuthorities().stream()
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
                 .orElseThrow();
