@@ -29,14 +29,15 @@ public class ImageUploadSaga {
 
         try {
             mentorActionLogger.logMentorResourceAction(response.getResourceId(), mentorId, MentorActionType.IMAGE_UPLOADED);
-        } catch (KafkaException kafkaEx) {
+        } catch (Exception ex) {
             try {
                 imageFeignClient.deleteImage(lessonId, response.getResourceId());
             } catch (Exception deleteEx) {
                 throw new ImageUploadRollbackException("Не удалось удалить изображение после ошибки логирования.", deleteEx);
             }
-            throw new MentorActionLoggingException("Ошибка логирования события загрузки изображения. Операция отменена.", kafkaEx);
+            throw new MentorActionLoggingException("Ошибка логирования события загрузки изображения. Операция отменена.", ex);
         }
+
 
         return response;
     }

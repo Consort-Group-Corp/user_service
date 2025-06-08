@@ -24,4 +24,10 @@ public class KafkaTopic {
 
     @Value("${kafka.mentor-action}")
     private String mentorActionTopic;
+
+    @Value("${kafka.course-group}")
+    private String courseGroupTopic;
+
+    @Value("${kafka.course-purchased}")
+    private String coursePurchasedTopic;
 }

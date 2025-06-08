@@ -15,12 +15,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import uz.consortgroup.core.api.v1.dto.payment.order.OrderRequest;
+import uz.consortgroup.core.api.v1.dto.payment.order.OrderResponse;
 import uz.consortgroup.core.api.v1.dto.user.request.UserProfileRequestDto;
 import uz.consortgroup.core.api.v1.dto.user.request.UserRegistrationRequestDto;
 import uz.consortgroup.core.api.v1.dto.user.request.UserUpdateRequestDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserProfileResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserRegistrationResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserUpdateResponseDto;
+import uz.consortgroup.userservice.service.proxy.order.CourseOrderProxyService;
 import uz.consortgroup.userservice.service.user.UserService;
 
 import java.util.UUID;

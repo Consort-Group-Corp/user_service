@@ -17,6 +17,8 @@ import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.userservice.exception.InvalidPasswordException;
 import uz.consortgroup.userservice.exception.InvalidTokenException;
 import uz.consortgroup.userservice.exception.InvalidVerificationCodeException;
+import uz.consortgroup.userservice.exception.OrderAlreadyExistsException;
+import uz.consortgroup.userservice.exception.OrderCreationRollbackException;
 import uz.consortgroup.userservice.exception.PasswordMismatchException;
 import uz.consortgroup.userservice.exception.UserAlreadyExistsException;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
@@ -131,6 +133,20 @@ public class GlobalExceptionHandler {
         log.error("PasswordMismatchException: ", ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Password mismatch", ex.getMessage()));
+    }
+
+    @ExceptionHandler(OrderAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleOrderAlreadyExistsException(OrderAlreadyExistsException ex) {
+        log.error("OrderAlreadyExistsException: ", ex);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(HttpStatus.CONFLICT.value(), "Order already exists", ex.getMessage()));
+    }
+
+    @ExceptionHandler(OrderCreationRollbackException.class)
+    public ResponseEntity<ErrorResponse> handleOrderCreationRollbackException(OrderCreationRollbackException ex) {
+        log.error("OrderCreationRollbackException: ", ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Order creation rollback", ex.getMessage()));
     }
 
     // JSON and Data Integrity Handlers

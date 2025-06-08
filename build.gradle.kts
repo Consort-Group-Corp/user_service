@@ -39,7 +39,7 @@ dependencies {
     implementation("io.github.openfeign.form:feign-form-spring:3.8.0")
 
     // core-api-dto
-    implementation("uz.consortgroup:core-api-dto:0.0.2")
+    implementation("uz.consortgroup:core-api-dto:0.0.1")
 
     //Eureka
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
