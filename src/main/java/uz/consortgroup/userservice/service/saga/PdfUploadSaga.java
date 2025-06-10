@@ -29,13 +29,13 @@ public class PdfUploadSaga {
 
         try {
             mentorActionLogger.logMentorResourceAction(response.getResourceId(),mentorId,MentorActionType.PDF_UPLOADED);
-        } catch (KafkaException kafkaEx) {
+        } catch (Exception ex) {
             try {
                 pdfFeignClient.deletePdf(lessonId, response.getResourceId());
             } catch (Exception deleteEx) {
                 throw new PdfUploadRollbackException("Не удалось удалить PDF после ошибки логирования", deleteEx);
             }
-            throw new MentorActionLoggingException("Ошибка логирования события загрузки PDF. Операция отменена.", kafkaEx);
+            throw new MentorActionLoggingException("Ошибка логирования события загрузки PDF. Операция отменена.", ex);
         }
 
         return response;

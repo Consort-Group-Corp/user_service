@@ -33,7 +33,7 @@ public class BulkImageUploadSaga {
             for (ImageUploadResponseDto image : response.getImages()) {
                 mentorActionLogger.logMentorResourceAction(image.getResourceId(), mentorId, MentorActionType.IMAGE_UPLOADED);
             }
-        } catch (KafkaException kafkaEx) {
+        } catch (Exception ex) {
             try {
                 for (ImageUploadResponseDto image : response.getImages()) {
                     imageFeignClient.deleteImage(lessonId, image.getResourceId());
@@ -41,7 +41,7 @@ public class BulkImageUploadSaga {
             } catch (Exception deleteEx) {
                 throw new ImageUploadRollbackException("Ошибка при откате загруженных изображений", deleteEx);
             }
-            throw new MentorActionLoggingException("Ошибка логирования событий в Kafka. Все загруженные изображения были удалены.", kafkaEx);
+            throw new MentorActionLoggingException("Ошибка логирования. Все загруженные изображения удалены.", ex);
         }
 
         return response;

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uz.consortgroup.core.api.v1.dto.course.response.video.BulkVideoUploadResponseDto;
 import uz.consortgroup.core.api.v1.dto.course.response.video.VideoUploadResponseDto;
+import uz.consortgroup.userservice.asspect.annotation.AllAspect;
 import uz.consortgroup.userservice.client.VideoFeignClient;
 import uz.consortgroup.userservice.event.mentor.MentorActionType;
 import uz.consortgroup.userservice.exception.MentorActionLoggingException;
@@ -23,6 +24,7 @@ public class BulkVideoUploadSaga {
     private final VideoFeignClient videoFeignClient;
     private final MentorActionLogger mentorActionLogger;
 
+    @AllAspect
     public BulkVideoUploadResponseDto run(UUID lessonId, String metadataJson, List<MultipartFile> files) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UUID mentorId = userDetails.getId();
@@ -33,7 +35,7 @@ public class BulkVideoUploadSaga {
             for (VideoUploadResponseDto video : response.getVideos()) {
                 mentorActionLogger.logMentorResourceAction(video.getResourceId(), mentorId, MentorActionType.VIDEO_UPLOADED);
             }
-        } catch (KafkaException kafkaEx) {
+        } catch (Exception ex) {
             try {
                 for (VideoUploadResponseDto video : response.getVideos()) {
                     videoFeignClient.deleteVideo(lessonId, video.getResourceId());
@@ -41,9 +43,10 @@ public class BulkVideoUploadSaga {
             } catch (Exception deleteEx) {
                 throw new VideoUploadRollbackException("Ошибка при откате загруженных видео", deleteEx);
             }
-            throw new MentorActionLoggingException("Ошибка логирования событий в Kafka. Все загруженные видео были удалены.", kafkaEx);
+            throw new MentorActionLoggingException("Ошибка логирования событий. Все загруженные видео были удалены.", ex);
         }
 
         return response;
     }
+
 }

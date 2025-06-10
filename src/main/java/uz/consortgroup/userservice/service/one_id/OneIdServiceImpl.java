@@ -10,13 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import uz.consortgroup.core.api.v1.dto.oneid.OneIdProfile;
+import uz.consortgroup.core.api.v1.dto.oneid.OneIdTokenRequest;
+import uz.consortgroup.core.api.v1.dto.oneid.OneIdTokenResponse;
 import uz.consortgroup.core.api.v1.dto.user.auth.JwtResponse;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.Language;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserStatus;
-import uz.consortgroup.core.api.v1.dto.user.oneid.OneIdProfile;
-import uz.consortgroup.core.api.v1.dto.user.oneid.OneIdTokenRequest;
-import uz.consortgroup.core.api.v1.dto.user.oneid.OneIdTokenResponse;
 import uz.consortgroup.userservice.asspect.annotation.AllAspect;
 import uz.consortgroup.userservice.config.properties.OneIdProperties;
 import uz.consortgroup.userservice.entity.User;
@@ -47,6 +47,7 @@ public class OneIdServiceImpl implements OneIdService {
 
     @Override
     @AllAspect
+    @Transactional
     public JwtResponse authorizeViaOneId(String code) {
         OneIdTokenResponse tokens = exchangeCodeForTokens(code);
 

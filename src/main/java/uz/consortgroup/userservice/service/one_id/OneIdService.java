@@ -1,8 +1,8 @@
 package uz.consortgroup.userservice.service.one_id;
 
+import uz.consortgroup.core.api.v1.dto.oneid.OneIdProfile;
+import uz.consortgroup.core.api.v1.dto.oneid.OneIdTokenResponse;
 import uz.consortgroup.core.api.v1.dto.user.auth.JwtResponse;
-import uz.consortgroup.core.api.v1.dto.user.oneid.OneIdProfile;
-import uz.consortgroup.core.api.v1.dto.user.oneid.OneIdTokenResponse;
 import uz.consortgroup.userservice.entity.User;
 
 public interface OneIdService {

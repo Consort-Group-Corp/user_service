@@ -29,13 +29,13 @@ public class VideoUploadSaga {
 
         try {
             mentorActionLogger.logMentorResourceAction(response.getResourceId(), mentorId, MentorActionType.VIDEO_UPLOADED);
-        } catch (KafkaException kafkaEx) {
+        } catch (Exception ex) {
             try {
                 videoFeignClient.deleteVideo(lessonId, response.getResourceId());
             } catch (Exception deleteEx) {
                 throw new VideoUploadRollbackException("Не удалось удалить видео после ошибки логирования", deleteEx);
             }
-            throw new MentorActionLoggingException("Ошибка логирования события загрузки видео. Операция отменена.", kafkaEx);
+            throw new MentorActionLoggingException("Ошибка логирования события загрузки видео. Операция отменена.", ex);
         }
 
         return response;
