@@ -7,6 +7,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import uz.consortgroup.userservice.event.course_group.CourseForumGroupCreatedEvent;
 import uz.consortgroup.userservice.service.processor.CourseForumGroupCreationProcessor;
+import uz.consortgroup.userservice.service.processor.ForumUserGroupMembershipProcessor;
 
 import java.util.List;
 import java.util.UUID;

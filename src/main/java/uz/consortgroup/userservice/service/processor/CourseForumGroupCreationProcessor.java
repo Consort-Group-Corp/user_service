@@ -14,6 +14,6 @@ public class CourseForumGroupCreationProcessor implements ActionProcessor<Course
 
     @Override
     public void process(List<CourseForumGroupCreatedEvent> events) {
-       courseForumGroupCreationService.saveAllForumGroupCreations(events);
+        courseForumGroupCreationService.saveAllForumGroupCreations(events);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import uz.consortgroup.userservice.event.coursepurchased.CoursePurchasedEvent;
 import uz.consortgroup.userservice.service.processor.CoursePurchasedEventProcessor;
+import uz.consortgroup.userservice.service.processor.ForumUserGroupMembershipProcessor;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +16,9 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class CoursePurchasedConsumer extends AbstractKafkaConsumer<CoursePurchasedEvent> {
+    private final ForumUserGroupMembershipProcessor forumUserGroupMembershipProcessor;
     private final CoursePurchasedEventProcessor coursePurchasedEventProcessor;
+
 
     @KafkaListener(
             topics = "course-purchased-topic",
@@ -31,6 +34,7 @@ public class CoursePurchasedConsumer extends AbstractKafkaConsumer<CoursePurchas
     protected void handleMessage(CoursePurchasedEvent event) {
         log.info("Processing event: {}", event);
         coursePurchasedEventProcessor.process(List.of(event));
+        forumUserGroupMembershipProcessor.process(List.of(event));
     }
 
     @Override
