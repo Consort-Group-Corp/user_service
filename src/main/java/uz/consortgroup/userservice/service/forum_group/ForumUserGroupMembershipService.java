@@ -5,5 +5,5 @@ import uz.consortgroup.userservice.event.coursepurchased.CoursePurchasedEvent;
 import java.util.List;
 
 public interface ForumUserGroupMembershipService {
-    void saveAllPurchasedCourses(List<CoursePurchasedEvent> events);
+    void assignUsersToForumGroups(List<CoursePurchasedEvent> events);
 }
