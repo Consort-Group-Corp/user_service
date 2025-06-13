@@ -10,4 +10,5 @@ import java.util.UUID;
 public interface CourseForumGroupCreationService {
     void saveAllForumGroupCreations(List<CourseForumGroupCreatedEvent> courseForumGroupCreatedEvents);
     Optional<CourseForumGroup> findByCourseId(UUID courseId);
+    Optional<CourseForumGroup> findByGroupId(UUID groupId);
 }

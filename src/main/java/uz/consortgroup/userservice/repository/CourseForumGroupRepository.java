@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface CourseForumGroupRepository extends JpaRepository<CourseForumGroup, UUID> {
     Optional<CourseForumGroup> findByCourseId(UUID courseId);
+    Optional<CourseForumGroup> findByGroupId(UUID groupId);
 }
