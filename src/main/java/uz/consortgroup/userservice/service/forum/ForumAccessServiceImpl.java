@@ -33,7 +33,7 @@ public class ForumAccessServiceImpl implements ForumAccessService {
 
     @Override
     @AllAspect
-    public UUID getCourseIdByForumId(UUID groupId) {
+    public UUID getCourseIdByGroupId(UUID groupId) {
         return courseForumGroupCreationService.findByGroupId(groupId)
                 .map(CourseForumGroup::getCourseId)
                 .orElseThrow(() -> new IllegalArgumentException("Forum group not found for id: " + groupId));

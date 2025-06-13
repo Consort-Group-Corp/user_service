@@ -32,7 +32,7 @@ public class ForumAccessController {
 
     @GetMapping("/course-id/{groupId}")
     @ResponseStatus(HttpStatus.OK)
-    public UUID getCourseIdByForumId(@PathVariable UUID groupId) {
-        return forumAccessService.getCourseIdByForumId(groupId);
+    public UUID getCourseIdByGroupId(@PathVariable UUID groupId) {
+        return forumAccessService.getCourseIdByGroupId(groupId);
     }
 }
