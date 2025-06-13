@@ -7,5 +7,5 @@ import java.util.UUID;
 
 public interface ForumAccessService {
     ForumAccessResponse checkAccess(ForumAccessRequest request);
-    UUID getCourseIdByForumId(UUID forumId);
+    UUID getCourseIdByForumId(UUID groupId);
 }

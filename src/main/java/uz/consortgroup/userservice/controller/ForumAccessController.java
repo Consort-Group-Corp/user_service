@@ -30,9 +30,9 @@ public class ForumAccessController {
         return forumAccessService.checkAccess(request);
     }
 
-    @GetMapping("/course-id/{forumId}")
+    @GetMapping("/course-id/{groupId}")
     @ResponseStatus(HttpStatus.OK)
-    public UUID getCourseIdByForumId(@PathVariable UUID forumId) {
-        return forumAccessService.getCourseIdByForumId(forumId);
+    public UUID getCourseIdByForumId(@PathVariable UUID groupId) {
+        return forumAccessService.getCourseIdByForumId(groupId);
     }
 }
