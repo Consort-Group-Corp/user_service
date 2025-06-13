@@ -47,6 +47,22 @@ public class ForumUserGroupMembershipServiceImpl implements ForumUserGroupMember
         saveMemberships(results);
     }
 
+    @Override
+    @Transactional
+    @AllAspect
+    public void assignUsers(UUID groupId, List<UUID> userIds) {
+        List<ForumUserGroupMembership> memberships = userIds.stream()
+                .filter(userId -> !forumUserGroupMembershipRepository.existsByUserIdAndGroupId(userId, groupId))
+                .map(userId -> ForumUserGroupMembership.builder()
+                        .userId(userId)
+                        .groupId(groupId)
+                        .joinedAt(Instant.now())
+                        .build())
+                .toList();
+
+        forumUserGroupMembershipRepository.saveAll(memberships);
+    }
+
     private boolean isNewEvent(CoursePurchasedEvent event) {
         boolean processed = isProcessed(event.getMessageId());
         log.info("isNewEvent check — messageId={}, processed={}", event.getMessageId(), processed);

@@ -79,6 +79,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/super-admin/**").hasAuthority(UserRole.SUPER_ADMIN.name())
                         .requestMatchers(HttpMethod.POST, "/api/v1/mentor/**").hasAuthority(UserRole.MENTOR.name())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/hr/**").hasAuthority(UserRole.HR.name())
                         .anyRequest().permitAll()
                 );
 

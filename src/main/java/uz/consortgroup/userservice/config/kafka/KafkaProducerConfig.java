@@ -34,7 +34,8 @@ public class KafkaProducerConfig {
                         "password_reset_requested:uz.consortgroup.userservice.event.user.PasswordResetRequestedEvent," +
                         "super-admin-action:uz.consortgroup.userservice.event.admin.SuperAdminUserActionEvent," +
                         "mentor-action:uz.consortgroup.userservice.event.mentor.MentorResourceActionEvent," +
-                        "course-group:uz.consortgroup.userservice.event.course_group.CourseGroupOpenedEvent");
+                        "course-group:uz.consortgroup.userservice.event.course_group.CourseGroupOpenedEvent," +
+                        "hr-action:uz.consortgroup.userservice.event.hr.HrActionEvent");
 
         return new DefaultKafkaProducerFactory<>(props);
     }

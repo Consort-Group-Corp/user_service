@@ -28,4 +28,7 @@ public interface CourseFeignClient {
 
     @DeleteMapping("/api/v1/courses/{courseId}")
     void deleteCourse(@PathVariable("courseId") UUID courseId);
+
+    @GetMapping("/api/v1/courses/{courseId}")
+    CourseResponseDto getCourseById(@PathVariable("courseId") UUID courseId);
 }

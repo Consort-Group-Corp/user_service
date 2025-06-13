@@ -24,7 +24,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class ForumUserGroup {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

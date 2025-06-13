@@ -4,6 +4,6 @@ import uz.consortgroup.userservice.entity.ForumUserGroup;
 
 import java.util.UUID;
 
-public interface ForumGroupService {
+public interface ForumUserGroupService {
     ForumUserGroup create(UUID courseId, String title);
 }
