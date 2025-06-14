@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.core.api.v1.dto.user.request.UserRegistrationRequestDto;
+import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.exception.UserAlreadyExistsException;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.exception.UserRoleNotFoundException;
 import uz.consortgroup.userservice.repository.UserRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -37,6 +39,20 @@ public class UserServiceValidator {
             UserRole.valueOf(role);
         } catch (IllegalArgumentException e) {
             throw new UserRoleNotFoundException("Role " + role + " not found in UserRole enum");
+        }
+    }
+
+    public void validateAllUsersExist(List<UUID> userIds) {
+        List<UUID> existingIds = userRepository.findAllById(userIds).stream()
+                .map(User::getId)
+                .toList();
+
+        List<UUID> notFound = userIds.stream()
+                .filter(id -> !existingIds.contains(id))
+                .toList();
+
+        if (!notFound.isEmpty()) {
+            throw new UserNotFoundException("Users not found: " + notFound);
         }
     }
 
