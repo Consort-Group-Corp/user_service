@@ -7,12 +7,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import uz.consortgroup.userservice.entity.User;
 
+
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
-public class UserDetailsImpl implements UserDetails {
+public class UserDetailsImpl implements UserDetails, HasId {
     @Getter
     private final UUID id;
     private final String email;

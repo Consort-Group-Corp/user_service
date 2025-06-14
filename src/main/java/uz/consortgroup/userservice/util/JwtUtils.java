@@ -14,7 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
+import uz.consortgroup.userservice.service.impl.HasId;
 import uz.consortgroup.userservice.service.impl.UserDetailsImpl;
+import uz.consortgroup.userservice.service.impl.super_admin.SuperAdminDetailsImpl;
 
 import java.security.Key;
 import java.util.Date;
@@ -30,16 +32,14 @@ public class JwtUtils {
     private int jetExpirationMs;
 
     public String generateJwtToken(Authentication authentication) {
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
-
         String username = authentication.getName();
-
         String userType = authentication.getAuthorities().stream()
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
                 .orElse("");
 
-        UUID userId = userPrincipal.getId();
+        HasId user = (HasId) authentication.getPrincipal();
+        UUID userId = user.getId();
 
         Date now = new Date();
         Date exp = new Date(now.getTime() + jetExpirationMs);

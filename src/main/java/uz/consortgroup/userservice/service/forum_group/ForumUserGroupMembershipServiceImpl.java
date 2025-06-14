@@ -1,10 +1,12 @@
 package uz.consortgroup.userservice.service.forum_group;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.consortgroup.userservice.asspect.annotation.AllAspect;
+import uz.consortgroup.userservice.entity.CourseForumGroup;
 import uz.consortgroup.userservice.entity.ForumUserGroupMembership;
 import uz.consortgroup.userservice.event.coursepurchased.CoursePurchasedEvent;
 import uz.consortgroup.userservice.repository.ForumUserGroupMembershipRepository;
@@ -12,10 +14,12 @@ import uz.consortgroup.userservice.repository.ForumUserGroupMembershipRepository
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ForumUserGroupMembershipServiceImpl implements ForumUserGroupMembershipService {
@@ -26,7 +30,7 @@ public class ForumUserGroupMembershipServiceImpl implements ForumUserGroupMember
     @Override
     @Transactional
     @AllAspect
-    public void saveAllPurchasedCourses(List<CoursePurchasedEvent> events) {
+    public void assignUsersToForumGroups(List<CoursePurchasedEvent> events) {
         if (events.isEmpty()) {
             return;
         }
@@ -43,30 +47,63 @@ public class ForumUserGroupMembershipServiceImpl implements ForumUserGroupMember
         saveMemberships(results);
     }
 
+    @Override
+    @Transactional
+    @AllAspect
+    public void assignUsers(UUID groupId, List<UUID> userIds) {
+        List<ForumUserGroupMembership> memberships = userIds.stream()
+                .filter(userId -> !forumUserGroupMembershipRepository.existsByUserIdAndGroupId(userId, groupId))
+                .map(userId -> ForumUserGroupMembership.builder()
+                        .userId(userId)
+                        .groupId(groupId)
+                        .joinedAt(Instant.now())
+                        .build())
+                .toList();
+
+        forumUserGroupMembershipRepository.saveAll(memberships);
+    }
+
     private boolean isNewEvent(CoursePurchasedEvent event) {
-        return !isProcessed(event.getMessageId());
+        boolean processed = isProcessed(event.getMessageId());
+        log.info("isNewEvent check — messageId={}, processed={}", event.getMessageId(), processed);
+        return !processed;
     }
 
     private Stream<MembershipResult> prepareMemberships(CoursePurchasedEvent event) {
         UUID courseId = event.getCourseId();
         UUID userId = event.getUserId();
+        UUID messageId = event.getMessageId();
 
-        return courseForumGroupCreationService.findByCourseId(courseId)
-                .map(courseForumGroup -> {
-                    UUID groupId = courseForumGroup.getGroupId();
-                    if (forumUserGroupMembershipRepository.existsByUserIdAndGroupId(userId, groupId)) {
-                        return null;
-                    }
-                    return new MembershipResult(
-                            event.getMessageId(),
-                            ForumUserGroupMembership.builder()
-                                    .userId(userId)
-                                    .groupId(groupId)
-                                    .joinedAt(Instant.now())
-                                    .build()
-                    );
-                }).stream();
+        log.info("Preparing membership for event: messageId={}, userId={}, courseId={}", messageId, userId, courseId);
+
+        Optional<CourseForumGroup> courseForumGroupOpt = courseForumGroupCreationService.findByCourseId(courseId);
+        log.info("Result of findByCourseId({}): present={}", courseId, courseForumGroupOpt.isPresent());
+
+        Optional<ForumUserGroupMembership> membershipOpt = courseForumGroupOpt.flatMap(courseForumGroup -> {
+            UUID groupId = courseForumGroup.getGroupId();
+
+            boolean exists = forumUserGroupMembershipRepository.existsByUserIdAndGroupId(userId, groupId);
+            log.info("Membership existence check for userId={}, groupId={}: {}", userId, groupId, exists);
+            if (exists) {
+                log.info("User {} is already a member of forum group {} for course {}", userId, groupId, courseId);
+                return Optional.empty();
+            }
+
+            ForumUserGroupMembership membership = ForumUserGroupMembership.builder()
+                    .userId(userId)
+                    .groupId(groupId)
+                    .joinedAt(Instant.now())
+                    .build();
+            return Optional.of(membership);
+        });
+
+        if (membershipOpt.isEmpty()) {
+            log.warn("No group mapping found for courseId {}. Skipping messageId {}", courseId, messageId);
+        }
+
+        return membershipOpt.stream().map(m -> new MembershipResult(messageId, m));
     }
+
 
     private void saveMemberships(List<MembershipResult> results) {
         List<ForumUserGroupMembership> memberships = results.stream()
@@ -75,6 +112,7 @@ public class ForumUserGroupMembershipServiceImpl implements ForumUserGroupMember
 
         forumUserGroupMembershipRepository.saveAll(memberships);
         results.forEach(result -> markAsProcessed(result.messageId()));
+        log.info("Saved {} forum user group memberships.", memberships.size());
     }
 
     private boolean isProcessed(UUID messageId) {
@@ -85,6 +123,7 @@ public class ForumUserGroupMembershipServiceImpl implements ForumUserGroupMember
     private void markAsProcessed(UUID messageId) {
         String key = redisKey(messageId);
         redisTemplate.opsForValue().set(key, "true", Duration.ofHours(1));
+        log.debug("Marked message {} as processed in Redis with key {}", messageId, key);
     }
 
     private String redisKey(UUID messageId) {

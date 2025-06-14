@@ -10,6 +10,7 @@ import uz.consortgroup.userservice.event.coursepurchased.CoursePurchasedEvent;
 import uz.consortgroup.userservice.repository.UserPurchasedCourseRepository;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -43,6 +44,13 @@ public class CoursePurchaseServiceImpl implements CoursePurchaseService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to save user purchased course", e);
         }
+    }
+
+    @Override
+    public boolean hasActiveAccess(UUID userId, UUID courseId) {
+        return userPurchasedCourseRepository.findByUserIdAndCourseId(userId, courseId)
+                .map(p -> p.getAccessUntil().isAfter(Instant.now()))
+                .orElse(false);
     }
 
     private boolean markIfNotProcessed(UUID messageId) {

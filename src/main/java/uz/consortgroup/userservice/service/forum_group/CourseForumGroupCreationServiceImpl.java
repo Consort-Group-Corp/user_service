@@ -48,8 +48,16 @@ public class CourseForumGroupCreationServiceImpl implements CourseForumGroupCrea
 
     @Override
     @Transactional(readOnly = true)
+    @AllAspect
     public Optional<CourseForumGroup> findByCourseId(UUID courseId) {
         return courseForumGroupRepository.findByCourseId(courseId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @AllAspect
+    public Optional<CourseForumGroup> findByGroupId(UUID groupId) {
+        return courseForumGroupRepository.findByGroupId(groupId);
     }
 
 

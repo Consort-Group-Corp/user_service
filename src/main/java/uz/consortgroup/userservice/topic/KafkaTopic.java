@@ -30,4 +30,7 @@ public class KafkaTopic {
 
     @Value("${kafka.course-purchased}")
     private String coursePurchasedTopic;
+
+    @Value("${kafka.hr-action}")
+    private String hrActionTopic;
 }

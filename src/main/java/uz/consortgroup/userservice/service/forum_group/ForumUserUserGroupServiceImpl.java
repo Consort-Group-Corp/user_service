@@ -12,8 +12,8 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class ForumUserGroupServiceImpl implements ForumGroupService {
-    private final ForumUserGroupRepository repository;
+public class ForumUserUserGroupServiceImpl implements ForumUserGroupService {
+    private final ForumUserGroupRepository forumUserGroupRepository;
 
     @AllAspect
     @Transactional
@@ -24,6 +24,6 @@ public class ForumUserGroupServiceImpl implements ForumGroupService {
                 .createdAt(Instant.now())
                 .build();
 
-        return repository.save(group);
+        return forumUserGroupRepository.save(group);
     }
 }

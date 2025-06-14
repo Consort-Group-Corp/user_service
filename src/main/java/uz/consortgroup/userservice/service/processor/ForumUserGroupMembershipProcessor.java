@@ -14,6 +14,6 @@ public class ForumUserGroupMembershipProcessor implements ActionProcessor<Course
 
     @Override
     public void process(List<CoursePurchasedEvent> events) {
-        forumUserGroupMembershipService.saveAllPurchasedCourses(events);
+        forumUserGroupMembershipService.assignUsersToForumGroups(events);
     }
 }

@@ -1,6 +1,7 @@
 package uz.consortgroup.userservice.handler;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import feign.FeignException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
+import uz.consortgroup.userservice.exception.CourseAlreadyPurchasedAndStillActiveException;
+import uz.consortgroup.userservice.exception.CourseNotPurchasableException;
+import uz.consortgroup.userservice.exception.InvalidOrderIdFormatException;
 import uz.consortgroup.userservice.exception.InvalidPasswordException;
 import uz.consortgroup.userservice.exception.InvalidTokenException;
 import uz.consortgroup.userservice.exception.InvalidVerificationCodeException;
@@ -148,6 +152,49 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Order creation rollback", ex.getMessage()));
     }
+
+    @ExceptionHandler(CourseNotPurchasableException.class)
+    public ResponseEntity<ErrorResponse> handleCourseNotPurchasableException(CourseNotPurchasableException ex) {
+        log.error("CourseNotPurchasableException: ", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Course not purchasable", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidOrderIdFormatException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidOrderIdFormatException(InvalidOrderIdFormatException ex) {
+        log.error("InvalidOrderIdFormatException: ", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid order ID format", ex.getMessage()));
+    }
+
+    @ExceptionHandler(CourseAlreadyPurchasedAndStillActiveException.class)
+    public ResponseEntity<ErrorResponse> handleCourseAlreadyPurchasedAndStillActiveException(CourseAlreadyPurchasedAndStillActiveException ex) {
+        log.error("CourseAlreadyPurchasedAndStillActiveException: ", ex);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(HttpStatus.CONFLICT.value(), "Course already purchased and still active", ex.getMessage()));
+    }
+
+    @ExceptionHandler(FeignException.NotFound.class)
+    public ResponseEntity<ErrorResponse> handleFeign404(FeignException.NotFound ex) {
+        String body = ex.contentUTF8();
+
+        if (body.contains("Course with id")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(
+                            404,
+                            "Курс не найден",
+                            "Курс не существует или недоступен для покупки"
+                    ));
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(
+                        404,
+                        "Ресурс не найден",
+                        "Сторонний сервис вернул 404"
+                ));
+    }
+
 
     // JSON and Data Integrity Handlers
     @ExceptionHandler(HttpMessageNotReadableException.class)
