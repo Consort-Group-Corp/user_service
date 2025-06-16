@@ -13,7 +13,6 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class CourseAccessValidator {
-
     private final UserPurchasedCourseRepository userPurchasedCourseRepository;
 
     public void validateUserCanPurchaseCourse(UUID userId, UUID courseId) {

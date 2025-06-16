@@ -1,4 +1,4 @@
-package uz.consortgroup.userservice.service.purcheses;
+package uz.consortgroup.userservice.service.purchases;
 
 import uz.consortgroup.userservice.event.coursepurchased.CoursePurchasedEvent;
 

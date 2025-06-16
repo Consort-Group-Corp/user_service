@@ -1,4 +1,4 @@
-package uz.consortgroup.userservice.service;
+package uz.consortgroup.userservice.service.super_admin;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +18,6 @@ import uz.consortgroup.userservice.repository.SuperAdminRepository;
 import uz.consortgroup.userservice.service.event.admin.SuperAdminActionLogger;
 import uz.consortgroup.userservice.service.operation.UserOperationsServiceServiceImpl;
 import uz.consortgroup.userservice.service.password.PasswordServiceImpl;
-import uz.consortgroup.userservice.service.super_admin.SuperAdminServiceImpl;
 
 import java.time.LocalDate;
 import java.util.UUID;
