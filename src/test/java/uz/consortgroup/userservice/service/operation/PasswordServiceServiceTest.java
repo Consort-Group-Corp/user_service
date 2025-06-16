@@ -1,4 +1,4 @@
-package uz.consortgroup.userservice.operation;
+package uz.consortgroup.userservice.service.operation;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -6,7 +6,7 @@ import uz.consortgroup.core.api.v1.dto.forum.ForumAccessReason;
 import uz.consortgroup.userservice.asspect.annotation.AllAspect;
 import uz.consortgroup.userservice.repository.ForumUserGroupMembershipRepository;
 import uz.consortgroup.userservice.service.forum_group.CourseForumGroupCreationService;
-import uz.consortgroup.userservice.service.purcheses.CoursePurchaseService;
+import uz.consortgroup.userservice.service.purchases.CoursePurchaseService;
 
 import java.util.UUID;
 

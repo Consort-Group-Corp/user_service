@@ -1,4 +1,4 @@
-package uz.consortgroup.userservice.service;
+package uz.consortgroup.userservice.service.verification;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +14,6 @@ import uz.consortgroup.userservice.exception.VerificationCodeExpiredException;
 import uz.consortgroup.userservice.mapper.VerificationCodeCacheMapper;
 import uz.consortgroup.userservice.repository.VerificationCodeRepository;
 import uz.consortgroup.userservice.service.cache.VerificationCodeCacheServiceImpl;
-import uz.consortgroup.userservice.service.verification.VerificationServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.Optional;

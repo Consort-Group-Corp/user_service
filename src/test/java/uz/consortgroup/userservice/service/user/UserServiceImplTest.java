@@ -1,4 +1,4 @@
-package uz.consortgroup.userservice.service;
+package uz.consortgroup.userservice.service.user;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +20,6 @@ import uz.consortgroup.userservice.service.cache.UserCacheServiceImpl;
 import uz.consortgroup.userservice.service.event.user.UserEventService;
 import uz.consortgroup.userservice.service.operation.UserOperationsServiceServiceImpl;
 import uz.consortgroup.userservice.service.password.PasswordServiceImpl;
-import uz.consortgroup.userservice.service.user.UserServiceImpl;
 import uz.consortgroup.userservice.service.verification.VerificationServiceImpl;
 import uz.consortgroup.userservice.validator.UserServiceValidator;
 

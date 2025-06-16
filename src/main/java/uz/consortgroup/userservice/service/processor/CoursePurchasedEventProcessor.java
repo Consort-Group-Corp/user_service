@@ -3,7 +3,7 @@ package uz.consortgroup.userservice.service.processor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uz.consortgroup.userservice.event.coursepurchased.CoursePurchasedEvent;
-import uz.consortgroup.userservice.service.purcheses.CoursePurchaseService;
+import uz.consortgroup.userservice.service.purchases.CoursePurchaseService;
 
 import java.util.List;
 
