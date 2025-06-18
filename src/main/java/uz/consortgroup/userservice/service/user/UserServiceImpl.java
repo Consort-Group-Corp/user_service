@@ -11,6 +11,7 @@ import uz.consortgroup.core.api.v1.dto.user.request.UserRegistrationRequestDto;
 import uz.consortgroup.core.api.v1.dto.user.request.UserUpdateRequestDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserProfileResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserRegistrationResponseDto;
+import uz.consortgroup.core.api.v1.dto.user.response.UserShortInfoResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserUpdateResponseDto;
 import uz.consortgroup.userservice.asspect.annotation.AllAspect;
 import uz.consortgroup.userservice.asspect.annotation.AspectAfterReturning;
@@ -21,6 +22,7 @@ import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.mapper.UserMapper;
 import uz.consortgroup.userservice.repository.UserRepository;
+import uz.consortgroup.userservice.service.operation.UserOperationsService;
 import uz.consortgroup.userservice.service.verification.VerificationServiceImpl;
 import uz.consortgroup.userservice.service.cache.UserCacheServiceImpl;
 import uz.consortgroup.userservice.service.event.user.UserEventService;
@@ -125,6 +127,12 @@ public class UserServiceImpl implements UserService {
         removeUserFromCache(id);
     }
 
+    @Override
+    @AllAspect
+    public UserShortInfoResponseDto getUserShortInfoById(UUID userId) {
+        User userShortInfo = userOperationService.getUserFromDbAndCacheById(userId);
+        return userMapper.toUserShortInfoResponseDto(userShortInfo);
+    }
 
     private static User createUser(UserRegistrationRequestDto userRegistrationRequestDto) {
         return User.builder()

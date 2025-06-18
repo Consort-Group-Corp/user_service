@@ -4,6 +4,7 @@ import uz.consortgroup.core.api.v1.dto.user.request.UserRegistrationRequestDto;
 import uz.consortgroup.core.api.v1.dto.user.request.UserUpdateRequestDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserProfileResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserRegistrationResponseDto;
+import uz.consortgroup.core.api.v1.dto.user.response.UserShortInfoResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserUpdateResponseDto;
 
 import java.util.UUID;
@@ -16,4 +17,5 @@ public interface UserService {
     UserProfileResponseDto getUserById(UUID userId);
     UserUpdateResponseDto updateUserById(UUID userId, UserUpdateRequestDto updateDto);
     void deleteUserById(UUID id);
+    UserShortInfoResponseDto getUserShortInfoById(UUID userId);
 }

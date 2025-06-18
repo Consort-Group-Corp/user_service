@@ -14,7 +14,8 @@ import uz.consortgroup.core.api.v1.dto.user.response.UserProfileResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserRegistrationResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserUpdateResponseDto;
 import uz.consortgroup.userservice.entity.User;
-import uz.consortgroup.userservice.mapper.*;
+import uz.consortgroup.userservice.mapper.UserCacheMapper;
+import uz.consortgroup.userservice.mapper.UserMapper;
 import uz.consortgroup.userservice.repository.UserRepository;
 import uz.consortgroup.userservice.service.cache.UserCacheServiceImpl;
 import uz.consortgroup.userservice.service.event.user.UserEventService;
@@ -28,10 +29,13 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
