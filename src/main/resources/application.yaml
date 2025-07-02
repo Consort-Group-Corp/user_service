@@ -87,6 +87,12 @@ oneid:
   profile-url: https://sso.egov.uz/sso/oauth/userinfo
   time-out: 5000
 
+mintrud:
+  api:
+    token: wUIBjx3G1C1Ee+eIXtt/zVIFkS40lhoan0
+    url: https://example.com/mintrud/api
+
+
 security:
   token: wUIBjx3G1C1Ee+eIXtt/zVIFkS40lhoan0HgHriNERBL08Vv2Bwb92is6gZUGEzANhMXulAPHD9li4TmKrdDoA==
   expiration: 3600000
@@ -107,3 +113,4 @@ course:
 payment:
   service:
     url: http://localhost:8086
+
