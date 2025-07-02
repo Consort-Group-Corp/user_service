@@ -22,6 +22,7 @@ import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.mapper.UserMapper;
 import uz.consortgroup.userservice.repository.UserRepository;
+import uz.consortgroup.userservice.service.mintrud.MehnatAutoFillService;
 import uz.consortgroup.userservice.service.operation.UserOperationsService;
 import uz.consortgroup.userservice.service.verification.VerificationServiceImpl;
 import uz.consortgroup.userservice.service.cache.UserCacheServiceImpl;
@@ -45,6 +46,7 @@ public class UserServiceImpl implements UserService {
     private final UserServiceValidator userServiceValidator;
     private final PasswordService passwordService;
     private final UserOperationsServiceServiceImpl userOperationService;
+    private final MehnatAutoFillService mehnatAutoFillService;
 
     @Transactional
     @AllAspect
@@ -92,6 +94,7 @@ public class UserServiceImpl implements UserService {
     public UserProfileResponseDto fillUserProfile(UUID userId, UserProfileRequestDto userProfileRequestDto) {
         userServiceValidator.validateUserId(userId);
         User user = updateUserProfileById(userId, userProfileRequestDto);
+        mehnatAutoFillService.tryFetchDataFromMehnat(user);
         userEventService.sendUserUpdateProfileEvent(userId, userProfileRequestDto);
         return userMapper.toUserProfileResponseDto(user);
     }

@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS user_schema.users (
     oneid_access_expires_at TIMESTAMP DEFAULT NULL,
     oneid_token_issued_at TIMESTAMP DEFAULT NULL,
     oneid_token_updated_at TIMESTAMP DEFAULT NULL,
+    mehnat_data_fetched BOOLEAN DEFAULT FALSE,
     is_verified BOOLEAN DEFAULT FALSE,
     role VARCHAR(50) DEFAULT NULL,
     status VARCHAR(50) DEFAULT NULL,

@@ -22,6 +22,7 @@ import uz.consortgroup.userservice.config.properties.OneIdProperties;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.repository.UserRepository;
 import uz.consortgroup.userservice.service.impl.UserDetailsImpl;
+import uz.consortgroup.userservice.service.mintrud.MehnatAutoFillService;
 import uz.consortgroup.userservice.util.AuthenticationUtils;
 
 import java.time.Instant;
@@ -34,6 +35,7 @@ public class OneIdServiceImpl implements OneIdService {
     private final WebClient webClientWithTimeout;
     private final UserRepository userRepository;
     private final AuthenticationUtils authenticationUtils;
+    private final MehnatAutoFillService mehnatAutoFillService;
 
     @Override
     public String buildAuthUrl() {
@@ -130,6 +132,11 @@ public class OneIdServiceImpl implements OneIdService {
         user.setOneIdTokenIssuedAt(Instant.now());
         user.setOneIdTokenUpdatedAt(Instant.now());
 
-        return userRepository.save(user);
+        user = userRepository.save(user);
+
+        mehnatAutoFillService.tryFetchDataFromMehnat(user);
+
+        return user;
     }
+
 }

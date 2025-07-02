@@ -92,6 +92,9 @@ public class User {
     @Column(name = "oneid_token_updated_at")
     private Instant oneIdTokenUpdatedAt;
 
+    @Column(name = "mehnat_data_fetched")
+    private Boolean mehnatDataFetched;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Password password;
 
