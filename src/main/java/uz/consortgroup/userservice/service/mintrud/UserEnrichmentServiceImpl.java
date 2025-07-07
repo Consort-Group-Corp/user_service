@@ -27,6 +27,10 @@ public class UserEnrichmentServiceImpl implements UserEnrichmentService {
 
             changed |= setIfNull(user::getWorkPlace, user::setWorkPlace, position.getOrg());
             changed |= setIfNull(user::getPosition, user::setPosition, position.getPosition());
+
+            changed |= setIfNull(user::getMehnatPositionStartDate, user::setMehnatPositionStartDate, position.getStartDate());
+            changed |= setIfNull(user::getMehnatOrganizationTin, user::setMehnatOrganizationTin, position.getTin());
+            changed |= setIfNull(user::getMehnatDepartmentName, user::setMehnatDepartmentName, position.getDepartment());
         }
 
         return changed;

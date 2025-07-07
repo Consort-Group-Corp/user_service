@@ -95,6 +95,15 @@ public class User {
     @Column(name = "mehnat_data_fetched")
     private Boolean mehnatDataFetched;
 
+    @Column(name = "mehnat_position_start_date")
+    private LocalDate mehnatPositionStartDate;
+
+    @Column(name = "mehnat_organization_tin")
+    private String mehnatOrganizationTin;
+
+    @Column(name = "mehnat_department_name")
+    private String mehnatDepartmentName;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Password password;
 
