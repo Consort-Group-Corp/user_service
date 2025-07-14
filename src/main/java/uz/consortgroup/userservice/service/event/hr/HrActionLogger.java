@@ -15,12 +15,24 @@ import java.util.UUID;
 public class HrActionLogger {
     private final HrActionLogProducer hrActionLogProducer;
 
-    public void logHrAction(UUID userId, UUID hrId, HrActionType actionType) {
+    public void logHrCreatedForum(UUID userId, UUID hrId, HrActionType actionType) {
         HrActionEvent event = HrActionEvent.builder()
                 .messageId(UUID.randomUUID())
                 .userId(userId)
                 .hrId(hrId)
                 .hrActionType(actionType)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        hrActionLogProducer.sendHrActionEvents(List.of(event));
+    }
+
+    public void logUserSearch(UUID hrId, UUID userId) {
+        HrActionEvent event = HrActionEvent.builder()
+                .messageId(UUID.randomUUID())
+                .userId(userId)
+                .hrId(hrId)
+                .hrActionType(HrActionType.SEARCH_USER)
                 .createdAt(LocalDateTime.now())
                 .build();
 

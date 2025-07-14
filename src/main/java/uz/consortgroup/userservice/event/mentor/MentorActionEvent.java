@@ -1,11 +1,11 @@
-package uz.consortgroup.userservice.event.admin;
+package uz.consortgroup.userservice.event.mentor;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -13,14 +13,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @Data
 @Builder
-public class SuperAdminUserActionEvent {
+public class MentorActionEvent {
     private UUID messageId;
-    private UUID adminId;
-    private UUID userId;
-    private String email;
+    private UUID mentorId;
+    private UUID resourceId;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private UserRole role;
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private SuperAdminActionType superAdminActionType;
+    private MentorActionType mentorActionType;
     private LocalDateTime createdAt;
 }

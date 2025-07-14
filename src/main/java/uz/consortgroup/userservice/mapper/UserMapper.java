@@ -1,9 +1,11 @@
 package uz.consortgroup.userservice.mapper;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import uz.consortgroup.core.api.v1.dto.user.response.UserProfileResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserRegistrationResponseDto;
+import uz.consortgroup.core.api.v1.dto.user.response.UserSearchResponse;
 import uz.consortgroup.core.api.v1.dto.user.response.UserShortInfoResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserUpdateResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.super_admin.UserResponseDto;
@@ -16,4 +18,6 @@ public interface UserMapper {
     UserUpdateResponseDto toUserUpdateResponseDto(User user);
     UserResponseDto toUserResponseDto(User user);
     UserShortInfoResponseDto toUserShortInfoResponseDto(User user);
+    @Mapping(target = "userId", source = "id")
+    UserSearchResponse toUserSearchResponse(User user);
 }

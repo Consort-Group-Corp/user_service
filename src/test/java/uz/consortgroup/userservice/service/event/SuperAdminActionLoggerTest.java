@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.event.admin.SuperAdminActionType;
-import uz.consortgroup.userservice.event.admin.SuperAdminUserActionEvent;
+import uz.consortgroup.userservice.event.admin.SuperAdminActionEvent;
 import uz.consortgroup.userservice.kafka.SuperAdminActionLogProducer;
 import uz.consortgroup.userservice.service.event.admin.SuperAdminActionLogger;
 
@@ -43,13 +43,13 @@ class SuperAdminActionLoggerTest {
         superAdminActionLogger.userRoleChangedEvent(user, adminId, superAdminActionType);
 
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<SuperAdminUserActionEvent>> captor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<SuperAdminActionEvent>> captor = ArgumentCaptor.forClass(List.class);
         verify(superAdminActionLogProducer).sendSuperAdminActionEvents(Collections.singletonList(captor.capture()));
 
-        List<SuperAdminUserActionEvent> events = captor.getValue();
+        List<SuperAdminActionEvent> events = captor.getValue();
         assertEquals(1, events.size());
 
-        SuperAdminUserActionEvent event = events.get(0);
+        SuperAdminActionEvent event = events.get(0);
         assertEquals(userId, event.getUserId());
         assertEquals(adminId, event.getAdminId());
         assertEquals("newuser@example.com", event.getEmail());

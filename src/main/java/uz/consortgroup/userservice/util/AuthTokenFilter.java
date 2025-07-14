@@ -36,6 +36,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
                 String userType = jwtUtils.getClaimFromJwtToken(jwt, "userType", String.class);
+                log.info("Extracted userType from JWT: {}", userType);
 
                 UserDetails userDetails;
 

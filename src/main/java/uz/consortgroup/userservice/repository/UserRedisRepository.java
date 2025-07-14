@@ -11,4 +11,6 @@ import java.util.UUID;
 @Repository
 public interface UserRedisRepository extends CrudRepository<UserCacheEntity, UUID> {
     Optional<UserCacheEntity> findByEmail(String email);
+
+    Optional<UserCacheEntity> findUserCacheEntityByPinfl(String pinfl);
 }

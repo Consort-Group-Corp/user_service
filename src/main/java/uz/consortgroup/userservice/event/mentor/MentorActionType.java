@@ -5,4 +5,5 @@ public enum MentorActionType {
     VIDEO_UPLOADED,
     IMAGE_UPLOADED,
     PDF_UPLOADED,
+    SEARCH_USER
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uz.consortgroup.core.api.v1.dto.user.response.UserShortInfoResponseDto;
 import uz.consortgroup.userservice.service.user.UserService;
+import uz.consortgroup.userservice.service.user.UserShortInfoService;
 
 import java.util.UUID;
 
@@ -16,11 +17,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/internal/users")
 public class InternalUserController {
-    private final UserService userService;
+    private final UserShortInfoService userShortInfoService;
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{userId}/short-info")
     public UserShortInfoResponseDto getUserShortInfoById(@PathVariable("userId") UUID userId) {
-        return userService.getUserShortInfoById(userId);
+        return userShortInfoService.getUserShortInfoById(userId);
     }
 }

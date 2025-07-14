@@ -18,6 +18,7 @@ import uz.consortgroup.userservice.service.cache.UserCacheServiceImpl;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -36,13 +37,26 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
         return getUserFromDbAndCacheById(userId);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     @LoggingAspectBeforeMethod
     @LoggingAspectAfterMethod
     @AspectAfterReturning
     public User findUserByEmail(String email) {
         return getUserFromCacheOrDbByEmail(email);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    @AllAspect
+    public User findUserByEmailOrPinfl(String query) {
+        String cleanedQuery = query.trim().replaceAll("\\s+", "").toLowerCase();
+
+        if (isEmail(cleanedQuery)) {
+            return getUserFromCacheOrDbByEmail(cleanedQuery);
+        } else {
+            return getUserFromCacheOrDbByPinfl(cleanedQuery);
+        }
     }
 
 
@@ -103,7 +117,6 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
                 });
     }
 
-
     @LoggingAspectBeforeMethod
     @LoggingAspectAfterMethod
     public void cacheUser(User user) {
@@ -112,5 +125,22 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
 
         }
         userCacheService.cacheUser(userCacheMapper.toUserCache(user));
+    }
+
+    @AllAspect
+    private User getUserFromCacheOrDbByPinfl(String pinfl) {
+        return userCacheService.findUserByPinfl(pinfl)
+                .map(userCacheMapper::toUserEntity)
+                .orElseGet(() -> {
+                    User user = userRepository.findUserByPinfl(pinfl)
+                            .orElseThrow(() -> new UserNotFoundException(String.format("User with pinfl %s not found", pinfl)));
+                    cacheUser(user);
+                    return user;
+                });
+    }
+
+    private boolean isEmail(String value) {
+        Pattern emailPattern = Pattern.compile("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,}$");
+        return emailPattern.matcher(value).matches();
     }
 }

@@ -1,5 +1,7 @@
 package uz.consortgroup.userservice.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -84,8 +86,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("UPDATE User u SET u.password = :password WHERE u.id = :userId")
     void changePassword(@Param("userId") UUID userId, @Param("password") String password);
 
+    Optional<User> findByOneIdUserId(String oneIdUserId);
+
     @Query("SELECT u.id FROM User u WHERE u.email = :email")
     UUID findUserIdByEmail(@Param("email") String email);
 
-    Optional<User> findByOneIdUserId(String oneIdUserId);
+    Page<User> findByEmailIgnoreCaseOrPinfl(String email, String pinfl, Pageable pageable);
+
+    Optional<User> findUserByPinfl(String pinfl);
 }
