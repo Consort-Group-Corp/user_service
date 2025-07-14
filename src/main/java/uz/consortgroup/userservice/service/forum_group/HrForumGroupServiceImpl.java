@@ -49,14 +49,14 @@ public class HrForumGroupServiceImpl implements HrForumGroupService {
         CourseResponseDto course = courseFeignClient.getCourseById(request.getCourseId());
 
         ForumUserGroup group = forumUserGroupService.create(request.getCourseId(), "HR: " + getCourseTitle(course));
-        hrActionLogger.logHrAction(group.getId(), hrId, HrActionType.FORUM_GROUP_CREATED);
+        hrActionLogger.logHrCreatedForum(group.getId(), hrId, HrActionType.FORUM_GROUP_CREATED);
 
         forumUserGroupMembershipService.assignUsers(group.getId(), request.getUserIds());
 
         courseGroupEventService.sendCourseGroupEvent(course);
 
         request.getUserIds().forEach(userId ->
-                hrActionLogger.logHrAction(userId, hrId, HrActionType.ADD_USER_TO_FORUM_GROUP)
+                hrActionLogger.logHrCreatedForum(userId, hrId, HrActionType.ADD_USER_TO_FORUM_GROUP)
         );
 
         return forumGroupMapper.toResponseDto(group);

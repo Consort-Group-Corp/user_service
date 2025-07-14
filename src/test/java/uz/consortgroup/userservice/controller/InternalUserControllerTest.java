@@ -9,7 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uz.consortgroup.core.api.v1.dto.user.response.UserShortInfoResponseDto;
-import uz.consortgroup.userservice.service.user.UserService;
+import uz.consortgroup.userservice.service.user.UserShortInfoService;
 
 import java.util.UUID;
 
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class InternalUserControllerTest {
 
     @Mock
-    private UserService userService;
+    private UserShortInfoService userShortInfoService;
 
     @InjectMocks
     private InternalUserController controller;
@@ -40,7 +40,7 @@ class InternalUserControllerTest {
                 .position("Developer")
                 .build();
 
-        when(userService.getUserShortInfoById(userId)).thenReturn(responseDto);
+        when(userShortInfoService.getUserShortInfoById(userId)).thenReturn(responseDto);
 
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 
@@ -57,7 +57,7 @@ class InternalUserControllerTest {
     void getUserShortInfoById_shouldReturn404WhenUserNotFound() throws Exception {
         UUID userId = UUID.randomUUID();
 
-        when(userService.getUserShortInfoById(userId)).thenReturn(null);
+        when(userShortInfoService.getUserShortInfoById(userId)).thenReturn(null);
 
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 
@@ -74,7 +74,7 @@ class InternalUserControllerTest {
                 .id(userId)
                 .build();
 
-        when(userService.getUserShortInfoById(userId)).thenReturn(responseDto);
+        when(userShortInfoService.getUserShortInfoById(userId)).thenReturn(responseDto);
 
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 
@@ -99,7 +99,7 @@ class InternalUserControllerTest {
     @Test
     void getUserShortInfoById_shouldReturnCorrectContentType() throws Exception {
         UUID userId = UUID.randomUUID();
-        when(userService.getUserShortInfoById(userId)).thenReturn(new UserShortInfoResponseDto());
+        when(userShortInfoService.getUserShortInfoById(userId)).thenReturn(new UserShortInfoResponseDto());
 
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 

@@ -78,4 +78,14 @@ public class UserCacheServiceImpl implements UserCacheService {
            return Optional.empty();
        }
     }
+
+    @LoggingAspectBeforeMethod
+    @LoggingAspectAfterMethod
+    public Optional<UserCacheEntity> findUserByPinfl(String pinfl) {
+        try {
+            return userRedisRepository.findUserCacheEntityByPinfl(pinfl);
+        } catch (UserNotFoundException e) {
+            return Optional.empty();
+        }
+    }
 }
