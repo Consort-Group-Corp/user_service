@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
+import uz.consortgroup.userservice.security.CustomAccessDeniedHandler;
 import uz.consortgroup.userservice.service.impl.UserDetailsServiceImpl;
 import uz.consortgroup.userservice.service.impl.super_admin.SuperAdminDetailsServiceImpl;
 import uz.consortgroup.userservice.util.AuthEntryPointJwt;
@@ -31,6 +32,7 @@ public class WebSecurityConfig {
     private final SuperAdminDetailsServiceImpl superAdminDetailsService;
     private final JwtUtils jwtUtils;
     private final AuthEntryPointJwt unauthorizedHandler;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -69,23 +71,38 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(unauthorizedHandler)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/new-verification-code").permitAll()
                         .requestMatchers(HttpMethod.PUT,  "/api/v1/users/*/new-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/password/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers("/api/v1/device-tokens/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/super-admin/**").hasAuthority(UserRole.SUPER_ADMIN.name())
                         .requestMatchers(HttpMethod.POST, "/api/v1/mentor/**").hasAuthority(UserRole.MENTOR.name())
                         .requestMatchers(HttpMethod.POST, "/api/v1/hr/**").hasAuthority(UserRole.HR.name())
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/search")
-                        .hasAnyAuthority(
+                        .requestMatchers(HttpMethod.POST, "/api/v1/user-notifications/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/device-tokens/**").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/user-notifications").hasAnyAuthority(
                                 UserRole.SUPER_ADMIN.name(),
                                 UserRole.MENTOR.name(),
                                 UserRole.HR.name()
                         )
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/search").hasAnyAuthority(
+                                UserRole.SUPER_ADMIN.name(),
+                                UserRole.MENTOR.name(),
+                                UserRole.HR.name()
+                        )
+
                         .anyRequest().permitAll()
                 );
 
@@ -96,4 +113,6 @@ public class WebSecurityConfig {
 
         return http.build();
     }
+
+
 }

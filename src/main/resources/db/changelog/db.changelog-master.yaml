@@ -17,3 +17,5 @@ databaseChangeLog:
       file: db/changelog/changeset/V031_create_user_purchased_course_table.sql
   - include:
       file: db/changelog/changeset/V032_create_course_forum_group_table.sql
+  - include:
+      file: db/changelog/changeset/V038_create_user_device_token_table.sql
