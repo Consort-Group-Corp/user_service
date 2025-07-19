@@ -94,4 +94,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Page<User> findByEmailIgnoreCaseOrPinfl(String email, String pinfl, Pageable pageable);
 
     Optional<User> findUserByPinfl(String pinfl);
+
+    List<User> findByIdIn(List<UUID> ids);
+
 }

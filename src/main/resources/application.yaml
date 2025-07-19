@@ -114,3 +114,6 @@ payment:
   service:
     url: http://localhost:8086
 
+notification:
+  service:
+    url: http://localhost:8082
