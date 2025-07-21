@@ -49,5 +49,4 @@ public class UserDeviceTokenController {
     public Map<UUID, List<FcmTokenDto>> getTokensByUserIds(@RequestBody List<UUID> userIds) {
         return userDeviceTokenService.getTokensByUserIds(userIds);
     }
-
 }
