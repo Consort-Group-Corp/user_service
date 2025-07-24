@@ -15,6 +15,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
+import uz.consortgroup.userservice.exception.AuthenticationFailedException;
 import uz.consortgroup.userservice.exception.CourseAlreadyPurchasedAndStillActiveException;
 import uz.consortgroup.userservice.exception.CourseNotPurchasableException;
 import uz.consortgroup.userservice.exception.InvalidOrderIdFormatException;
@@ -172,6 +173,13 @@ public class GlobalExceptionHandler {
         log.error("CourseAlreadyPurchasedAndStillActiveException: ", ex);
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(HttpStatus.CONFLICT.value(), "Course already purchased and still active", ex.getMessage()));
+    }
+
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationFailedException(AuthenticationFailedException ex) {
+        log.error("AuthenticationFailedException: ", ex);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Authentication failed", ex.getMessage()));
     }
 
     @ExceptionHandler(FeignException.NotFound.class)

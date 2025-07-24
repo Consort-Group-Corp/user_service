@@ -29,7 +29,7 @@ public class SuperAdminController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/new-user")
-    public UserResponseDto createNewUserWithMentorRole(@Valid @RequestBody UserCreateDto userCreateDto) {
+    public UserResponseDto createNewUser(@Valid @RequestBody UserCreateDto userCreateDto) {
         return superAdminService.createNewUserWithMentorRole(userCreateDto);
     }
 }

@@ -6,7 +6,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
-import uz.consortgroup.userservice.asspect.annotation.AllAspect;
 
 import java.util.UUID;
 
@@ -21,7 +20,6 @@ public class AuthContext {
         return getPrincipal().getUserRole();
     }
 
-    @AllAspect
     public HasAuthContext getPrincipal() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

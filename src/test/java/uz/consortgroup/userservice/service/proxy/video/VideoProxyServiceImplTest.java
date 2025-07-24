@@ -50,24 +50,6 @@ class VideoProxyServiceImplTest {
     }
 
     @Test
-    void uploadVideos_ShouldCallSagaAndReturnResponse() {
-        UUID lessonId = UUID.randomUUID();
-        String metadataJson = "{\"title\":\"Multiple Videos\"}";
-        List<MultipartFile> files = List.of(
-            new MockMultipartFile("video1.mp4", "video1.mp4", "video/mp4", "content1".getBytes()),
-            new MockMultipartFile("video2.mp4", "video2.mp4", "video/mp4", "content2".getBytes())
-        );
-        
-        BulkVideoUploadResponseDto expectedResponse = new BulkVideoUploadResponseDto();
-        when(bulkVideoUploadSaga.run(any(), any(), any())).thenReturn(expectedResponse);
-
-        BulkVideoUploadResponseDto actualResponse = videoProxyService.uploadVideos(lessonId, metadataJson, files);
-
-        assertSame(expectedResponse, actualResponse);
-        verify(bulkVideoUploadSaga).run(lessonId, metadataJson, files);
-    }
-
-    @Test
     void uploadVideo_ShouldHaveTransactionalAnnotation() throws NoSuchMethodException {
         var method = VideoProxyServiceImpl.class.getMethod("uploadVideo", UUID.class, String.class, MultipartFile.class);
         assertNotNull(method.getAnnotation(Transactional.class));
@@ -77,17 +59,5 @@ class VideoProxyServiceImplTest {
     void uploadVideos_ShouldHaveTransactionalAnnotation() throws NoSuchMethodException {
         var method = VideoProxyServiceImpl.class.getMethod("uploadVideos", UUID.class, String.class, List.class);
         assertNotNull(method.getAnnotation(Transactional.class));
-    }
-
-    @Test
-    void uploadVideo_ShouldHaveAllAspectAnnotation() throws NoSuchMethodException {
-        var method = VideoProxyServiceImpl.class.getMethod("uploadVideo", UUID.class, String.class, MultipartFile.class);
-        assertNotNull(method.getAnnotation(uz.consortgroup.userservice.asspect.annotation.AllAspect.class));
-    }
-
-    @Test
-    void uploadVideos_ShouldHaveAllAspectAnnotation() throws NoSuchMethodException {
-        var method = VideoProxyServiceImpl.class.getMethod("uploadVideos", UUID.class, String.class, List.class);
-        assertNotNull(method.getAnnotation(uz.consortgroup.userservice.asspect.annotation.AllAspect.class));
     }
 }

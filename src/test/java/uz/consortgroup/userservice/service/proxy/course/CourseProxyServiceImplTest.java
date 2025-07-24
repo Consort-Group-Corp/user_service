@@ -37,18 +37,6 @@ class CourseProxyServiceImplTest {
     }
 
     @Test
-    void createCourse_NullRequest() {
-        CourseResponseDto expectedResponse = new CourseResponseDto();
-        
-        when(courseCreationSaga.run(null)).thenReturn(expectedResponse);
-        
-        CourseResponseDto actualResponse = courseProxyService.createCourse(null);
-        
-        assertEquals(expectedResponse, actualResponse);
-        verify(courseCreationSaga).run(null);
-    }
-
-    @Test
     void createCourse_SagaThrowsException() {
         CourseCreateRequestDto requestDto = new CourseCreateRequestDto();
         

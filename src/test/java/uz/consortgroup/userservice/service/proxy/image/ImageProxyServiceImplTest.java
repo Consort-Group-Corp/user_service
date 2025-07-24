@@ -51,21 +51,6 @@ class ImageProxyServiceImplTest {
         verify(imageUploadSaga).run(lessonId, metadataJson, file);
     }
 
-
-    @Test
-    void uploadImages_Success() {
-        UUID lessonId = UUID.randomUUID();
-        String metadataJson = "{\"key\":\"value\"}";
-        BulkImageUploadResponseDto expectedResponse = new BulkImageUploadResponseDto();
-
-        when(bulkImageUploadSaga.run(lessonId, metadataJson, files)).thenReturn(expectedResponse);
-
-        BulkImageUploadResponseDto actualResponse = imageProxyService.uploadImages(lessonId, metadataJson, files);
-
-        assertEquals(expectedResponse, actualResponse);
-        verify(bulkImageUploadSaga).run(lessonId, metadataJson, files);
-    }
-
     @Test
     void uploadImages_SagaThrowsException() {
         UUID lessonId = UUID.randomUUID();

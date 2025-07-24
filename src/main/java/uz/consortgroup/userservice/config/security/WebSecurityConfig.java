@@ -93,12 +93,14 @@ public class WebSecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/user-notifications").hasAnyAuthority(
                                 UserRole.SUPER_ADMIN.name(),
+                                UserRole.ADMIN.name(),
                                 UserRole.MENTOR.name(),
                                 UserRole.HR.name()
                         )
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/search").hasAnyAuthority(
                                 UserRole.SUPER_ADMIN.name(),
+                                UserRole.ADMIN.name(),
                                 UserRole.MENTOR.name(),
                                 UserRole.HR.name()
                         )

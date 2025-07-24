@@ -7,24 +7,29 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uz.consortgroup.userservice.asspect.annotation.AllAspect;
-import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.repository.UserRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class UserDetailsServiceImpl implements UserDetailsService {
+
     private final UserRepository userRepository;
 
     @Override
     @Transactional
-    @AllAspect
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UserNotFoundException(String.format("User with email %s not found", email)));
+        log.info("Attempting to load user by email: {}", email);
 
-        return UserDetailsImpl.build(user);
+        return userRepository.findByEmail(email)
+                .map(user -> {
+                    log.info("User found for email: {}", email);
+                    return UserDetailsImpl.build(user);
+                })
+                .orElseThrow(() -> {
+                    log.warn("User with email {} not found", email);
+                    return new UserNotFoundException(String.format("User with email %s not found", email));
+                });
     }
 }

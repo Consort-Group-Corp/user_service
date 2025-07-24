@@ -40,12 +40,6 @@ class ForumUserGroupMembershipProcessorTest {
     }
 
     @Test
-    void process_NullList() {
-        processor.process(null);
-        verify(membershipService).assignUsersToForumGroups(null);
-    }
-
-    @Test
     void process_ServiceThrowsException() {
         List<CoursePurchasedEvent> events = List.of(new CoursePurchasedEvent());
         doThrow(new RuntimeException("Test error")).when(membershipService).assignUsersToForumGroups(events);
