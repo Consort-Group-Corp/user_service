@@ -5,18 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
-import uz.consortgroup.userservice.asspect.annotation.AllAspect;
-import uz.consortgroup.userservice.asspect.annotation.AspectAfterReturning;
-import uz.consortgroup.userservice.asspect.annotation.AspectAfterThrowing;
-import uz.consortgroup.userservice.asspect.annotation.LoggingAspectAfterMethod;
-import uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.mapper.UserCacheMapper;
 import uz.consortgroup.userservice.repository.UserRepository;
 import uz.consortgroup.userservice.service.cache.UserCacheServiceImpl;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -30,27 +24,23 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
 
     @Transactional
     @Override
-    @LoggingAspectBeforeMethod
-    @LoggingAspectAfterMethod
-    @AspectAfterReturning
     public User findUserById(UUID userId) {
+        log.info("Finding user by ID: {}", userId);
         return getUserFromDbAndCacheById(userId);
     }
 
     @Transactional(readOnly = true)
     @Override
-    @LoggingAspectBeforeMethod
-    @LoggingAspectAfterMethod
-    @AspectAfterReturning
     public User findUserByEmail(String email) {
+        log.info("Finding user by email: {}", email);
         return getUserFromCacheOrDbByEmail(email);
     }
 
     @Transactional(readOnly = true)
     @Override
-    @AllAspect
     public User findUserByEmailOrPinfl(String query) {
         String cleanedQuery = query.trim().replaceAll("\\s+", "").toLowerCase();
+        log.info("Finding user by email or PINFL: {}", cleanedQuery);
 
         if (isEmail(cleanedQuery)) {
             return getUserFromCacheOrDbByEmail(cleanedQuery);
@@ -59,19 +49,17 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
         }
     }
 
-
     @Override
-    @LoggingAspectBeforeMethod
-    @LoggingAspectAfterMethod
     public void saveUser(User user) {
+        log.info("Saving user with email: {}", user.getEmail());
         userCacheService.cacheUser(userCacheMapper.toUserCache(user));
         userRepository.save(user);
     }
 
     @Override
     @Transactional
-    @AllAspect
     public User changeUserRoleByEmail(String email, UserRole role) {
+        log.info("Changing role for user {} to {}", email, role);
         User user = getUserFromCacheOrDbByEmail(email);
         user.setRole(role);
         cacheUser(user);
@@ -79,61 +67,64 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
     }
 
     @Override
-    @AllAspect
     public UUID findUserIdByEmail(String email) {
+        log.info("Finding userId by email: {}", email);
         return userRepository.findUserIdByEmail(email);
     }
 
-
     @Transactional
-    @AllAspect
     public User getUserFromDbAndCacheById(UUID userId) {
+        log.debug("Trying to get user from cache by ID: {}", userId);
         return userCacheService.findUserById(userId)
                 .map(userCacheMapper::toUserEntity)
                 .orElseGet(() -> {
-                    try {
-                        User user = userRepository.findById(userId)
-                                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
-                        cacheUser(user);
-                        return user;
-                    } catch (UserNotFoundException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new RuntimeException("Неожиданная ошибка при получении пользователя", e);
-                    }
-                });
-    }
-
-    @Transactional
-    @AllAspect
-    public User getUserFromCacheOrDbByEmail(String email) {
-        return userCacheService.findUserByEmail(email)
-                .map(userCacheMapper::toUserEntity)
-                .orElseGet(() -> {
-                    User user = userRepository.findByEmail(email)
-                            .orElseThrow(() -> new UserNotFoundException("User not found: " + email));
+                    log.debug("User not found in cache. Querying DB for ID: {}", userId);
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> {
+                                log.warn("User not found in DB: {}", userId);
+                                return new UserNotFoundException("Пользователь не найден");
+                            });
                     cacheUser(user);
                     return user;
                 });
     }
 
-    @LoggingAspectBeforeMethod
-    @LoggingAspectAfterMethod
+    @Transactional
+    public User getUserFromCacheOrDbByEmail(String email) {
+        log.debug("Trying to get user from cache by email: {}", email);
+        return userCacheService.findUserByEmail(email)
+                .map(userCacheMapper::toUserEntity)
+                .orElseGet(() -> {
+                    log.debug("User not found in cache. Querying DB for email: {}", email);
+                    User user = userRepository.findByEmail(email)
+                            .orElseThrow(() -> {
+                                log.warn("User not found in DB: {}", email);
+                                return new UserNotFoundException("User not found: " + email);
+                            });
+                    cacheUser(user);
+                    return user;
+                });
+    }
+
     public void cacheUser(User user) {
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null");
-
         }
+        log.debug("Caching user with ID: {}", user.getId());
         userCacheService.cacheUser(userCacheMapper.toUserCache(user));
     }
 
-    @AllAspect
     private User getUserFromCacheOrDbByPinfl(String pinfl) {
+        log.debug("Trying to get user from cache by PINFL: {}", pinfl);
         return userCacheService.findUserByPinfl(pinfl)
                 .map(userCacheMapper::toUserEntity)
                 .orElseGet(() -> {
+                    log.debug("User not found in cache. Querying DB for PINFL: {}", pinfl);
                     User user = userRepository.findUserByPinfl(pinfl)
-                            .orElseThrow(() -> new UserNotFoundException(String.format("User with pinfl %s not found", pinfl)));
+                            .orElseThrow(() -> {
+                                log.warn("User not found in DB with PINFL: {}", pinfl);
+                                return new UserNotFoundException(String.format("User with pinfl %s not found", pinfl));
+                            });
                     cacheUser(user);
                     return user;
                 });

@@ -102,7 +102,7 @@ class SuperAdminControllerTest {
 
 
     @Test
-    void createNewUserWithMentorRole_shouldReturn400WhenEmailMissing() throws Exception {
+    void createNewUser_shouldReturn400WhenEmailMissing() throws Exception {
         UserCreateDto request = new UserCreateDto();
         request.setFirstName("John");
         request.setLastName("Doe");
@@ -115,7 +115,7 @@ class SuperAdminControllerTest {
     }
 
     @Test
-    void createNewUserWithMentorRole_shouldReturn400WhenFirstNameMissing() throws Exception {
+    void createNewUser_shouldReturn400WhenFirstNameMissing() throws Exception {
         UserCreateDto request = new UserCreateDto();
         request.setEmail("mentor@example.com");
         request.setLastName("Doe");

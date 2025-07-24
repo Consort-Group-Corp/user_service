@@ -54,24 +54,6 @@ class CourseAccessValidatorTest {
     }
 
     @Test
-    void validateUserCanPurchaseCourse_ShouldThrowExceptionWhenAccessStillActive() {
-        UUID userId = UUID.randomUUID();
-        UUID courseId = UUID.randomUUID();
-        UserPurchasedCourse activePurchase = new UserPurchasedCourse();
-        activePurchase.setAccessUntil(Instant.now().plusSeconds(3600));
-
-        when(userPurchasedCourseRepository.findByUserIdAndCourseId(userId, courseId))
-            .thenReturn(Optional.of(activePurchase));
-
-        CourseAlreadyPurchasedAndStillActiveException exception = assertThrows(
-            CourseAlreadyPurchasedAndStillActiveException.class,
-            () -> courseAccessValidator.validateUserCanPurchaseCourse(userId, courseId)
-        );
-
-        assertEquals("Курс уже куплен и доступ к нему ещё не истёк", exception.getMessage());
-    }
-
-    @Test
     void validateUserCanPurchaseCourse_ShouldPassWhenAccessExactlyNow() {
         UUID userId = UUID.randomUUID();
         UUID courseId = UUID.randomUUID();

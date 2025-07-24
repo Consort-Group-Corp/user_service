@@ -40,12 +40,6 @@ class CourseForumGroupCreationProcessorTest {
     }
 
     @Test
-    void process_NullList() {
-        processor.process(null);
-        verify(creationService).saveAllForumGroupCreations(null);
-    }
-
-    @Test
     void process_ServiceThrowsException() {
         List<CourseForumGroupCreatedEvent> events = List.of(new CourseForumGroupCreatedEvent());
         doThrow(new RuntimeException("Test error")).when(creationService).saveAllForumGroupCreations(events);

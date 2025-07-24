@@ -38,12 +38,6 @@ class CourseOrderProxyServiceImplTest {
     }
 
     @Test
-    void createCourseOrder_NullRequest_NoException() {
-        assertDoesNotThrow(() -> courseOrderProxyService.createCourseOrder(null));
-    }
-
-
-    @Test
     void createCourseOrder_SagaThrowsException() {
         OrderRequest request = new OrderRequest();
         

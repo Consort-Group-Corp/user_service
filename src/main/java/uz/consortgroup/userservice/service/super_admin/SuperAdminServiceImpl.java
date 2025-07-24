@@ -1,6 +1,7 @@
 package uz.consortgroup.userservice.service.super_admin;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
@@ -8,7 +9,6 @@ import uz.consortgroup.core.api.v1.dto.user.enumeration.UserStatus;
 import uz.consortgroup.core.api.v1.dto.user.super_admin.UserChangeRequestDto;
 import uz.consortgroup.core.api.v1.dto.user.super_admin.UserCreateDto;
 import uz.consortgroup.core.api.v1.dto.user.super_admin.UserResponseDto;
-import uz.consortgroup.userservice.asspect.annotation.AllAspect;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.event.admin.SuperAdminActionType;
 import uz.consortgroup.userservice.mapper.UserMapper;
@@ -21,6 +21,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SuperAdminServiceImpl implements SuperAdminService {
     private final UserOperationsServiceServiceImpl userOperationsServiceImpl;
     private final UserMapper userMapper;
@@ -29,19 +30,21 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     private final SuperAdminActionLogger superAdminActionLogger;
 
     @Transactional
-    @AllAspect
     public UserResponseDto findUserByEmailAndChangeUserRole(UserChangeRequestDto userChangeRequestDto) {
+        log.info("Changing user role by email: {}, new role: {}", userChangeRequestDto.getEmail(), userChangeRequestDto.getNewRole());
+
         User user = userOperationsServiceImpl.changeUserRoleByEmail(userChangeRequestDto.getEmail(), userChangeRequestDto.getNewRole());
         superAdminActionLogger.userRoleChangedEvent(user, getSuperAdminId(), SuperAdminActionType.USER_UPDATED);
+
+        log.debug("User role successfully changed: userId={}, newRole={}", user.getId(), user.getRole());
         return userMapper.toUserResponseDto(user);
     }
 
-
     @Transactional
-    @AllAspect
     public UserResponseDto createNewUserWithMentorRole(UserCreateDto userCreateDto) {
-        UUID superAdminId = getSuperAdminId();
+        log.info("Creating a new user with role: {}", userCreateDto.getRole());
 
+        UUID superAdminId = getSuperAdminId();
         User user = buildUserFromDto(userCreateDto);
 
         userOperationsServiceImpl.saveUser(user);
@@ -49,20 +52,24 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
         superAdminActionLogger.userRoleChangedEvent(user, superAdminId, SuperAdminActionType.USER_CREATED);
 
+        log.debug("New user created: id={}, email={}", user.getId(), user.getEmail());
         return userMapper.toUserResponseDto(user);
     }
 
-
-
     @Transactional(readOnly = true)
-    @AllAspect
     public UUID getSuperAdminId() {
-        return superAdminRepository.findIdsByRole(UserRole.SUPER_ADMIN)
+        UUID id = superAdminRepository.findIdsByRole(UserRole.SUPER_ADMIN)
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Super admin not found"));
+                .orElseThrow(() -> {
+                    log.error("Super admin not found in the database");
+                    return new RuntimeException("Super admin not found");
+                });
+        log.debug("Super admin ID retrieved: {}", id);
+        return id;
     }
 
     private User buildUserFromDto(UserCreateDto userCreateDto) {
+        log.debug("Building User entity from DTO: {}", userCreateDto.getEmail());
         return User.builder()
                 .language(userCreateDto.getLanguage())
                 .lastName(userCreateDto.getLastName())

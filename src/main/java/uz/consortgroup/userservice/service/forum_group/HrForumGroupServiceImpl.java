@@ -1,15 +1,13 @@
 package uz.consortgroup.userservice.service.forum_group;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.consortgroup.core.api.v1.dto.course.response.course.CourseResponseDto;
 import uz.consortgroup.core.api.v1.dto.forum.CreateForumGroupByHrRequest;
 import uz.consortgroup.core.api.v1.dto.forum.HrForumGroupCreateResponse;
-import uz.consortgroup.userservice.asspect.annotation.AspectAfterThrowing;
-import uz.consortgroup.userservice.asspect.annotation.LoggingAspectAfterMethod;
-import uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod;
 import uz.consortgroup.userservice.client.CourseFeignClient;
 import uz.consortgroup.userservice.entity.ForumUserGroup;
 import uz.consortgroup.userservice.event.hr.HrActionType;
@@ -21,6 +19,7 @@ import uz.consortgroup.userservice.validator.UserServiceValidator;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HrForumGroupServiceImpl implements HrForumGroupService {
@@ -35,31 +34,48 @@ public class HrForumGroupServiceImpl implements HrForumGroupService {
 
     @Override
     @Transactional
-    @LoggingAspectBeforeMethod
-    @LoggingAspectAfterMethod
-    @AspectAfterThrowing
     public HrForumGroupCreateResponse createHrForumGroup(CreateForumGroupByHrRequest request) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getPrincipal();
-
         UUID hrId = userDetails.getId();
 
-        userServiceValidator.validateAllUsersExist(request.getUserIds());
-        CourseResponseDto course = courseFeignClient.getCourseById(request.getCourseId());
+        log.info("HR forum group creation started by HR: {}. CourseId: {}, Users count: {}",
+                hrId, request.getCourseId(), request.getUserIds().size());
 
-        ForumUserGroup group = forumUserGroupService.create(request.getCourseId(), "HR: " + getCourseTitle(course));
-        hrActionLogger.logHrCreatedForum(group.getId(), hrId, HrActionType.FORUM_GROUP_CREATED);
+        try {
+            userServiceValidator.validateAllUsersExist(request.getUserIds());
+            log.info("User existence validated for {} user(s)", request.getUserIds().size());
 
-        forumUserGroupMembershipService.assignUsers(group.getId(), request.getUserIds());
+            CourseResponseDto course = courseFeignClient.getCourseById(request.getCourseId());
+            String title = getCourseTitle(course);
+            log.info("Fetched course: id={}, title={}", course.getId(), title);
 
-        courseGroupEventService.sendCourseGroupEvent(course);
+            ForumUserGroup group = forumUserGroupService.create(request.getCourseId(), "HR: " + title);
+            log.info("Forum group created with id: {}", group.getId());
 
-        request.getUserIds().forEach(userId ->
-                hrActionLogger.logHrCreatedForum(userId, hrId, HrActionType.ADD_USER_TO_FORUM_GROUP)
-        );
+            hrActionLogger.logHrCreatedForum(group.getId(), hrId, HrActionType.FORUM_GROUP_CREATED);
+            log.info("HR forum group creation action logged");
 
-        return forumGroupMapper.toResponseDto(group);
+            forumUserGroupMembershipService.assignUsers(group.getId(), request.getUserIds());
+            log.info("Assigned {} users to forum group {}", request.getUserIds().size(), group.getId());
+
+            courseGroupEventService.sendCourseGroupEvent(course);
+            log.info("Course group event sent for courseId={}", course.getId());
+
+            request.getUserIds().forEach(userId ->
+                    hrActionLogger.logHrCreatedForum(userId, hrId, HrActionType.ADD_USER_TO_FORUM_GROUP)
+            );
+            log.info("HR add-user actions logged for each user");
+
+            HrForumGroupCreateResponse response = forumGroupMapper.toResponseDto(group);
+            log.info("Returning HR forum group response with groupId={}", response.getGroupId());
+            return response;
+
+        } catch (Exception ex) {
+            log.error("Error occurred during HR forum group creation. HR: {}, CourseId: {}", hrId, request.getCourseId(), ex);
+            throw ex;
+        }
     }
 
     private String getCourseTitle(CourseResponseDto course) {

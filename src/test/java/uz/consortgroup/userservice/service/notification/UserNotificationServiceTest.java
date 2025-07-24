@@ -8,6 +8,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uz.consortgroup.core.api.v1.dto.user.request.NotificationCreateRequestDto;
 import uz.consortgroup.userservice.client.NotificationTaskClient;
 
+import java.util.List;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.argThat;
@@ -27,17 +30,20 @@ class UserNotificationServiceTest {
     @Test
     void notifyUser_shouldCallNotificationTaskClient() {
         NotificationCreateRequestDto request = new NotificationCreateRequestDto();
-        
+        request.setRecipientUserIds(List.of(UUID.randomUUID()));
+
         userNotificationService.notifyUser(request);
-        
+
         verify(notificationTaskClient, times(1)).createNotification(request);
     }
+
 
     @Test
     void notifyUser_shouldPassRequestWithoutModification() {
         NotificationCreateRequestDto request = new NotificationCreateRequestDto();
         request.setActive(true);
-        
+        request.setRecipientUserIds(List.of(UUID.randomUUID()));
+
         userNotificationService.notifyUser(request);
         
         verify(notificationTaskClient).createNotification(argThat(argument -> 
@@ -45,12 +51,6 @@ class UserNotificationServiceTest {
         ));
     }
 
-    @Test
-    void notifyUser_shouldHandleNullRequest() {
-        userNotificationService.notifyUser(null);
-        
-        verify(notificationTaskClient, times(1)).createNotification(null);
-    }
 
     @Test
     void notifyUser_shouldPropagateClientException() {

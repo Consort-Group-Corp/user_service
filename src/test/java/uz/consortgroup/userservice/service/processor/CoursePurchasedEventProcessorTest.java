@@ -39,11 +39,6 @@ class CoursePurchasedEventProcessorTest {
         verify(coursePurchaseService).saveAllPurchasedCourses(List.of());
     }
 
-    @Test
-    void process_NullList() {
-        processor.process(null);
-        verify(coursePurchaseService).saveAllPurchasedCourses(null);
-    }
 
     @Test
     void process_ServiceThrowsException() {

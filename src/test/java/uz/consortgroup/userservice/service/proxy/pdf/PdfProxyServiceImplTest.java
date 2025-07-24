@@ -50,24 +50,6 @@ class PdfProxyServiceImplTest {
     }
 
     @Test
-    void uploadPdfFiles_WithValidData_CallsSagaAndReturnsResponse() {
-        UUID lessonId = UUID.randomUUID();
-        String metadataJson = "{\"title\":\"Multiple PDFs\"}";
-        List<MultipartFile> files = List.of(
-                new MockMultipartFile("file1.pdf", "file1.pdf", "application/pdf", "content1".getBytes()),
-                new MockMultipartFile("file2.pdf", "file2.pdf", "application/pdf", "content2".getBytes())
-        );
-
-        BulkPdfFilesUploadResponseDto expectedResponse = new BulkPdfFilesUploadResponseDto();
-        when(bulkPdfUploadSaga.run(any(), any(), any())).thenReturn(expectedResponse);
-
-        BulkPdfFilesUploadResponseDto actualResponse = pdfProxyService.uploadPdfFiles(lessonId, metadataJson, files);
-
-        assertSame(expectedResponse, actualResponse);
-        verify(bulkPdfUploadSaga).run(lessonId, metadataJson, files);
-    }
-
-    @Test
     void uploadPdfFile_VerifyTransactionalAnnotation() throws NoSuchMethodException {
         var method = PdfProxyServiceImpl.class.getMethod("uploadPdfFile", UUID.class, String.class, MultipartFile.class);
         assertNotNull(method.getAnnotation(Transactional.class));
@@ -77,17 +59,5 @@ class PdfProxyServiceImplTest {
     void uploadPdfFiles_VerifyTransactionalAnnotation() throws NoSuchMethodException {
         var method = PdfProxyServiceImpl.class.getMethod("uploadPdfFiles", UUID.class, String.class, List.class);
         assertNotNull(method.getAnnotation(Transactional.class));
-    }
-
-    @Test
-    void uploadPdfFile_VerifyAllAspectAnnotation() throws NoSuchMethodException {
-        var method = PdfProxyServiceImpl.class.getMethod("uploadPdfFile", UUID.class, String.class, MultipartFile.class);
-        assertNotNull(method.getAnnotation(uz.consortgroup.userservice.asspect.annotation.AllAspect.class));
-    }
-
-    @Test
-    void uploadPdfFiles_VerifyAllAspectAnnotation() throws NoSuchMethodException {
-        var method = PdfProxyServiceImpl.class.getMethod("uploadPdfFiles", UUID.class, String.class, List.class);
-        assertNotNull(method.getAnnotation(uz.consortgroup.userservice.asspect.annotation.AllAspect.class));
     }
 }

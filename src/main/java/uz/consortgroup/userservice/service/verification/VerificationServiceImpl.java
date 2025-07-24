@@ -5,9 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.VerificationCodeStatus;
-import uz.consortgroup.userservice.asspect.annotation.AspectAfterReturning;
-import uz.consortgroup.userservice.asspect.annotation.LoggingAspectAfterMethod;
-import uz.consortgroup.userservice.asspect.annotation.LoggingAspectBeforeMethod;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.entity.VerificationCode;
 import uz.consortgroup.userservice.entity.cacheEntity.VerificationCodeCacheEntity;
@@ -30,10 +27,8 @@ public class VerificationServiceImpl implements VerificationService {
     private final VerificationCodeCacheServiceImpl verificationCodeCacheService;
     private final VerificationCodeCacheMapper verificationCodeCacheMapper;
 
-    @LoggingAspectBeforeMethod
-    @LoggingAspectAfterMethod
-    @AspectAfterReturning
     public String generateAndSaveCode(User user) {
+        log.debug("Generating new verification code for user {}", user.getId());
         int previousAttempts = verificationCodeRepository.findLastActiveCodeByUserId(user.getId())
                 .map(VerificationCode::getAttempts)
                 .orElse(0);
@@ -45,8 +40,6 @@ public class VerificationServiceImpl implements VerificationService {
     }
 
     @Transactional
-    @LoggingAspectBeforeMethod
-    @LoggingAspectAfterMethod
     public void verifyCode(User user, String inputCode) {
         VerificationCode code = getActiveCode(user);
         validateCode(code, inputCode);

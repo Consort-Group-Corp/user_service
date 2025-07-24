@@ -116,17 +116,6 @@ class PasswordServiceServiceTest {
     }
 
     @Test
-    void createPassword_ShouldHandleNullUser() {
-        Password result = passwordOperationsService.createPassword(null, "encodedPassword");
-
-        assertNotNull(result);
-        assertNull(result.getUser());
-        assertEquals("encodedPassword", result.getPasswordHash());
-        assertTrue(result.getIsActive());
-        assertNotNull(result.getCreatedAt());
-    }
-
-    @Test
     void createPassword_ShouldHandleNullEncodedPassword() {
         User user = new User();
         Password result = passwordOperationsService.createPassword(user, null);

@@ -17,7 +17,6 @@ import uz.consortgroup.core.api.v1.dto.user.auth.JwtResponse;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.Language;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserStatus;
-import uz.consortgroup.userservice.asspect.annotation.AllAspect;
 import uz.consortgroup.userservice.config.properties.OneIdProperties;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.repository.UserRepository;
@@ -39,34 +38,43 @@ public class OneIdServiceImpl implements OneIdService {
 
     @Override
     public String buildAuthUrl() {
-        return UriComponentsBuilder.fromHttpUrl(properties.getBaseUrl())
+        String url = UriComponentsBuilder.fromHttpUrl(properties.getBaseUrl())
                 .queryParam("response_type", "code")
                 .queryParam("client_id", properties.getClientId())
                 .queryParam("redirect_uri", properties.getRedirectUri())
                 .queryParam("scope", "openid")
                 .toUriString();
+
+        log.info("Generated OneID Auth URL: {}", url);
+        return url;
     }
 
     @Override
-    @AllAspect
     @Transactional
     public JwtResponse authorizeViaOneId(String code) {
+        log.info("Authorizing user via OneID with code={}", code);
+
         OneIdTokenResponse tokens = exchangeCodeForTokens(code);
+        log.info("Received OneID tokens: accessTokenExpiresIn={}s", tokens.getExpiresIn());
 
         OneIdProfile profile = fetchProfile(tokens.getAccessToken());
+        log.info("Fetched OneID profile for userId={}, email={}", profile.getUserId(), profile.getEmail());
 
         User user = processUserFromOneId(tokens, profile);
+        log.info("User processed and saved: userId={}, email={}", user.getId(), user.getEmail());
 
         UserDetailsImpl userDetails = UserDetailsImpl.build(user);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities()
-        );
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-        return authenticationUtils.performAuthentication(user.getEmail(), authentication);
+        JwtResponse response = authenticationUtils.performAuthentication(user.getEmail(), authentication);
+        log.info("JWT token generated for userId={}", user.getId());
+
+        return response;
     }
 
-    @AllAspect
     public OneIdTokenResponse exchangeCodeForTokens(String code) {
+        log.info("Exchanging code for OneID tokens...");
+
         OneIdTokenRequest body = OneIdTokenRequest.builder()
                 .grant_type("authorization_code")
                 .code(code)
@@ -75,33 +83,51 @@ public class OneIdServiceImpl implements OneIdService {
                 .redirect_uri(properties.getRedirectUri())
                 .build();
 
-        return webClientWithTimeout
-                .post()
-                .uri(properties.getTokenUrl())
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(body))
-                .retrieve()
-                .bodyToMono(OneIdTokenResponse.class)
-                .block();
+        try {
+            OneIdTokenResponse response = webClientWithTimeout
+                    .post()
+                    .uri(properties.getTokenUrl())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(body))
+                    .retrieve()
+                    .bodyToMono(OneIdTokenResponse.class)
+                    .block();
+
+            log.info("Successfully retrieved token from OneID");
+            return response;
+        } catch (Exception e) {
+            log.error("Failed to exchange code for tokens: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
-    @AllAspect
     public OneIdProfile fetchProfile(String accessToken) {
-        return webClientWithTimeout
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                        .path(properties.getProfileUrl())
-                        .queryParam("access_token", accessToken)
-                        .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(OneIdProfile.class)
-                .block();
+        log.info("Fetching OneID profile using accessToken...");
+
+        try {
+            OneIdProfile profile = webClientWithTimeout
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path(properties.getProfileUrl())
+                            .queryParam("access_token", accessToken)
+                            .build())
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(OneIdProfile.class)
+                    .block();
+
+            log.info("Successfully fetched profile from OneID for userId={}", profile.getUserId());
+            return profile;
+        } catch (Exception e) {
+            log.error("Failed to fetch OneID profile: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
-    @AllAspect
     @Transactional
     public User processUserFromOneId(OneIdTokenResponse tokens, OneIdProfile profile) {
+        log.info("Processing user from OneID profile, userId={}", profile.getUserId());
+
         User user = userRepository.findByOneIdUserId(profile.getUserId())
                 .map(existing -> {
                     existing.setFirstName(profile.getFirstName());
@@ -134,9 +160,14 @@ public class OneIdServiceImpl implements OneIdService {
 
         user = userRepository.save(user);
 
-        mehnatAutoFillService.tryFetchDataFromMehnat(user);
+        log.info("User saved with ID={}, email={}", user.getId(), user.getEmail());
+
+        try {
+            mehnatAutoFillService.tryFetchDataFromMehnat(user);
+        } catch (Exception e) {
+            log.warn("Mehnat autofill failed for userId={}: {}", user.getId(), e.getMessage());
+        }
 
         return user;
     }
-
 }
