@@ -11,5 +11,8 @@ public interface UserCacheService {
     void cacheUser(UserCacheEntity user);
     void cacheUsers(List<UserCacheEntity> users);
     void removeUserFromCache(UUID userId);
+    Optional<UserCacheEntity> findUserByPinfl(String pinfl);
     Optional<UserCacheEntity> findUserByEmail(String email);
+    List<UserCacheEntity> findUsersByEmails(List<String> emails);
+    List<UserCacheEntity> findUsersByPinfls(List<String> pinfls);
 }

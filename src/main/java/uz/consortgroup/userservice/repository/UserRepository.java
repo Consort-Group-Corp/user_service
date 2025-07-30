@@ -12,6 +12,7 @@ import uz.consortgroup.core.api.v1.dto.user.enumeration.UserStatus;
 import uz.consortgroup.userservice.entity.User;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -97,4 +98,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     List<User> findByIdIn(List<UUID> ids);
 
+
+    List<User> findByEmailIn(Collection<String> emails);
+
+    List<User> findByPinflIn(Collection<String> pinfls);
 }
