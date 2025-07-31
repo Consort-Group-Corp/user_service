@@ -7,6 +7,8 @@ import uz.consortgroup.userservice.entity.cacheEntity.UserCacheEntity;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.repository.UserRedisRepository;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,6 +18,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserCacheServiceImpl implements UserCacheService {
+
     private final UserRedisRepository userRedisRepository;
 
     public Optional<UserCacheEntity> findUserById(UUID id) {
@@ -106,5 +109,50 @@ public class UserCacheServiceImpl implements UserCacheService {
             log.error("Unexpected error while finding user by PINFL: {}", pinfl, e);
             throw e;
         }
+    }
+
+    public List<UserCacheEntity> findUsersByEmails(List<String> emails) {
+        log.info("Searching users in cache by emails: {}", emails);
+
+        if (emails == null || emails.isEmpty()) {
+            log.warn("Email list is null or empty, returning empty result.");
+            return Collections.emptyList();
+        }
+
+        List<UserCacheEntity> result = new ArrayList<>();
+
+        for (String email : emails) {
+            try {
+                Optional<UserCacheEntity> optional = userRedisRepository.findByEmail(email);
+                optional.ifPresent(result::add);
+            } catch (Exception e) {
+                log.error("Failed to get user from cache by email: {}", email, e);
+            }
+        }
+
+        log.info("Total users found in cache by emails: {}", result.size());
+        return result;
+    }
+
+    public List<UserCacheEntity> findUsersByPinfls(List<String> pinfls) {
+        log.info("Searching users in Redis cache by PINFLs: {}", pinfls);
+        List<UserCacheEntity> users = new ArrayList<>();
+
+        for (String pinfl : pinfls) {
+            try {
+                Optional<UserCacheEntity> userOpt = userRedisRepository.findByPinfl((pinfl));
+                if (userOpt.isPresent()) {
+                    log.debug("User found in cache by PINFL: {}", pinfl);
+                    users.add(userOpt.get());
+                } else {
+                    log.debug("User NOT found in cache by PINFL: {}", pinfl);
+                }
+            } catch (Exception e) {
+                log.error("Error while searching user by PINFL {} in cache", pinfl, e);
+            }
+        }
+
+        log.info("Total users found in cache by PINFLs: {}", users.size());
+        return users;
     }
 }

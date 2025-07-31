@@ -6,19 +6,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.userservice.entity.User;
+import uz.consortgroup.userservice.entity.cacheEntity.UserCacheEntity;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.mapper.UserCacheMapper;
 import uz.consortgroup.userservice.repository.UserRepository;
-import uz.consortgroup.userservice.service.cache.UserCacheServiceImpl;
+import uz.consortgroup.userservice.service.cache.UserCacheService;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserOperationsServiceServiceImpl implements UserOperationsService {
-    private final UserCacheServiceImpl userCacheService;
+    private static final int BATCH_SIZE = 50;
+    private final UserCacheService userCacheService;
     private final UserRepository userRepository;
     private final UserCacheMapper userCacheMapper;
 
@@ -128,6 +137,80 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
                     cacheUser(user);
                     return user;
                 });
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<User> findUsersBatch(List<String> emails, List<String> pinfls) {
+        List<User> results = new ArrayList<>();
+
+        for (int i = 0; i < emails.size(); i += BATCH_SIZE) {
+            List<String> batchEmails = emails.subList(i, Math.min(i + BATCH_SIZE, emails.size()));
+            results.addAll(findUsersInCacheOrDbByEmails(batchEmails));
+        }
+
+        for (int i = 0; i < pinfls.size(); i += BATCH_SIZE) {
+            List<String> batchPinfls = pinfls.subList(i, Math.min(i + BATCH_SIZE, pinfls.size()));
+            results.addAll(findUsersInCacheOrDbByPinfls(batchPinfls));
+        }
+
+        return new ArrayList<>(new LinkedHashSet<>(results));
+    }
+
+    public List<User> findUsersInCacheOrDbByEmails(List<String> emails) {
+        return findUsersInCacheOrDb(
+                emails,
+                userCacheService::findUsersByEmails,
+                userRepository::findByEmailIn,
+                User::getEmail,
+                userCacheMapper::toUserCache,
+                userCacheMapper::toUserEntity
+        );
+    }
+
+    public List<User> findUsersInCacheOrDbByPinfls(List<String> pinfls) {
+        return findUsersInCacheOrDb(
+                pinfls,
+                userCacheService::findUsersByPinfls,
+                userRepository::findByPinflIn,
+                User::getPinfl,
+                userCacheMapper::toUserCache,
+                userCacheMapper::toUserEntity
+        );
+    }
+
+    private List<User> findUsersInCacheOrDb(List<String> keys,
+                                            Function<List<String>, List<UserCacheEntity>> cacheFetcher,
+                                            Function<List<String>, List<User>> dbFetcher,
+                                            Function<User, String> keyExtractor,
+                                            Function<User, UserCacheEntity> toCacheEntity,
+                                            Function<UserCacheEntity, User> fromCacheEntity) {
+        if (keys == null || keys.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<UserCacheEntity> cachedEntities = cacheFetcher.apply(keys);
+        List<User> cachedUsers = cachedEntities.stream()
+                .map(fromCacheEntity)
+                .toList();
+
+        Set<String> cachedKeys = cachedUsers.stream()
+                .map(keyExtractor)
+                .collect(Collectors.toSet());
+
+        List<String> keysNotInCache = keys.stream()
+                .filter(k -> !cachedKeys.contains(k))
+                .toList();
+
+        List<User> dbUsers = keysNotInCache.isEmpty() ? Collections.emptyList() : dbFetcher.apply(keysNotInCache);
+
+        dbUsers.forEach(user -> userCacheService.cacheUser(toCacheEntity.apply(user)));
+
+        List<User> result = new ArrayList<>(cachedUsers.size() + dbUsers.size());
+        result.addAll(cachedUsers);
+        result.addAll(dbUsers);
+
+        return result;
     }
 
     private boolean isEmail(String value) {
