@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface UserOperationsService {
     User findUserById(UUID userId);
+    List<User> batchFindUsersById(List<UUID> userIds);
     User findUserByEmail(String email);
     void saveUser(User user);
     User changeUserRoleByEmail(String email, UserRole role);
