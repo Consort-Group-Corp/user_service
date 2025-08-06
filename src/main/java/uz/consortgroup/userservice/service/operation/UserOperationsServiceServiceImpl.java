@@ -38,6 +38,15 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
         return getUserFromDbAndCacheById(userId);
     }
 
+    @Override
+    @Transactional
+    public List<User> batchFindUsersById(List<UUID> userIds) {
+        log.info("Batch finding users by IDs: {}", userIds.size());
+        return userIds.stream()
+                .map(this::getUserFromDbAndCacheById)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     @Override
     public User findUserByEmail(String email) {
@@ -81,7 +90,7 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
         return userRepository.findUserIdByEmail(email);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public User getUserFromDbAndCacheById(UUID userId) {
         log.debug("Trying to get user from cache by ID: {}", userId);
         return userCacheService.findUserById(userId)
@@ -91,14 +100,14 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
                     User user = userRepository.findById(userId)
                             .orElseThrow(() -> {
                                 log.warn("User not found in DB: {}", userId);
-                                return new UserNotFoundException("Пользователь не найден");
+                                return new UserNotFoundException(String.format("User with id %s not found", userId));
                             });
                     cacheUser(user);
                     return user;
                 });
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public User getUserFromCacheOrDbByEmail(String email) {
         log.debug("Trying to get user from cache by email: {}", email);
         return userCacheService.findUserByEmail(email)
@@ -108,7 +117,7 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
                     User user = userRepository.findByEmail(email)
                             .orElseThrow(() -> {
                                 log.warn("User not found in DB: {}", email);
-                                return new UserNotFoundException("User not found: " + email);
+                                return new UserNotFoundException(String.format("User with email %s not found", email));
                             });
                     cacheUser(user);
                     return user;

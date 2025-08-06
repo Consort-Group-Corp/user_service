@@ -20,9 +20,13 @@ public interface UserMapper {
     UserRegistrationResponseDto toUserRegistrationResponseDto(User user);
     UserUpdateResponseDto toUserUpdateResponseDto(User user);
     UserResponseDto toUserResponseDto(User user);
+
+    @Mapping(target = "role", source = "role")
     UserShortInfoResponseDto toUserShortInfoResponseDto(User user);
+    List<UserShortInfoResponseDto> toUserShortInfoResponseDtos(List<User> users);
     @Mapping(target = "userId", source = "id")
     UserSearchResponse toUserSearchResponse(User user);
+
 
     default UserBulkSearchResponse toUserBulkSearchResponse(List<User> users) {
         List<UserSearchResponse> userDtos = users.stream()

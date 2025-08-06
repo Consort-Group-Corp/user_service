@@ -84,4 +84,7 @@ public class SuperAdmin {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+    public UserRole getRole() {
+        return UserRole.SUPER_ADMIN;
+    }
 }
