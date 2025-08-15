@@ -1,5 +1,6 @@
 package uz.consortgroup.userservice.controller;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/forum-access")
 @RequiredArgsConstructor
 @Validated
+@Hidden
 public class ForumAccessController {
     private final ForumAccessService forumAccessService;
 

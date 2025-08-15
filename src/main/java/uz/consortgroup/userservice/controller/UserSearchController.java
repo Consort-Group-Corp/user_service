@@ -1,5 +1,6 @@
 package uz.consortgroup.userservice.controller;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,8 +18,9 @@ import uz.consortgroup.userservice.service.user.UserSearchService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/internal/users")
 @Validated
+@Hidden
 public class UserSearchController {
     private final UserSearchService userSearchService;
 

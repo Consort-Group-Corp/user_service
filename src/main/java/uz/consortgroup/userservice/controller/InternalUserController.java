@@ -1,5 +1,6 @@
 package uz.consortgroup.userservice.controller;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/internal/users")
+@Hidden
 public class InternalUserController {
     private final UserDirectoryService userDirectoryService;
 
