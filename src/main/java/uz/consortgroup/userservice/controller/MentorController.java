@@ -15,13 +15,24 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import uz.consortgroup.core.api.v1.dto.course.enumeration.Language;
 import uz.consortgroup.core.api.v1.dto.course.request.course.CourseCreateRequestDto;
 import uz.consortgroup.core.api.v1.dto.course.request.image.BulkImageUploadRequestDto;
 import uz.consortgroup.core.api.v1.dto.course.request.pdf.BulkPdfFilesUploadRequestDto;
 import uz.consortgroup.core.api.v1.dto.course.request.video.BulkVideoUploadRequestDto;
 import uz.consortgroup.core.api.v1.dto.course.request.video.VideoUploadRequestDto;
+import uz.consortgroup.core.api.v1.dto.course.response.course.CoursePreviewResponseDto;
 import uz.consortgroup.core.api.v1.dto.course.response.course.CourseResponseDto;
 import uz.consortgroup.core.api.v1.dto.course.response.image.BulkImageUploadResponseDto;
 import uz.consortgroup.core.api.v1.dto.course.response.image.ImageUploadResponseDto;
@@ -480,5 +491,47 @@ public class MentorController {
             @RequestPart("files") List<MultipartFile> files
     ) {
         return pdfProxyService.uploadPdfFiles(lessonId, metadataJson, files);
+    }
+
+    @Operation(
+            summary = "Получить превью курса",
+            description = "Возвращает краткое превью курса по его UUID и языку."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Превью успешно получено",
+                    content = @Content(schema = @Schema(implementation = CoursePreviewResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "Неавторизован"),
+            @ApiResponse(responseCode = "403", description = "Нет доступа"),
+            @ApiResponse(responseCode = "404", description = "Курс не найден")
+    })
+    @GetMapping("/courses/{courseId}/preview")
+    @ResponseStatus(HttpStatus.OK)
+    public CoursePreviewResponseDto getCoursePreview(
+            @Parameter(description = "UUID курса", example = "9e09e19d-2988-453f-ab69-e8f39a8f723b")
+            @PathVariable UUID courseId,
+            @Parameter(description = "Код языка", example = "RU",
+                    schema = @Schema(allowableValues = {"RU", "EN", "UZ", "UZK", "KAA"}))
+            @RequestParam Language language
+    ) {
+        return courseProxyService.getCoursePreview(courseId, language);
+    }
+
+    @Operation(
+            summary = "Удалить курс",
+            description = "Удаляет курс по его UUID. Если удаление успешно, возвращается статус 204."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Курс удалён"),
+            @ApiResponse(responseCode = "401", description = "Неавторизован"),
+            @ApiResponse(responseCode = "403", description = "Нет доступа"),
+            @ApiResponse(responseCode = "404", description = "Курс не найден")
+    })
+    @DeleteMapping("/courses/{courseId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCourse(
+            @Parameter(description = "UUID курса", example = "9e09e19d-2988-453f-ab69-e8f39a8f723b")
+            @PathVariable UUID courseId
+    ) {
+        courseProxyService.deleteCourse(courseId);
     }
 }

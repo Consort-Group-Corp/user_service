@@ -24,7 +24,7 @@ import uz.consortgroup.userservice.service.auth.AuthService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
-@Tag(name = "Auth Controller", description = "Аутентификация и авторизация пользователей")
+@Tag(name = "Authorization", description = "Аутентификация и авторизация пользователей")
 @Validated
 public class AuthController {
 

@@ -86,10 +86,15 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/device-tokens/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/super-admin/**").hasAuthority(UserRole.SUPER_ADMIN.name())
-                        .requestMatchers(HttpMethod.POST, "/api/v1/mentor/**").hasAuthority(UserRole.MENTOR.name())
-                        .requestMatchers(HttpMethod.POST, "/api/v1/hr/**").hasAuthority(UserRole.HR.name())
+
+
                         .requestMatchers(HttpMethod.POST, "/api/v1/user-notifications/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/device-tokens/**").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/**").hasAnyAuthority(
+                                UserRole.SUPER_ADMIN.name(),
+                                UserRole.ADMIN.name()
+                        )
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/user-notifications").hasAnyAuthority(
                                 UserRole.SUPER_ADMIN.name(),
@@ -97,6 +102,18 @@ public class WebSecurityConfig {
                                 UserRole.MENTOR.name(),
                                 UserRole.HR.name()
                         )
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/hr/**").hasAnyAuthority(
+                                UserRole.SUPER_ADMIN.name(),
+                                UserRole.ADMIN.name(),
+                                UserRole.MENTOR.name(),
+                                UserRole.HR.name())
+
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/mentor/**").hasAnyAuthority(
+                                UserRole.MENTOR.name(),
+                                UserRole.ADMIN.name(),
+                                UserRole.SUPER_ADMIN.name())
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/search").hasAnyAuthority(
                                 UserRole.SUPER_ADMIN.name(),
