@@ -71,50 +71,39 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-                .exceptionHandling(exception -> exception
+                .exceptionHandling(e -> e
                         .authenticationEntryPoint(unauthorizedHandler)
                         .accessDeniedHandler(accessDeniedHandler)
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // public
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/new-verification-code").permitAll()
                         .requestMatchers(HttpMethod.PUT,  "/api/v1/users/*/new-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/password/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/device-tokens/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/super-admin/**").hasAuthority(UserRole.SUPER_ADMIN.name())
 
+                        // super-admin
+                        .requestMatchers(HttpMethod.POST, "/api/v1/super-admin/**")
+                        .hasAuthority(UserRole.SUPER_ADMIN.name())
 
+                        // разрешённые POST без ролей (как было)
                         .requestMatchers(HttpMethod.POST, "/api/v1/user-notifications/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/device-tokens/**").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/**").hasAnyAuthority(
+                        // СПЕЦИФИЧНЫЕ ПРАВИЛА ПЕРЕД ОБЩИМ /api/v1/users/**
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/users/course-orders",
+                                "/api/v1/users/course-orders/**"
+                        ).hasAnyAuthority(
                                 UserRole.SUPER_ADMIN.name(),
-                                UserRole.ADMIN.name()
+                                UserRole.ADMIN.name(),
+                                UserRole.MENTOR.name(),
+                                UserRole.HR.name(),
+                                UserRole.STUDENT.name()
                         )
-
-                        .requestMatchers(HttpMethod.POST, "/api/v1/user-notifications").hasAnyAuthority(
-                                UserRole.SUPER_ADMIN.name(),
-                                UserRole.ADMIN.name(),
-                                UserRole.MENTOR.name(),
-                                UserRole.HR.name()
-                        )
-
-                        .requestMatchers(HttpMethod.POST, "/api/v1/hr/**").hasAnyAuthority(
-                                UserRole.SUPER_ADMIN.name(),
-                                UserRole.ADMIN.name(),
-                                UserRole.MENTOR.name(),
-                                UserRole.HR.name())
-
-
-                        .requestMatchers(HttpMethod.POST, "/api/v1/mentor/**").hasAnyAuthority(
-                                UserRole.MENTOR.name(),
-                                UserRole.ADMIN.name(),
-                                UserRole.SUPER_ADMIN.name())
-
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/search").hasAnyAuthority(
                                 UserRole.SUPER_ADMIN.name(),
                                 UserRole.ADMIN.name(),
@@ -122,16 +111,33 @@ public class WebSecurityConfig {
                                 UserRole.HR.name()
                         )
 
+                        // ОБЩЕЕ правило на все остальные POST под /api/v1/users/**
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/**").hasAnyAuthority(
+                                UserRole.SUPER_ADMIN.name(),
+                                UserRole.ADMIN.name()
+                        )
+
+                        // HR / Mentor зоны
+                        .requestMatchers(HttpMethod.POST, "/api/v1/hr/**").hasAnyAuthority(
+                                UserRole.SUPER_ADMIN.name(),
+                                UserRole.ADMIN.name(),
+                                UserRole.MENTOR.name(),
+                                UserRole.HR.name()
+                        )
+                        .requestMatchers(HttpMethod.POST, "/api/v1/mentor/**").hasAnyAuthority(
+                                UserRole.MENTOR.name(),
+                                UserRole.ADMIN.name(),
+                                UserRole.SUPER_ADMIN.name()
+                        )
+
+                        // всё остальное
                         .anyRequest().permitAll()
                 );
 
         http.authenticationProvider(superAdminAuthenticationProvider());
         http.authenticationProvider(userAuthenticationProvider());
-
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
-
 }

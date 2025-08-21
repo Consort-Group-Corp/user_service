@@ -5,12 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uz.consortgroup.core.api.v1.dto.course.request.course.CourseCreateRequestDto;
 import uz.consortgroup.core.api.v1.dto.course.response.course.CourseResponseDto;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.ForumAccessType;
 import uz.consortgroup.userservice.client.CourseFeignClient;
+import uz.consortgroup.userservice.entity.ForumUserGroup;
 import uz.consortgroup.userservice.event.mentor.MentorActionType;
 import uz.consortgroup.userservice.exception.CourseCreationRollbackException;
 import uz.consortgroup.userservice.exception.MentorActionLoggingException;
 import uz.consortgroup.userservice.service.event.course_group.CourseGroupEventService;
 import uz.consortgroup.userservice.service.event.mentor.MentorActionLogger;
+import uz.consortgroup.userservice.service.forum_group.ForumUserGroupService;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,7 @@ public class CourseCreationSaga {
     private final CourseFeignClient courseFeignClient;
     private final MentorActionLogger mentorActionLogger;
     private final CourseGroupEventService courseGroupEventService;
+    private final ForumUserGroupService forumUserGroupService;
 
 
     public CourseResponseDto run(CourseCreateRequestDto dto) {
@@ -29,6 +33,7 @@ public class CourseCreationSaga {
         log.info("Creating course: title='{}', authorId={}", courseTitle, dto.getAuthorId());
 
         CourseResponseDto course;
+        ForumUserGroup group;
         try {
             course = courseFeignClient.createCourse(dto);
             log.info("Course created: id={}, title='{}'", course.getId(), courseTitle);
@@ -39,7 +44,15 @@ public class CourseCreationSaga {
 
         try {
             mentorActionLogger.logMentorResourceAction(course.getId(), course.getAuthorId(), MentorActionType.COURSE_CREATED);
-            courseGroupEventService.sendCourseGroupEvent(course);
+
+            group = forumUserGroupService.create(
+                    course.getId(),
+                    courseTitle,
+                    course.getAuthorId(),
+                    ForumAccessType.OPEN
+            );
+
+            courseGroupEventService.sendCourseGroupEvent(group, course.getStartTime(), course.getEndTime(), group.getOwnerId());
             log.info("Mentor action logged and course group event sent: courseId={}, authorId={}", course.getId(), course.getAuthorId());
         } catch (Exception ex) {
             log.warn("Failed to log mentor action or send event. Rolling back course creation: courseId={}", course.getId());

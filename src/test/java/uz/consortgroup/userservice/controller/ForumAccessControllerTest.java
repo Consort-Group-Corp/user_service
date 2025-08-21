@@ -42,13 +42,13 @@ class ForumAccessControllerTest {
     }
 
     @Test
-    void checkAccess_shouldReturnOkWithValidRequest() throws Exception {
+    void checkAccess_ByCourse_shouldReturnOkWithValidRequest() throws Exception {
         ForumAccessRequest request = new ForumAccessRequest();
         request.setUserId(UUID.randomUUID());
         request.setCourseId(UUID.randomUUID());
 
         ForumAccessResponse response = new ForumAccessResponse();
-        when(forumAccessService.checkAccess(any(ForumAccessRequest.class))).thenReturn(response);
+        when(forumAccessService.checkAccessByCourse(any(ForumAccessRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/forum-access/access")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -58,7 +58,7 @@ class ForumAccessControllerTest {
     }
 
     @Test
-    void checkAccess_shouldReturn400WhenMissingUserId() throws Exception {
+    void checkAccess_ByCourse_shouldReturn400WhenMissingUserId() throws Exception {
         ForumAccessRequest request = new ForumAccessRequest();
         request.setCourseId(UUID.randomUUID());
 
@@ -69,7 +69,7 @@ class ForumAccessControllerTest {
     }
 
     @Test
-    void checkAccess_shouldReturn400WhenMissingCourseId() throws Exception {
+    void checkAccess_ByCourse_shouldReturn400WhenMissingCourseId() throws Exception {
         ForumAccessRequest request = new ForumAccessRequest();
         request.setUserId(UUID.randomUUID());
 

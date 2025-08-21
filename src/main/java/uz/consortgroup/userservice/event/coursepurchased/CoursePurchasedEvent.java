@@ -17,5 +17,4 @@ public class CoursePurchasedEvent {
     private UUID userId;
     private UUID courseId;
     private Instant purchasedAt;
-    private Instant accessUntil;
 }

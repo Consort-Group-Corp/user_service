@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uz.consortgroup.core.api.v1.dto.course.response.course.CourseResponseDto;
 import uz.consortgroup.core.api.v1.dto.forum.CreateForumGroupByHrRequest;
 import uz.consortgroup.core.api.v1.dto.forum.HrForumGroupCreateResponse;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.ForumAccessType;
 import uz.consortgroup.userservice.client.CourseFeignClient;
 import uz.consortgroup.userservice.entity.ForumUserGroup;
 import uz.consortgroup.userservice.event.hr.HrActionType;
@@ -45,13 +46,18 @@ public class HrForumGroupServiceImpl implements HrForumGroupService {
 
         try {
             userServiceValidator.validateAllUsersExist(request.getUserIds());
+            userServiceValidator.validateIsMentor(request.getOwnerId());
             log.info("User existence validated for {} user(s)", request.getUserIds().size());
 
             CourseResponseDto course = courseFeignClient.getCourseById(request.getCourseId());
             String title = getCourseTitle(course);
             log.info("Fetched course: id={}, title={}", course.getId(), title);
 
-            ForumUserGroup group = forumUserGroupService.create(request.getCourseId(), "HR: " + title);
+            ForumUserGroup group = forumUserGroupService.create(
+                    request.getCourseId(),
+                    "HR: " + title,
+                    request.getOwnerId(),
+                    ForumAccessType.OPEN);
             log.info("Forum group created with id: {}", group.getId());
 
             hrActionLogger.logHrCreatedForum(group.getId(), hrId, HrActionType.FORUM_GROUP_CREATED);
@@ -60,7 +66,7 @@ public class HrForumGroupServiceImpl implements HrForumGroupService {
             forumUserGroupMembershipService.assignUsers(group.getId(), request.getUserIds());
             log.info("Assigned {} users to forum group {}", request.getUserIds().size(), group.getId());
 
-            courseGroupEventService.sendCourseGroupEvent(course);
+            courseGroupEventService.sendCourseGroupEvent(group, request.getStartTime(), request.getEndTime(), request.getOwnerId());
             log.info("Course group event sent for courseId={}", course.getId());
 
             request.getUserIds().forEach(userId ->
