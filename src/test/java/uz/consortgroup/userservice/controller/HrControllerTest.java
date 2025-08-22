@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,87 +36,163 @@ class HrControllerTest {
     private HrController hrController;
 
     private MockMvc mockMvc;
-    private  ObjectMapper objectMapper ;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(hrController).build();
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
     }
 
     @Test
     void createForumGroupByHr_shouldReturnCreatedResponse() throws Exception {
+        UUID courseId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID groupId = UUID.randomUUID();
+        Instant startTime = Instant.parse("2025-08-14T09:00:00Z");
+        Instant endTime = Instant.parse("2025-09-14T09:00:00Z");
+
         CreateForumGroupByHrRequest request = new CreateForumGroupByHrRequest();
-        request.setCourseId(UUID.randomUUID());
-        request.setUserIds(List.of(UUID.randomUUID()));
-        request.setStartTime(Instant.now());
-        request.setEndTime(Instant.now().plusSeconds(3600));
+        request.setCourseId(courseId);
+        request.setUserIds(List.of(userId));
+        request.setOwnerId(userId);
+        request.setStartTime(startTime);
+        request.setEndTime(endTime);
 
-        HrForumGroupCreateResponse response = new HrForumGroupCreateResponse();
-        when(hrForumGroupService.createHrForumGroup(any())).thenReturn(response);
+        HrForumGroupCreateResponse response = new HrForumGroupCreateResponse(groupId);
+        when(hrForumGroupService.createHrForumGroup(any(CreateForumGroupByHrRequest.class))).thenReturn(response);
 
-        mockMvc = MockMvcBuilders.standaloneSetup(hrController).build();
         mockMvc.perform(post("/api/v1/hr/groups")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.groupId").value(groupId.toString()));
     }
 
     @Test
     void createForumGroupByHr_shouldReturn400WhenMissingCourseId() throws Exception {
-        CreateForumGroupByHrRequest request = new CreateForumGroupByHrRequest();
-        request.setUserIds(List.of(UUID.randomUUID()));
-        request.setStartTime(Instant.now());
-        request.setEndTime(Instant.now().plusSeconds(3600));
+        UUID userId = UUID.randomUUID();
+        Instant startTime = Instant.parse("2025-08-14T09:00:00Z");
+        Instant endTime = Instant.parse("2025-09-14T09:00:00Z");
 
-        mockMvc = MockMvcBuilders.standaloneSetup(hrController).build();
+        CreateForumGroupByHrRequest request = new CreateForumGroupByHrRequest();
+        request.setUserIds(List.of(userId));
+        request.setStartTime(startTime);
+        request.setEndTime(endTime);
+
         mockMvc.perform(post("/api/v1/hr/groups")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void createForumGroupByHr_shouldReturn400WhenEmptyUserIds() throws Exception {
-        CreateForumGroupByHrRequest request = new CreateForumGroupByHrRequest();
-        request.setCourseId(UUID.randomUUID());
-        request.setUserIds(List.of());
-        request.setStartTime(Instant.now());
-        request.setEndTime(Instant.now().plusSeconds(3600));
+        UUID courseId = UUID.randomUUID();
+        Instant startTime = Instant.parse("2025-08-14T09:00:00Z");
+        Instant endTime = Instant.parse("2025-09-14T09:00:00Z");
 
-        mockMvc = MockMvcBuilders.standaloneSetup(hrController).build();
+        CreateForumGroupByHrRequest request = new CreateForumGroupByHrRequest();
+        request.setCourseId(courseId);
+        request.setUserIds(List.of());
+        request.setStartTime(startTime);
+        request.setEndTime(endTime);
+
         mockMvc.perform(post("/api/v1/hr/groups")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void createForumGroupByHr_shouldReturn400WhenMissingStartTime() throws Exception {
-        CreateForumGroupByHrRequest request = new CreateForumGroupByHrRequest();
-        request.setCourseId(UUID.randomUUID());
-        request.setUserIds(List.of(UUID.randomUUID()));
-        request.setEndTime(Instant.now().plusSeconds(3600));
+        UUID courseId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant endTime = Instant.parse("2025-09-14T09:00:00Z");
 
-        mockMvc = MockMvcBuilders.standaloneSetup(hrController).build();
+        CreateForumGroupByHrRequest request = new CreateForumGroupByHrRequest();
+        request.setCourseId(courseId);
+        request.setUserIds(List.of(userId));
+        request.setEndTime(endTime);
+
         mockMvc.perform(post("/api/v1/hr/groups")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void createForumGroupByHr_shouldReturn400WhenMissingEndTime() throws Exception {
-        CreateForumGroupByHrRequest request = new CreateForumGroupByHrRequest();
-        request.setCourseId(UUID.randomUUID());
-        request.setUserIds(List.of(UUID.randomUUID()));
-        request.setStartTime(Instant.now());
+        UUID courseId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant startTime = Instant.parse("2025-08-14T09:00:00Z");
 
-        mockMvc = MockMvcBuilders.standaloneSetup(hrController).build();
+        CreateForumGroupByHrRequest request = new CreateForumGroupByHrRequest();
+        request.setCourseId(courseId);
+        request.setUserIds(List.of(userId));
+        request.setStartTime(startTime);
+
         mockMvc.perform(post("/api/v1/hr/groups")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createForumGroupByHr_shouldReturn400WhenEndTimeBeforeStartTime() throws Exception {
+        UUID courseId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant startTime = Instant.parse("2025-09-14T09:00:00Z");
+        Instant endTime = Instant.parse("2025-08-14T09:00:00Z");
+
+        CreateForumGroupByHrRequest request = new CreateForumGroupByHrRequest();
+        request.setCourseId(courseId);
+        request.setUserIds(List.of(userId));
+        request.setStartTime(startTime);
+        request.setEndTime(endTime);
+
+        mockMvc.perform(post("/api/v1/hr/groups")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createForumGroupByHr_shouldReturn400WhenInvalidUUIDFormat() throws Exception {
+        String invalidRequest = """
+        {
+          "courseId": "invalid-uuid",
+          "userIds": ["2fbbf276-e14f-4db3-a2b3-db543d51d69c"],
+          "startTime": "2025-08-14T09:00:00Z",
+          "endTime": "2025-09-14T09:00:00Z"
+        }
+        """;
+
+        mockMvc.perform(post("/api/v1/hr/groups")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidRequest))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createForumGroupByHr_shouldReturn400WhenInvalidDateTimeFormat() throws Exception {
+        UUID courseId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        String invalidRequest = """
+        {
+          "courseId": "%s",
+          "userIds": ["%s"],
+          "startTime": "invalid-date-time",
+          "endTime": "2025-09-14T09:00:00Z"
+        }
+        """.formatted(courseId, userId);
+
+        mockMvc.perform(post("/api/v1/hr/groups")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidRequest))
                 .andExpect(status().isBadRequest());
     }
 }

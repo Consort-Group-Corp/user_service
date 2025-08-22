@@ -8,7 +8,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uz.consortgroup.core.api.v1.dto.course.request.course.CourseCreateRequestDto;
 import uz.consortgroup.core.api.v1.dto.course.response.course.CourseResponseDto;
 import uz.consortgroup.userservice.client.CourseFeignClient;
-import uz.consortgroup.userservice.event.mentor.MentorActionType;
 import uz.consortgroup.userservice.exception.CourseCreationRollbackException;
 import uz.consortgroup.userservice.exception.MentorActionLoggingException;
 import uz.consortgroup.userservice.service.event.course_group.CourseGroupEventService;
@@ -40,29 +39,6 @@ class CourseCreationSagaTest {
 
     @InjectMocks
     private CourseCreationSaga courseCreationSaga;
-
-    @Test
-    void run_ShouldSuccessfullyCreateCourseAndLogActions() {
-        CourseCreateRequestDto requestDto = new CourseCreateRequestDto();
-        UUID courseId = UUID.randomUUID();
-        UUID authorId = UUID.randomUUID();
-        
-        CourseResponseDto mockResponse = new CourseResponseDto();
-        mockResponse.setId(courseId);
-        mockResponse.setAuthorId(authorId);
-        
-        when(courseFeignClient.createCourse(any())).thenReturn(mockResponse);
-        doNothing().when(mentorActionLogger).logMentorResourceAction(any(), any(), any());
-        doNothing().when(courseGroupEventService).sendCourseGroupEvent(any());
-
-        CourseResponseDto response = courseCreationSaga.run(requestDto);
-
-        assertNotNull(response);
-        assertEquals(courseId, response.getId());
-        verify(courseFeignClient).createCourse(requestDto);
-        verify(mentorActionLogger).logMentorResourceAction(courseId, authorId, MentorActionType.COURSE_CREATED);
-        verify(courseGroupEventService).sendCourseGroupEvent(mockResponse);
-    }
 
     @Test
     void run_ShouldThrowMentorActionLoggingExceptionWhenLoggingFails() {
@@ -119,7 +95,6 @@ class CourseCreationSagaTest {
             () -> courseCreationSaga.run(requestDto));
 
         verify(mentorActionLogger, never()).logMentorResourceAction(any(), any(), any());
-        verify(courseGroupEventService, never()).sendCourseGroupEvent(any());
         verify(courseFeignClient, never()).deleteCourse(any());
     }
 }

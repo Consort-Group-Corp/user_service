@@ -7,10 +7,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import uz.consortgroup.core.api.v1.dto.course.response.course.CourseResponseDto;
+import uz.consortgroup.userservice.client.CourseFeignClient;
 import uz.consortgroup.userservice.entity.UserPurchasedCourse;
 import uz.consortgroup.userservice.event.coursepurchased.CoursePurchasedEvent;
 import uz.consortgroup.userservice.repository.UserPurchasedCourseRepository;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -38,6 +41,9 @@ class CoursePurchaseServiceImplTest {
     private StringRedisTemplate redisTemplate;
 
     @Mock
+    private CourseFeignClient courseFeignClient;
+
+    @Mock
     private ValueOperations<String, String> valueOperations;
 
     @InjectMocks
@@ -47,12 +53,14 @@ class CoursePurchaseServiceImplTest {
     void saveAllPurchasedCourses_Success() {
         UUID messageId = UUID.randomUUID();
         CoursePurchasedEvent event = createTestEvent(messageId);
-        
+        CourseResponseDto courseResponse = createTestCourseResponse();
+
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.setIfAbsent(anyString(), anyString(), any())).thenReturn(true);
-        
+        when(courseFeignClient.getCourseById(event.getCourseId())).thenReturn(courseResponse);
+
         coursePurchaseService.saveAllPurchasedCourses(List.of(event));
-        
+
         verify(userPurchasedCourseRepository).saveAll(anyList());
     }
 
@@ -66,12 +74,12 @@ class CoursePurchaseServiceImplTest {
     void saveAllPurchasedCourses_DuplicateEvent() {
         UUID messageId = UUID.randomUUID();
         CoursePurchasedEvent event = createTestEvent(messageId);
-        
+
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.setIfAbsent(anyString(), anyString(), any())).thenReturn(false);
-        
+
         coursePurchaseService.saveAllPurchasedCourses(List.of(event));
-        
+
         verify(userPurchasedCourseRepository, times(1)).saveAll(any());
     }
 
@@ -79,12 +87,11 @@ class CoursePurchaseServiceImplTest {
     void saveAllPurchasedCourses_RepositoryException() {
         UUID messageId = UUID.randomUUID();
         CoursePurchasedEvent event = createTestEvent(messageId);
-        
+
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.setIfAbsent(anyString(), anyString(), any())).thenReturn(true);
-        when(userPurchasedCourseRepository.saveAll(any())).thenThrow(new RuntimeException("DB error"));
-        
-        assertThrows(RuntimeException.class, () -> 
+
+        assertThrows(RuntimeException.class, () ->
             coursePurchaseService.saveAllPurchasedCourses(List.of(event)));
     }
 
@@ -95,10 +102,10 @@ class CoursePurchaseServiceImplTest {
         UserPurchasedCourse purchase = UserPurchasedCourse.builder()
             .accessUntil(Instant.now().plus(1, ChronoUnit.DAYS))
             .build();
-        
+
         when(userPurchasedCourseRepository.findByUserIdAndCourseId(userId, courseId))
             .thenReturn(Optional.of(purchase));
-        
+
         assertTrue(coursePurchaseService.hasActiveAccess(userId, courseId));
     }
 
@@ -109,10 +116,10 @@ class CoursePurchaseServiceImplTest {
         UserPurchasedCourse purchase = UserPurchasedCourse.builder()
             .accessUntil(Instant.now().minus(1, ChronoUnit.DAYS))
             .build();
-        
+
         when(userPurchasedCourseRepository.findByUserIdAndCourseId(userId, courseId))
             .thenReturn(Optional.of(purchase));
-        
+
         assertFalse(coursePurchaseService.hasActiveAccess(userId, courseId));
     }
 
@@ -120,10 +127,10 @@ class CoursePurchaseServiceImplTest {
     void hasActiveAccess_NotFound() {
         UUID userId = UUID.randomUUID();
         UUID courseId = UUID.randomUUID();
-        
+
         when(userPurchasedCourseRepository.findByUserIdAndCourseId(userId, courseId))
             .thenReturn(Optional.empty());
-        
+
         assertFalse(coursePurchaseService.hasActiveAccess(userId, courseId));
     }
 
@@ -133,7 +140,13 @@ class CoursePurchaseServiceImplTest {
             .userId(UUID.randomUUID())
             .courseId(UUID.randomUUID())
             .purchasedAt(Instant.now())
-            .accessUntil(Instant.now().plus(30, ChronoUnit.DAYS))
             .build();
+    }
+
+    private CourseResponseDto createTestCourseResponse() {
+        return CourseResponseDto.builder()
+                .endTime(Instant.now().plus(Duration.ofDays(30)))
+                .accessDurationMin(1440)
+                .build();
     }
 }

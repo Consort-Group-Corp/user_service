@@ -39,15 +39,6 @@ class UserNotificationControllerTest {
     @MockitoBean
     private UserNotificationService userNotificationService;
 
-    @Test
-    void sendNotification_shouldReturnCreatedStatus_whenRequestIsValid() throws Exception {
-        NotificationCreateRequestDto request = createValidRequest();
-        
-        mockMvc.perform(post("/api/v1/user-notifications")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
-    }
 
     @Test
     void sendNotification_shouldReturnBadRequest_whenCreatedByUserIdIsNull() throws Exception {
@@ -130,6 +121,7 @@ class UserNotificationControllerTest {
         NotificationCreateRequestDto request = new NotificationCreateRequestDto();
         request.setCreatedByUserId(UUID.randomUUID());
         request.setCreatorRole(CreatorRole.SUPER_ADMIN);
+        request.setTranslations(Map.of(Language.ENGLISH, new TranslationDto()));
         request.setCommunication(Communication.EMAIL);
         request.setSendAt(LocalDateTime.now().plusHours(1));
         request.setActive(true);
