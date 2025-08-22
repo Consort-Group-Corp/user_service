@@ -102,4 +102,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     List<User> findByEmailIn(Collection<String> emails);
 
     List<User> findByPinflIn(Collection<String> pinfls);
+
+    boolean existsByIdAndRole(UUID id, UserRole role);
 }

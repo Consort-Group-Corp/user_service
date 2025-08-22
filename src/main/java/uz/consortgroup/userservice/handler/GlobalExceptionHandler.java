@@ -21,6 +21,7 @@ import uz.consortgroup.userservice.exception.CourseNotPurchasableException;
 import uz.consortgroup.userservice.exception.InvalidOrderIdFormatException;
 import uz.consortgroup.userservice.exception.InvalidPasswordException;
 import uz.consortgroup.userservice.exception.InvalidTokenException;
+import uz.consortgroup.userservice.exception.InvalidUserRoleException;
 import uz.consortgroup.userservice.exception.InvalidVerificationCodeException;
 import uz.consortgroup.userservice.exception.OrderAlreadyExistsException;
 import uz.consortgroup.userservice.exception.OrderCreationRollbackException;
@@ -73,6 +74,12 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Validation failed", ex.getMessage()));
     }
 
+    @ExceptionHandler(InvalidUserRoleException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidUserRoleException(InvalidUserRoleException ex) {
+        log.error("InvalidUserRoleException: ", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid role", ex.getMessage()));
+    }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {

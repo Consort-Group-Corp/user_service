@@ -3,9 +3,11 @@ package uz.consortgroup.userservice.service.forum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uz.consortgroup.core.api.v1.dto.forum.ForumAccessReason;
-import uz.consortgroup.core.api.v1.dto.forum.ForumAccessRequest;
+import uz.consortgroup.core.api.v1.dto.forum.ForumAccessByCourseRequest;
+import uz.consortgroup.core.api.v1.dto.forum.ForumAccessByGroupRequest;
+
 import uz.consortgroup.core.api.v1.dto.forum.ForumAccessResponse;
+import uz.consortgroup.core.api.v1.dto.forum.enumeration.ForumAccessReason;
 import uz.consortgroup.userservice.entity.CourseForumGroup;
 import uz.consortgroup.userservice.service.forum_group.CourseForumGroupCreationService;
 import uz.consortgroup.userservice.validator.ForumAccessValidator;
@@ -21,13 +23,13 @@ public class ForumAccessServiceImpl implements ForumAccessService {
     private final CourseForumGroupCreationService courseForumGroupCreationService;
 
     @Override
-    public ForumAccessResponse checkAccess(ForumAccessRequest request) {
+    public ForumAccessResponse checkAccessByCourse(ForumAccessByCourseRequest request) {
         UUID courseId = request.getCourseId();
         UUID userId = request.getUserId();
 
         log.info("Checking forum access: userId={}, courseId={}", userId, courseId);
 
-        ForumAccessReason reason = forumAccessValidator.validateAccess(courseId, userId);
+        ForumAccessReason reason = forumAccessValidator.validateAccessByCourse(courseId, userId);
         boolean hasAccess = reason == ForumAccessReason.USER_HAS_ACCESS;
 
         ForumAccessResponse response = ForumAccessResponse.builder()
@@ -39,6 +41,15 @@ public class ForumAccessServiceImpl implements ForumAccessService {
                 userId, courseId, hasAccess, reason);
 
         return response;
+    }
+
+    @Override
+    public ForumAccessResponse checkAccessByGroup(ForumAccessByGroupRequest request) {
+        ForumAccessReason reason = forumAccessValidator.validateAccessByGroup(request.getGroupId(), request.getUserId());
+        return ForumAccessResponse.builder()
+                .hasAccess(reason == ForumAccessReason.USER_HAS_ACCESS)
+                .reason(reason)
+                .build();
     }
 
     @Override

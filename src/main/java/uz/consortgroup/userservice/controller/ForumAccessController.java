@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uz.consortgroup.core.api.v1.dto.forum.ForumAccessRequest;
+import uz.consortgroup.core.api.v1.dto.forum.ForumAccessByCourseRequest;
+import uz.consortgroup.core.api.v1.dto.forum.ForumAccessByGroupRequest;
 import uz.consortgroup.core.api.v1.dto.forum.ForumAccessResponse;
 import uz.consortgroup.userservice.service.forum.ForumAccessService;
 
@@ -26,10 +27,16 @@ import java.util.UUID;
 public class ForumAccessController {
     private final ForumAccessService forumAccessService;
 
-    @PostMapping("/access")
+    @PostMapping("/by-course")
     @ResponseStatus(HttpStatus.OK)
-    public ForumAccessResponse checkAccess(@Valid @RequestBody ForumAccessRequest request) {
-        return forumAccessService.checkAccess(request);
+    public ForumAccessResponse checkAccessByCourse(@Valid @RequestBody ForumAccessByCourseRequest request) {
+        return forumAccessService.checkAccessByCourse(request);
+    }
+
+    @PostMapping("/by-group")
+    @ResponseStatus(HttpStatus.OK)
+    public ForumAccessResponse checkAccessByGroup(@Valid @RequestBody ForumAccessByGroupRequest request) {
+        return forumAccessService.checkAccessByGroup(request);
     }
 
     @GetMapping("/course-id/{groupId}")

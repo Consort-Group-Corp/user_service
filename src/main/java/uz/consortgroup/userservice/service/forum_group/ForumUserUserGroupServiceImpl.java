@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uz.consortgroup.core.api.v1.dto.user.enumeration.ForumAccessType;
 import uz.consortgroup.userservice.entity.ForumUserGroup;
 import uz.consortgroup.userservice.repository.ForumUserGroupRepository;
 
@@ -19,12 +20,14 @@ public class ForumUserUserGroupServiceImpl implements ForumUserGroupService {
 
     @Override
     @Transactional
-    public ForumUserGroup create(UUID courseId, String title) {
+    public ForumUserGroup create(UUID courseId, String title, UUID ownerId, ForumAccessType forumAccessType) {
         log.info("Creating forum user group for courseId={}, title='{}'", courseId, title);
 
         ForumUserGroup group = ForumUserGroup.builder()
                 .courseId(courseId)
+                .ownerId(ownerId)
                 .title(title)
+                .forumAccessType(ForumAccessType.OPEN)
                 .createdAt(Instant.now())
                 .build();
 

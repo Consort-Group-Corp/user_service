@@ -3,9 +3,11 @@ package uz.consortgroup.userservice.validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.core.api.v1.dto.user.request.UserRegistrationRequestDto;
 import uz.consortgroup.userservice.entity.User;
+import uz.consortgroup.userservice.exception.InvalidUserRoleException;
 import uz.consortgroup.userservice.exception.UserAlreadyExistsException;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.exception.UserRoleNotFoundException;
@@ -69,39 +71,14 @@ public class UserServiceValidator {
         log.info("All users exist");
     }
 
-    public void validatePasswordChangeRequest(Long userId, String oldPassword, String newPassword) {
-        log.info("Validating password change for userId: {}", userId);
-
-        if (userId == null) {
-            log.error("User ID is null");
-            throw new IllegalArgumentException("User ID cannot be null");
+    @Transactional(readOnly = true)
+    public void validateIsMentor(UUID ownerId) {
+        log.info("Validating owner role: {}", ownerId);
+        boolean ok = userRepository.existsByIdAndRole(ownerId, UserRole.MENTOR);
+        if (!ok) {
+            boolean exists = userRepository.existsById(ownerId);
+            if (!exists) throw new UserNotFoundException("User with id %s not found".formatted(ownerId));
+            throw new InvalidUserRoleException("Owner must have role MENTOR");
         }
-
-        if (oldPassword == null || oldPassword.isBlank()) {
-            log.error("Old password is empty");
-            throw new IllegalArgumentException("Old password cannot be empty");
-        }
-
-        if (newPassword == null || newPassword.isBlank()) {
-            log.error("New password is empty");
-            throw new IllegalArgumentException("New password cannot be empty");
-        }
-
-        if (oldPassword.equals(newPassword)) {
-            log.error("New password must be different from old password");
-            throw new IllegalArgumentException("New password must be different from old password");
-        }
-
-        if (!isPasswordValid(newPassword)) {
-            log.error("New password does not meet complexity requirements");
-            throw new IllegalArgumentException("Password does not meet complexity requirements");
-        }
-
-        log.info("Password change request is valid");
-    }
-
-    private boolean isPasswordValid(String password) {
-        String pattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$";
-        return password.matches(pattern);
     }
 }
