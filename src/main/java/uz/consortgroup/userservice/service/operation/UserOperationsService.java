@@ -16,4 +16,5 @@ public interface UserOperationsService {
     User getUserFromDbAndCacheById(UUID userId);
     User findUserByEmailOrPinfl(String query);
     List<User> findUsersBatch(List<String> emails, List<String> pinfls);
+    boolean isUserBlocked(UUID userId);
 }

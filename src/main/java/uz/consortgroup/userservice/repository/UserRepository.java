@@ -104,4 +104,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     List<User> findByPinflIn(Collection<String> pinfls);
 
     boolean existsByIdAndRole(UUID id, UserRole role);
+
+    @Query("SELECT CASE WHEN EXISTS (" +
+            "    SELECT 1 FROM User u WHERE u.id = :userId AND u.status = 'BLOCKED'" +
+            ") THEN true ELSE false END")
+    boolean isUserBlocked(UUID userId);
 }

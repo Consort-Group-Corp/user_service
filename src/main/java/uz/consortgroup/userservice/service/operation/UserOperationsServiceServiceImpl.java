@@ -166,6 +166,11 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
         return new ArrayList<>(new LinkedHashSet<>(results));
     }
 
+    @Override
+    public boolean isUserBlocked(UUID userId) {
+        return userRepository.isUserBlocked(userId);
+    }
+
     public List<User> findUsersInCacheOrDbByEmails(List<String> emails) {
         return findUsersInCacheOrDb(
                 emails,
