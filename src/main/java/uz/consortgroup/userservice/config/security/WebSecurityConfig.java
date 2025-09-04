@@ -82,6 +82,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/new-verification-code").permitAll()
                         .requestMatchers(HttpMethod.PUT,  "/api/v1/users/*/new-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/password/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/registration/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/device-tokens/**").permitAll()
 
