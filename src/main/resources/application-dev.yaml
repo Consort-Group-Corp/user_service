@@ -10,7 +10,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/consort_group
+    url: jdbc:postgresql://db:5432/consort_group
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
@@ -29,14 +29,13 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6381
+      host: consort-redis-user-service
+      port: 6379
 
   servlet:
     multipart:
       max-file-size: 1000MB
       max-request-size: 1000MB
-
 
 logging:
   level:
@@ -44,7 +43,7 @@ logging:
     org.springframework: DEBUG
 
 kafka:
-  bootstrap-servers: localhost:9092
+  bootstrap-servers: kafka:9092
   consumer-group-id: forum-service-group
   session-timeout-ms: 10000
   max-partition-fetch-bytes: 1048576
@@ -64,14 +63,14 @@ kafka:
     enable: true
 
 app:
-  link: http://localhost:8081/index.html
+  link: http://consort-user-service:8081/index.html
 
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka-service:8762/eureka/
   instance:
     prefer-ip-address: true
 
@@ -85,7 +84,7 @@ oneid:
   base-url: https://sso.egov.uz/sso/oauth/Authorization.do
   client-id: CLIENT_ID
   client-secret: CLIENT_SECRET
-  redirect-uri: http://localhost:8080/api/v1/oneid/callback
+  redirect-uri: http://api-gateway-service:8085/api/v1/oneid/callback
   token-url: https://sso.egov.uz/sso/oauth/Token.do
   profile-url: https://sso.egov.uz/sso/oauth/userinfo
   time-out: 5000
@@ -110,15 +109,15 @@ cache:
 
 course:
   service:
-     url: http://localhost:8084
+    url: http://consort-course-service:8084
 
 payment:
   service:
-    url: http://localhost:8086
+    url: http://consort-payment-service:8086
 
 notification:
   service:
-    url: http://localhost:8082
+    url: http://consort-notification-service:8082
 
 springdoc:
   api-docs:
@@ -135,4 +134,3 @@ springdoc:
   model-converters:
     pageable-converter:
       enabled: true
-
