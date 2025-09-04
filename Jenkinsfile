@@ -73,5 +73,11 @@ pipeline {
         always {
             cleanWs()
         }
+        success {
+            echo '✅ Build successful! Deployment ready!'
+        }
+        failure {
+            echo '❌ Build failed! Check the logs!'
+        }
     }
 }
