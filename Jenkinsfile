@@ -5,6 +5,18 @@ pipeline {
         gradle 'gradle-8'
     }
 
+    environment {
+        ENV_FILE = '/var/jenkins_home/.env'
+
+        POSTGRES_DB = sh(script: "grep '^POSTGRES_DB=' ${ENV_FILE} | cut -d= -f2", returnStdout: true).trim()
+        POSTGRES_USER = sh(script: "grep '^POSTGRES_USER=' ${ENV_FILE} | cut -d= -f2", returnStdout: true).trim()
+        POSTGRES_PASSWORD = sh(script: "grep '^POSTGRES_PASSWORD=' ${ENV_FILE} | cut -d= -f2", returnStdout: true).trim()
+        DB_USERNAME = sh(script: "grep '^DB_USERNAME=' ${ENV_FILE} | cut -d= -f2", returnStdout: true).trim()
+        DB_PASSWORD = sh(script: "grep '^DB_PASSWORD=' ${ENV_FILE} | cut -d= -f2", returnStdout: true).trim()
+        KAFKA_CLUSTER_ID = sh(script: "grep '^KAFKA_CLUSTER_ID=' ${ENV_FILE} | cut -d= -f2", returnStdout: true).trim()
+        SECURITY_TOKEN = sh(script: "grep '^SECURITY_TOKEN=' ${ENV_FILE} | cut -d= -f2", returnStdout: true).trim()
+    }
+
     triggers {
         pollSCM('')
     }
@@ -73,12 +85,13 @@ pipeline {
                         -p 8081:8081 \\
                         -v /app/logs/user:/var/log/user \\
                         -e SPRING_PROFILES_ACTIVE=dev \\
-                        -e SPRING_DATASOURCE_URL=jdbc:postgresql://consort-postgres:5432/consort_group \\
+                        -e SPRING_DATASOURCE_URL=jdbc:postgresql://consort-postgres:5432/${POSTGRES_DB} \\
                         -e SPRING_DATASOURCE_USERNAME=${POSTGRES_USER} \\
                         -e SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD} \\
                         -e SPRING_DATA_REDIS_HOST=consort-redis-user-service \\
                         -e SPRING_DATA_REDIS_PORT=6379 \\
                         -e SPRING_CLOUD_EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8762/eureka/ \\
+                        -e SECURITY_TOKEN=${SECURITY_TOKEN} \\
                         user-service:latest
 
                     echo "✅ User service deployed successfully!"
