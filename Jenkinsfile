@@ -41,7 +41,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh './gradlew clean build -x test'  # ← БЕЗ тестов
+                sh './gradlew clean build -x test'
             }
         }
 
@@ -61,6 +61,12 @@ pipeline {
     post {
         always {
             cleanWs()
+        }
+        success {
+            echo '✅ Build successful! Deployment ready!'
+        }
+        failure {
+            echo '❌ Build failed! Check the logs!'
         }
     }
 }
