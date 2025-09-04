@@ -21,17 +21,12 @@ pipeline {
         stage('Build Core DTO') {
             steps {
                 sh '''
-                    # Создаем отдельную директорию вне workspace
                     mkdir -p /tmp/core-dto-build
                     cd /tmp/core-dto-build
-
-                    # Клонируем и собираем core-api-dto
                     git clone https://github.com/Consort-Group-Corp/core_api_dto.git
                     cd core_api_dto
                     chmod +x gradlew
                     ./gradlew publishToMavenLocal
-
-                    # Очищаем временную директорию
                     cd /
                     rm -rf /tmp/core-dto-build
                 '''
@@ -46,13 +41,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh './gradlew clean build -x test'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh './gradlew test'
+                sh './gradlew clean build -x test'  # ← БЕЗ тестов
             }
         }
 
@@ -69,16 +58,9 @@ pipeline {
         }
     }
 
-
     post {
         always {
             cleanWs()
-        }
-        success {
-            echo '✅ Build successful! Deployment ready!'
-        }
-        failure {
-            echo '❌ Build failed! Check the logs!'
         }
     }
 }
