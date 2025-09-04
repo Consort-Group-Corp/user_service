@@ -6,9 +6,8 @@ pipeline {
         gradle 'gradle-8'
     }
 
-
     triggers {
-        githubPush()
+        pollSCM('')
     }
 
     stages {
@@ -22,7 +21,7 @@ pipeline {
 
         stage('Fix permissions') {
             steps {
-                sh 'chmod +x gradlew'  // исправляем права на выполнение
+                sh 'chmod +x gradlew'
             }
         }
 
@@ -53,15 +52,13 @@ pipeline {
 
     post {
         always {
-            cleanWs()  // очистка workspace
+            cleanWs()
         }
         success {
             echo '✅ Build successful! Deployment ready!'
-            // Можно добавить уведомление в Slack/Telegram
         }
         failure {
             echo '❌ Build failed! Check the logs!'
-            // Можно добавить уведомление об ошибке
         }
     }
 }
