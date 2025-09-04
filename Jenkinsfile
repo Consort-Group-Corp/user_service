@@ -18,15 +18,22 @@ pipeline {
             }
         }
 
-        // ДОБАВЬТЕ ЭТОТ ЭТАП ↓
         stage('Build Core DTO') {
             steps {
                 sh '''
+                    # Создаем отдельную директорию вне workspace
+                    mkdir -p /tmp/core-dto-build
+                    cd /tmp/core-dto-build
+
+                    # Клонируем и собираем core-api-dto
                     git clone https://github.com/Consort-Group-Corp/core_api_dto.git
                     cd core_api_dto
                     chmod +x gradlew
                     ./gradlew publishToMavenLocal
-                    cd ..
+
+                    # Очищаем временную директорию
+                    cd /
+                    rm -rf /tmp/core-dto-build
                 '''
             }
         }
@@ -62,9 +69,16 @@ pipeline {
         }
     }
 
+
     post {
         always {
             cleanWs()
+        }
+        success {
+            echo '✅ Build successful! Deployment ready!'
+        }
+        failure {
+            echo '❌ Build failed! Check the logs!'
         }
     }
 }
