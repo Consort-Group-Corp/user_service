@@ -73,7 +73,7 @@ class UserControllerTest {
 
         when(userServiceImpl.registerNewUser(any(UserRegistrationRequestDto.class))).thenReturn(response);
 
-        mockMvc.perform(post(BASE_URL)
+        mockMvc.perform(post(BASE_URL + "/registration")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -183,7 +183,7 @@ class UserControllerTest {
         invalidDto.setPassword("Password123!");
         invalidDto.setLanguage(Language.UZBEK);
 
-        mockMvc.perform(post(BASE_URL)
+        mockMvc.perform(post(BASE_URL + "/registration")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest());
@@ -200,7 +200,7 @@ class UserControllerTest {
         when(userServiceImpl.registerNewUser(any(UserRegistrationRequestDto.class)))
                 .thenThrow(new UserAlreadyExistsException("Email already exists"));
 
-        mockMvc.perform(post(BASE_URL)
+        mockMvc.perform(post(BASE_URL + "/registration")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validDto)))
                 .andExpect(status().isConflict());

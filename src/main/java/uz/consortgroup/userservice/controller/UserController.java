@@ -37,7 +37,7 @@ public class UserController {
 
     // ---------- Регистрация ----------
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
+    @PostMapping("/registration")
     @Operation(
             operationId = "registerUser",
             summary = "Регистрация пользователя",
