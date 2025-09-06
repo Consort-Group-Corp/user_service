@@ -10,7 +10,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://db:5432/consort_group
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://consort-postgres:5432/${POSTGRES_DB:consort_group}}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
@@ -21,8 +21,7 @@ spring:
       ddl-auto: update
     show-sql: true
     properties:
-      hibernate:
-        format_sql: true
+      hibernate.format_sql: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -37,18 +36,31 @@ spring:
       max-file-size: 1000MB
       max-request-size: 1000MB
 
+  # === Kafka ===
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:forum-service-group}
+      auto-offset-reset: latest
+      properties:
+        session.timeout.ms: ${SPRING_KAFKA_CONSUMER_SESSION_TIMEOUT_MS:10000}
+        heartbeat.interval.ms: ${SPRING_KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS:3000}
+        max.partition.fetch.bytes: ${SPRING_KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES:1048576}
+      max-poll-records: ${SPRING_KAFKA_CONSUMER_MAX_POLL_RECORDS:500}
+      max-poll-interval: ${SPRING_KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS:300000}
+    producer:
+      acks: all
+      retries: 10
+    admin:
+      auto-create: true
+
 logging:
   level:
     root: INFO
     org.springframework: DEBUG
 
-kafka:
-  bootstrap-servers: kafka:9092
-  consumer-group-id: forum-service-group
-  session-timeout-ms: 10000
-  max-partition-fetch-bytes: 1048576
-  max-poll-records: 500
-  max-poll-interval-ms: 300000
+# === Бизнесовые топики ===
+topics:
   user-registration: user-registered-topic
   user-update-profile: user-update-profile-topic
   verification-code-resent: verification-code-resent-topic
@@ -59,8 +71,6 @@ kafka:
   course-purchased: course-purchased-topic
   course-forum-group: course-forum-group-created-topic
   hr-action: hr-action-topic
-  producer:
-    enable: true
 
 app:
   link: http://consort-user-service:8081/index.html
@@ -122,7 +132,6 @@ notification:
 springdoc:
   api-docs:
     enabled: true
-
   swagger-ui:
     docExpansion: full
     defaultModelsExpandDepth: 1
@@ -130,7 +139,6 @@ springdoc:
     defaultModelRendering: schema
     operationsSorter: method
     tagsSorter: alpha
-
   model-converters:
     pageable-converter:
       enabled: true
