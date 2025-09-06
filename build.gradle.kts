@@ -91,6 +91,8 @@ dependencies {
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
+    //Actuator
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     // Тестирование
     testImplementation("org.springframework.boot:spring-boot-starter-test")

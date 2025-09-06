@@ -78,6 +78,7 @@ public class WebSecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // public
+                        .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/new-verification-code").permitAll()
                         .requestMatchers(HttpMethod.PUT,  "/api/v1/users/*/new-password").permitAll()
