@@ -1,6 +1,6 @@
 pipeline {
   agent any
-  options { timestamps(); ansiColor('xterm') }
+  options { timestamps(); skipDefaultCheckout() }
 
   tools {
     jdk 'jdk-21'
@@ -12,11 +12,11 @@ pipeline {
   }
 
   environment {
-    SERVICE_NAME = 'user-service'
+    SERVICE_NAME   = 'user-service'
     CONTAINER_NAME = 'consort-user-service'
     DOCKER_NETWORK = 'consort-infra_consort-network'
-    LOGS_DIR = '/app/logs/user'
-    ENV_FILE = '/var/jenkins_home/.env'
+    LOGS_DIR       = '/app/logs/user'
+    ENV_FILE       = '/var/jenkins_home/.env'   // сейчас ты его уже скопировал сюда
   }
 
   stages {
@@ -25,8 +25,8 @@ pipeline {
         checkout scm
         script {
           env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-          env.IMAGE_TAG = "${env.SERVICE_NAME}:${env.GIT_COMMIT_SHORT}"
-          env.IMAGE_LATEST = "${env.SERVICE_NAME}:latest"
+          env.IMAGE_TAG        = "${env.SERVICE_NAME}:${env.GIT_COMMIT_SHORT}"
+          env.IMAGE_LATEST     = "${env.SERVICE_NAME}:latest"
         }
       }
     }
@@ -70,23 +70,18 @@ pipeline {
 
     stage('Docker build') {
       steps {
-        sh """
-          docker build -t ${IMAGE_TAG} -t ${IMAGE_LATEST} .
-        """
+        sh "docker build -t ${IMAGE_TAG} -t ${IMAGE_LATEST} ."
       }
     }
 
     stage('Deploy') {
       steps {
         sh """
-          # сеть должна существовать заранее (её создаёт compose-инфра)
           mkdir -p ${LOGS_DIR} || true
 
-          # остановить/удалить старый контейнер
           docker stop ${CONTAINER_NAME} || true
           docker rm   ${CONTAINER_NAME} || true
 
-          # запустить новый
           docker run -d \
             --name ${CONTAINER_NAME} \
             --network ${DOCKER_NETWORK} \
