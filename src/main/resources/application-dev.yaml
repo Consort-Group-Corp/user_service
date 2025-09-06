@@ -30,6 +30,14 @@ spring:
     redis:
       host: ${REDIS_USER_HOST:consort-redis-user-service}
       port: ${REDIS_USER_PORT:6379}
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+        shutdown-timeout: 100ms
 
   servlet:
     multipart:
@@ -92,6 +100,18 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+      show-components: when_authorized
+  health:
+    redis:
+      enabled: false
+    db:
+      enabled: true
+    defaults:
+      enabled: true
+    diskspace:
+      enabled: true
+    ping:
+      enabled: true
 
 oneid:
   base-url: https://sso.egov.uz/sso/oauth/Authorization.do
@@ -145,4 +165,3 @@ springdoc:
   model-converters:
     pageable-converter:
       enabled: true
-
