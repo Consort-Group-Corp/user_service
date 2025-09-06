@@ -96,24 +96,33 @@ pipeline {
           docker run -d \
             --name ${CONTAINER_NAME} \
             --network ${DOCKER_NETWORK} \
+            --restart unless-stopped \
             -p 8081:8081 \
             -v ${LOGS_DIR}:/var/log/user \
+            --env-file ${ENV_FILE} \
+            -e TZ=Asia/Tashkent \
             -e SPRING_PROFILES_ACTIVE=dev \
             -e SPRING_DATASOURCE_URL=jdbc:postgresql://consort-postgres:5432/${POSTGRES_DB} \
             -e SPRING_DATASOURCE_USERNAME=${POSTGRES_USER} \
             -e SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD} \
             -e SPRING_DATA_REDIS_HOST=consort-redis-user-service \
             -e SPRING_DATA_REDIS_PORT=6379 \
-            -e SPRING_CLOUD_EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8762/eureka/ \
+            -e SPRING_KAFKA_BOOTSTRAP_SERVERS=consort-kafka:9092 \
+            -e EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://consort-eureka-service:8762/eureka/ \
+            -e JAVA_TOOL_OPTIONS="-Deureka.client.serviceUrl.defaultZone=http://consort-eureka-service:8762/eureka/ -Dspring.kafka.bootstrap-servers=consort-kafka:9092" \
+            -e SPRING_APPLICATION_JSON='{"eureka":{"client":{"serviceUrl":{"defaultZone":"http://consort-eureka-service:8762/eureka/"}}},"spring":{"kafka":{"bootstrap-servers":"consort-kafka:9092"}}}' \
             -e SECURITY_TOKEN=${SECURITY_TOKEN} \
             ${IMAGE_TAG}
+
+          # короткий smoke-check (опционально)
+          sleep 5
+          curl -sf http://localhost:8081/actuator/health >/dev/null || (docker logs --tail=200 ${CONTAINER_NAME}; exit 1)
 
           echo "✅ Deployed ${CONTAINER_NAME} with image ${IMAGE_TAG}"
         '''
       }
     }
   }
-
 
   post {
     success {
