@@ -16,7 +16,7 @@ pipeline {
     CONTAINER_NAME = 'consort-user-service'
     DOCKER_NETWORK = 'consort-infra_consort-network'
     LOGS_DIR       = '/app/logs/user'
-    ENV_FILE       = '/var/jenkins_home/.env'   // сейчас ты его уже скопировал сюда
+    ENV_FILE       = '/var/jenkins_home/.env'
   }
 
   stages {
@@ -34,14 +34,13 @@ pipeline {
     stage('Load .env') {
       steps {
         script {
-          def p = readProperties file: env.ENV_FILE
-          env.POSTGRES_DB       = p.POSTGRES_DB ?: 'consort_group'
-          env.POSTGRES_USER     = p.POSTGRES_USER ?: 'consort'
-          env.POSTGRES_PASSWORD = p.POSTGRES_PASSWORD ?: ''
-          env.DB_USERNAME       = p.DB_USERNAME ?: env.POSTGRES_USER
-          env.DB_PASSWORD       = p.DB_PASSWORD ?: env.POSTGRES_PASSWORD
-          env.KAFKA_CLUSTER_ID  = p.KAFKA_CLUSTER_ID ?: 'consort-cluster-id'
-          env.SECURITY_TOKEN    = p.SECURITY_TOKEN ?: ''
+          def rd = { k -> sh(script: "grep -E '^${k}=' ${env.ENV_FILE} | head -n1 | cut -d= -f2- || true", returnStdout: true).trim() }
+          env.POSTGRES_DB       = rd('POSTGRES_DB')       ?: 'consort_group'
+          env.POSTGRES_USER     = rd('POSTGRES_USER')     ?: 'consort'
+          env.POSTGRES_PASSWORD = rd('POSTGRES_PASSWORD') ?: ''
+          env.DB_USERNAME       = rd('DB_USERNAME')       ?: env.POSTGRES_USER
+          env.DB_PASSWORD       = rd('DB_PASSWORD')       ?: env.POSTGRES_PASSWORD
+          env.SECURITY_TOKEN    = rd('SECURITY_TOKEN')    ?: ''
         }
       }
     }
