@@ -145,3 +145,4 @@ springdoc:
   model-converters:
     pageable-converter:
       enabled: true
+
