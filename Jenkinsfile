@@ -122,7 +122,7 @@ pipeline {
         docker rmi  ${IMAGE_TAG} || true
       """
     }
-    always {
+    cleanup {
       cleanWs(deleteDirs: true, disableDeferredWipeout: true, notFailBuild: true)
     }
   }
