@@ -10,9 +10,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://consort-postgres:5432/${POSTGRES_DB:consort_group}}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:consort-postgres}:${DB_PORT:5432}/${POSTGRES_DB:consort_group}}
+    username: ${DB_USERNAME:${POSTGRES_USER:consort}}
+    password: ${DB_PASSWORD:${POSTGRES_PASSWORD:consort}}
     hikari:
       maximum-pool-size: 10
 
@@ -28,38 +28,37 @@ spring:
 
   data:
     redis:
-      host: consort-redis-user-service
-      port: 6379
+      host: ${REDIS_USER_HOST:consort-redis-user-service}
+      port: ${REDIS_USER_PORT:6379}
 
   servlet:
     multipart:
       max-file-size: 1000MB
       max-request-size: 1000MB
 
-  # === Kafka ===
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
     consumer:
-      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:forum-service-group}
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:user-service-group}
       auto-offset-reset: latest
+      max-poll-records: ${SPRING_KAFKA_CONSUMER_MAX_POLL_RECORDS:500}
       properties:
         session.timeout.ms: ${SPRING_KAFKA_CONSUMER_SESSION_TIMEOUT_MS:10000}
         heartbeat.interval.ms: ${SPRING_KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS:3000}
         max.partition.fetch.bytes: ${SPRING_KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES:1048576}
-      max-poll-records: ${SPRING_KAFKA_CONSUMER_MAX_POLL_RECORDS:500}
-      max-poll-interval: ${SPRING_KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS:300000}
+        max.poll.interval.ms: ${SPRING_KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS:300000}
     producer:
       acks: all
       retries: 10
-    admin:
-      auto-create: true
+    properties:
+      metadata.max.age.ms: 30000
 
 logging:
   level:
     root: INFO
     org.springframework: DEBUG
 
-# === Бизнесовые топики ===
+# Бизнес-топики
 topics:
   user-registration: user-registered-topic
   user-update-profile: user-update-profile-topic
@@ -73,14 +72,14 @@ topics:
   hr-action: hr-action-topic
 
 app:
-  link: http://consort-user-service:8081/index.html
+  link: ${APP_LINK:http://consort-user-service:8081/index.html}
 
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://eureka-service:8762/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://eureka-service:8762/eureka/}
   instance:
     prefer-ip-address: true
 
@@ -92,21 +91,21 @@ management:
 
 oneid:
   base-url: https://sso.egov.uz/sso/oauth/Authorization.do
-  client-id: CLIENT_ID
-  client-secret: CLIENT_SECRET
-  redirect-uri: http://api-gateway-service:8085/api/v1/oneid/callback
+  client-id: ${ONEID_CLIENT_ID:CLIENT_ID}
+  client-secret: ${ONEID_CLIENT_SECRET:CLIENT_SECRET}
+  redirect-uri: ${ONEID_REDIRECT_URI:http://api-gateway-service:8085/api/v1/oneid/callback}
   token-url: https://sso.egov.uz/sso/oauth/Token.do
   profile-url: https://sso.egov.uz/sso/oauth/userinfo
   time-out: 5000
 
 mintrud:
   api:
-    token: wUIBjx3G1C1Ee+eIXtt/zVIFkS40lhoan0
-    url: https://example.com/mintrud/api
+    token: ${MINTRUD_TOKEN:wUIBjx3G1C1Ee+eIXtt/zVIFkS40lhoan0}
+    url: ${MINTRUD_URL:https://example.com/mintrud/api}
 
 security:
   token: ${SECURITY_TOKEN}
-  expiration: 3600000
+  expiration: ${JWT_EXPIRATION_MS:3600000}
 
 async:
   core-pool-size: 5
@@ -119,15 +118,15 @@ cache:
 
 course:
   service:
-    url: http://consort-course-service:8084
+    url: ${COURSE_SERVICE_URL:http://consort-course-service:8084}
 
 payment:
   service:
-    url: http://consort-payment-service:8086
+    url: ${PAYMENT_SERVICE_URL:http://consort-payment-service:8086}
 
 notification:
   service:
-    url: http://consort-notification-service:8082
+    url: ${NOTIFICATION_SERVICE_URL:http://consort-notification-service:8082}
 
 springdoc:
   api-docs:
