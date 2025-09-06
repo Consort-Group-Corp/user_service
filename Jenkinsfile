@@ -16,7 +16,7 @@ pipeline {
     CONTAINER_NAME = 'consort-user-service'
     DOCKER_NETWORK = 'consort-infra_consort-network'
     LOGS_DIR       = '/app/logs/user'
-    ENV_FILE       = '/var/jenkins_home/.env'   // сейчас ты его уже скопировал сюда
+    ENV_FILE       = '/var/jenkins_home/.env'
   }
 
   stages {
