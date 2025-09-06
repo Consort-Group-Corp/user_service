@@ -37,7 +37,7 @@ spring:
       max-request-size: 1000MB
 
   kafka:
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:"consort-kafka:9092"}
     consumer:
       group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:user-service-group}
       auto-offset-reset: latest
@@ -79,15 +79,19 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://eureka-service:8762/eureka/}
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://consort-eureka-service:8762/eureka/}
   instance:
     prefer-ip-address: true
+    instance-id: ${HOSTNAME}:${server.port}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
 
 oneid:
   base-url: https://sso.egov.uz/sso/oauth/Authorization.do
