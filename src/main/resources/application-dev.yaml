@@ -59,7 +59,7 @@ logging:
     org.springframework: DEBUG
 
 # Бизнес-топики
-topics:
+kafka:
   user-registration: user-registered-topic
   user-update-profile: user-update-profile-topic
   verification-code-resent: verification-code-resent-topic
