@@ -1,5 +1,6 @@
 server:
   port: 8081
+  forward-headers-strategy: framework
 
 spring:
   config:
@@ -162,6 +163,7 @@ springdoc:
     defaultModelRendering: schema
     operationsSorter: method
     tagsSorter: alpha
+    use-root-path: true
   model-converters:
     pageable-converter:
       enabled: true

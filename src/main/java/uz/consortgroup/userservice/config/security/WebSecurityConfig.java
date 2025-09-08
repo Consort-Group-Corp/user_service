@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.userservice.security.CustomAccessDeniedHandler;
 import uz.consortgroup.userservice.service.impl.UserDetailsServiceImpl;
@@ -49,6 +51,22 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        var cors = new org.springframework.web.cors.CorsConfiguration();
+        cors.setAllowedOrigins(java.util.List.of(
+                "http://164.92.247.120:8085",
+                "http://localhost:8085"
+        ));
+        cors.setAllowedMethods(java.util.List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        cors.setAllowedHeaders(java.util.List.of("*"));
+        cors.setAllowCredentials(true);
+
+        var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cors);
+        return source;
+    }
+
+    @Bean
     public DaoAuthenticationProvider superAdminAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(superAdminDetailsService);
@@ -71,6 +89,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(unauthorizedHandler)
                         .accessDeniedHandler(accessDeniedHandler)
@@ -78,6 +97,7 @@ public class WebSecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // public
+                        .requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/new-verification-code").permitAll()
