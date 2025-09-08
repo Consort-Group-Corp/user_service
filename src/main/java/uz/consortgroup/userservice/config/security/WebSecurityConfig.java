@@ -16,7 +16,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.userservice.security.CustomAccessDeniedHandler;
 import uz.consortgroup.userservice.service.impl.UserDetailsServiceImpl;
@@ -52,7 +54,7 @@ public class WebSecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        var cors = new org.springframework.web.cors.CorsConfiguration();
+        CorsConfiguration cors = new CorsConfiguration();
         cors.setAllowedOrigins(java.util.List.of(
                 "http://164.92.247.120:8085",
                 "http://localhost:8085"
@@ -61,7 +63,7 @@ public class WebSecurityConfig {
         cors.setAllowedHeaders(java.util.List.of("*"));
         cors.setAllowCredentials(true);
 
-        var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cors);
         return source;
     }
@@ -105,6 +107,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/password/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/registration/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/super-admin/login").permitAll()
                         .requestMatchers("/api/v1/device-tokens/**").permitAll()
 
                         // super-admin
