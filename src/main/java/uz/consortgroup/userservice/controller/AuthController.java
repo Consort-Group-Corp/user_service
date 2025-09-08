@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class AuthController {
     private final AuthService authService;
 
     @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirements(value = {})
     @Operation(
             summary = "Аутентификация пользователя",
             description = "Авторизация по языку интерфейса, электронной почте и паролю. "
@@ -90,6 +92,7 @@ public class AuthController {
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirements(value = {})
     @Operation(
             summary = "Аутентификация супер админа",
             description = "Авторизация супер-администратора по языку интерфейса, электронной почте и паролю."

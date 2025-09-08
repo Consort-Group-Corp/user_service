@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -37,6 +38,7 @@ public class UserController {
 
     // ---------- Регистрация ----------
     @ResponseStatus(HttpStatus.CREATED)
+    @SecurityRequirements(value = {})
     @PostMapping("/registration")
     @Operation(
             operationId = "registerUser",
@@ -69,6 +71,7 @@ public class UserController {
 
     // ---------- Верификация ----------
     @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirements(value = {})
     @PostMapping("/{userId}/verification")
     @Operation(
             operationId = "verifyUser",
@@ -97,6 +100,7 @@ public class UserController {
 
     // ---------- Повторная отправка кода ----------
     @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirements(value = {})
     @PostMapping("/{userId}/new-verification-code")
     @Operation(
             operationId = "resendVerificationCode",
