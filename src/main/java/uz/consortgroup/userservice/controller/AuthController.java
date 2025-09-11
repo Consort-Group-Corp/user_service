@@ -91,6 +91,7 @@ public class AuthController {
         return authService.authenticateUser(loginRequest);
     }
 
+
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirements(value = {})
     @Operation(
