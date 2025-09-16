@@ -80,45 +80,206 @@ public class MentorController {
     @Operation(
             operationId = "createCourse",
             summary = "Создать курс",
-            description = "Создаёт курс с переводами, модулями и уроками. Время указывать в ISO-8601 (UTC)."
+            description = """
+                    Создаёт курс с переводами, модулями и уроками. Время указывать в ISO-8601 (UTC).
+                    Обрати внимание: slug у переводов курса может быть нормализован/изменён бекендом (например, для дедупликации),
+                    а у переводов модулей/уроков в ответе slug может не возвращаться — это ожидаемо.
+                    """
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Курс создан",
-                    content = @Content(schema = @Schema(implementation = CourseResponseDto.class),
-                            examples = @ExampleObject(value = """
-                {
-                  "id": "9e09e19d-2988-453f-ab69-e8f39a8f723b",
-                  "authorId": "e2f00427-fd76-41ad-940e-4624955f9384",
-                  "courseType": "BASE",
-                  "priceType": "PAID",
-                  "priceAmount": 99.99,
-                  "discountPercent": 10.0,
-                  "startTime": "2025-05-01T10:00:00Z",
-                  "endTime": "2025-07-01T10:00:00Z",
-                  "accessDurationMin": 1440,
-                  "courseStatus": "ACTIVE",
-                  "coverImageUrl": "",
-                  "createdAt": "2025-08-13T23:02:19.5947094",
-                  "updatedAt": null,
-                  "translations": [],
-                  "modules": []
-                }
-                """))),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Неавторизовано",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Курс создан",
+                    content = @Content(
+                            schema = @Schema(implementation = CourseResponseDto.class),
+                            examples = @ExampleObject(
+                                    name = "Пример успешного ответа",
+                                    value = """
+                                            {
+                                              "id": "69816784-e946-44ff-b9e1-8ac480afb976",
+                                              "authorId": "093572fb-e50f-476b-b5e7-3bc2513ace53",
+                                              "courseType": "BASE",
+                                              "priceType": "PAID",
+                                              "priceAmount": 120000.99,
+                                              "discountPercent": 10.0,
+                                              "startTime": "2025-09-01T10:00:00Z",
+                                              "endTime": "2025-10-01T10:00:00Z",
+                                              "accessDurationMin": 1440,
+                                              "courseStatus": "ACTIVE",
+                                              "coverImageUrl": "",
+                                              "createdAt": "2025-09-17T00:43:55.6735746",
+                                              "updatedAt": null,
+                                              "translations": [
+                                                {
+                                                  "id": "c1a198a8-4f0b-4100-997e-53cad57cf9b6",
+                                                  "language": "RU",
+                                                  "title": "Курс по Java 2",
+                                                  "description": "Углублённый курс по разработке на Java",
+                                                  "slug": "Курс по java для начинающих 3"
+                                                },
+                                                {
+                                                  "id": "e0d1e029-13e5-41f2-be1e-69cb5827af47",
+                                                  "language": "EN",
+                                                  "title": "Java Course 2",
+                                                  "description": "Advanced Java development course",
+                                                  "slug": "Java junior course 3"
+                                                }
+                                              ],
+                                              "modules": [
+                                                {
+                                                  "id": "6f9b30b5-98d1-49c1-bf3e-1edcd15e5a70",
+                                                  "courseId": "69816784-e946-44ff-b9e1-8ac480afb976",
+                                                  "moduleName": "Основы Java 2",
+                                                  "orderPosition": 1,
+                                                  "isActive": true,
+                                                  "createdAt": "2025-09-17T00:43:55.7019126",
+                                                  "updatedAt": null,
+                                                  "translations": [
+                                                    {
+                                                      "id": "00481cb0-9fb4-42cc-a355-b54e8a350729",
+                                                      "language": "RU",
+                                                      "title": "Введени 2е",
+                                                      "description": "Первый модуль — знакомство с курсом 2"
+                                                    },
+                                                    {
+                                                      "id": "04ee2986-5737-447a-aca6-6be9bae56ffd",
+                                                      "language": "EN",
+                                                      "title": "Introduction 2",
+                                                      "description": "First module — course overview"
+                                                    }
+                                                  ],
+                                                  "lessons": [
+                                                    {
+                                                      "id": "7e10821c-9cd1-405d-a643-d08ecb2882a1",
+                                                      "moduleId": "6f9b30b5-98d1-49c1-bf3e-1edcd15e5a70",
+                                                      "orderPosition": 1,
+                                                      "lessonType": "VIDEO",
+                                                      "contentUrl": "url-to-content",
+                                                      "durationMinutes": 30,
+                                                      "isPreview": true,
+                                                      "createdAt": "2025-09-17T00:43:55.7042901",
+                                                      "updatedAt": "2025-09-17T00:43:55.7099339",
+                                                      "translations": [
+                                                        {
+                                                          "id": "2d1158aa-75fe-435b-b030-187423bd6d9d",
+                                                          "language": "RU",
+                                                          "title": "Урок 1",
+                                                          "description": "Первый урок"
+                                                        },
+                                                        {
+                                                          "id": "693342b9-3c88-4873-86f7-c47e66850abf",
+                                                          "language": "EN",
+                                                          "title": "Lesson 1",
+                                                          "description": "First lesson"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Ошибка валидации",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Неавторизовано",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
     })
     public CourseResponseDto createCourse(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Данные курса",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = CourseCreateRequestDto.class))
+                    content = @Content(
+                            schema = @Schema(implementation = CourseCreateRequestDto.class),
+                            examples = @ExampleObject(
+                                    name = "Пример запроса",
+                                    value = """
+                                            {
+                                              "authorId": "093572fb-e50f-476b-b5e7-3bc2513ace53",
+                                              "courseType": "BASE",
+                                              "priceType": "PAID",
+                                              "priceAmount": 120000.99,
+                                              "discountPercent": 10.0,
+                                              "startTime": "2025-09-01T10:00:00Z",
+                                              "endTime":   "2025-10-01T10:00:00Z",
+                                              "accessDurationMin": 1440,
+                                              "courseStatus": "ACTIVE",
+                                              "coverImageUrl": "",
+                                              "translations": [
+                                                {
+                                                  "language": "RU",
+                                                  "title": "Курс по Java 2",
+                                                  "description": "Углублённый курс по разработке на Java",
+                                                  "slug": "Курс по java для начинающих 2"
+                                                },
+                                                {
+                                                  "language": "EN",
+                                                  "title": "Java Course 2",
+                                                  "description": "Advanced Java development course",
+                                                  "slug": "Java junior course 2"
+                                                }
+                                              ],
+                                              "modules": [
+                                                {
+                                                  "moduleName": "Основы Java 2",
+                                                  "orderPosition": 1,
+                                                  "translations": [
+                                                    {
+                                                      "language": "RU",
+                                                      "title": "Введени 2е",
+                                                      "description": "Первый модуль — знакомство с курсом 2",
+                                                      "slug": "vedenies 2"
+                                                    },
+                                                    {
+                                                      "language": "EN",
+                                                      "title": "Introduction 2",
+                                                      "description": "First module — course overview",
+                                                      "slug": "introduction to module 2"
+                                                    }
+                                                  ],
+                                                  "lessons": [
+                                                    {
+                                                      "orderPosition": 1,
+                                                      "contentUrl": "url-to-content",
+                                                      "lessonType": "VIDEO",
+                                                      "isPreview": true,
+                                                      "durationMinutes": 30,
+                                                      "translations": [
+                                                        {
+                                                          "language": "RU",
+                                                          "title": "Урок 1",
+                                                          "description": "Первый урок",
+                                                          "slug": "urok-2"
+                                                        },
+                                                        {
+                                                          "language": "EN",
+                                                          "title": "Lesson 1",
+                                                          "description": "First lesson",
+                                                          "slug": "lesson-2"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                            """
+                            )
+                    )
             )
             @RequestBody @Valid CourseCreateRequestDto dto
     ) {
         return courseProxyService.createCourse(dto);
     }
+
 
     // ===== Загрузка видео (один файл) =====
     @PostMapping(value = "/lessons/{lessonId}/videos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -150,15 +311,15 @@ public class MentorController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = VideoUploadRequestDto.class),
                             examples = @ExampleObject(value = """
-                {
-                  "duration": 120,
-                  "resolution": "1080p",
-                  "orderPosition": 1,
-                  "translations": [
-                    {"language":"RU","title":"Введение","description":"Что будет в курсе"}
-                  ]
-                }
-                """)))
+                                    {
+                                      "duration": 120,
+                                      "resolution": "1080p",
+                                      "orderPosition": 1,
+                                      "translations": [
+                                        {"language":"RU","title":"Введение","description":"Что будет в курсе"}
+                                      ]
+                                    }
+                                    """)))
             @RequestPart("metadata") String metadataJson,
 
             @Parameter(
@@ -206,13 +367,13 @@ public class MentorController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = BulkVideoUploadRequestDto.class),
                             examples = @ExampleObject(value = """
-                {
-                  "videos": [
-                    {"duration": 120, "resolution": "1080p", "orderPosition": 1, "translations":[]},
-                    {"duration": 95,  "resolution": "720p",  "orderPosition": 2, "translations":[]}
-                  ]
-                }
-                """)))
+                                    {
+                                      "videos": [
+                                        {"duration": 120, "resolution": "1080p", "orderPosition": 1, "translations":[]},
+                                        {"duration": 95,  "resolution": "720p",  "orderPosition": 2, "translations":[]}
+                                      ]
+                                    }
+                                    """)))
             @RequestPart("metadata") String metadataJson,
 
             @Parameter(
@@ -251,8 +412,8 @@ public class MentorController {
                     required = true,
                     content = @Content(mediaType = "application/json",
                             examples = @ExampleObject(value = """
-                {"orderPosition":1,"translations":[{"language":"RU","title":"Схема","description":"..."}]}
-                """)))
+                                    {"orderPosition":1,"translations":[{"language":"RU","title":"Схема","description":"..."}]}
+                                    """)))
             @RequestPart("metadata") String metadataJson,
 
             @Parameter(
@@ -292,8 +453,8 @@ public class MentorController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = BulkImageUploadRequestDto.class),
                             examples = @ExampleObject(value = """
-                {"images":[{"orderPosition":1,"translations":[]},{"orderPosition":2,"translations":[]}]}
-                """)))
+                                    {"images":[{"orderPosition":1,"translations":[]},{"orderPosition":2,"translations":[]}]}
+                                    """)))
             @RequestPart("metadata") String metadataJson,
 
             @Parameter(
@@ -332,8 +493,8 @@ public class MentorController {
                     required = true,
                     content = @Content(mediaType = "application/json",
                             examples = @ExampleObject(value = """
-                {"orderPosition":1,"translations":[{"language":"RU","title":"Методичка","description":""}]}
-                """)))
+                                    {"orderPosition":1,"translations":[{"language":"RU","title":"Методичка","description":""}]}
+                                    """)))
             @RequestPart("metadata") String metadataJson,
 
             @Parameter(
@@ -369,8 +530,8 @@ public class MentorController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = BulkPdfFilesUploadRequestDto.class),
                             examples = @ExampleObject(value = """
-                {"pdfs":[{"orderPosition":1,"translations":[]},{"orderPosition":2,"translations":[]}]}
-                """)))
+                                    {"pdfs":[{"orderPosition":1,"translations":[]},{"orderPosition":2,"translations":[]}]}
+                                    """)))
             @RequestPart("metadata") String metadataJson,
 
             @Parameter(
