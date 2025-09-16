@@ -61,6 +61,19 @@ public class MentorController {
     private final ImageProxyService imageProxyService;
     private final PdfProxyService pdfProxyService;
 
+    // Док-тексты по форматам/лимитам (из application.yml)
+    private static final String SERVER_LIMITS =
+            "Серверные лимиты multipart: max-file-size=1000MB, max-request-size=1000MB.";
+    private static final String VIDEO_RULES =
+            "Видео-файл. Допустимые MIME: video/mp4, video/mpeg. Расширения: mp4, mpeg. " +
+                    "Максимальный размер (storage): 1000MB. " + SERVER_LIMITS;
+    private static final String IMAGE_RULES =
+            "Файл изображения. Допустимые MIME: image/jpeg, image/png. Расширения: jpg, jpeg, png. " +
+                    "Максимальный размер (storage): 100MB. " + SERVER_LIMITS;
+    private static final String PDF_RULES =
+            "PDF-файл. MIME: application/pdf. Расширение: pdf. " +
+                    "Максимальный размер (storage): 20MB. " + SERVER_LIMITS;
+
     // ===== Создать курс (JSON) =====
     @PostMapping(value = "/courses", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
@@ -87,74 +100,8 @@ public class MentorController {
                   "coverImageUrl": "",
                   "createdAt": "2025-08-13T23:02:19.5947094",
                   "updatedAt": null,
-                  "translations": [
-                    {
-                      "id": "36a9400d-8821-4da8-88a4-b0eedfabbfb4",
-                      "language": "RU",
-                      "title": "Курс по Java",
-                      "description": "Углублённый курс по разработке на Java",
-                      "slug": "Курс по java для начинающих"
-                    },
-                    {
-                      "id": "adc5625c-dcda-4b07-8869-b0698a1848dd",
-                      "language": "EN",
-                      "title": "Java Course",
-                      "description": "Advanced Java development course",
-                      "slug": "Java junior course"
-                    }
-                  ],
-                  "modules": [
-                    {
-                      "id": "8dee3104-5753-45fa-acd2-d60585304619",
-                      "courseId": "9e09e19d-2988-453f-ab69-e8f39a8f723b",
-                      "moduleName": "Основы Java",
-                      "orderPosition": 1,
-                      "isActive": true,
-                      "createdAt": "2025-08-13T23:02:19.6200271",
-                      "updatedAt": null,
-                      "translations": [
-                        {
-                          "id": "f1d2435a-26a8-4a14-beab-2c57bbcc2db1",
-                          "language": "RU",
-                          "title": "Введение",
-                          "description": "Первый модуль — знакомство с курсом"
-                        },
-                        {
-                          "id": "16bd1233-c497-4e99-af4a-7a898d06ed37",
-                          "language": "EN",
-                          "title": "Introduction",
-                          "description": "First module — course overview"
-                        }
-                      ],
-                      "lessons": [
-                        {
-                          "id": "4716b6d1-a634-4b50-8a46-c249c248ca22",
-                          "moduleId": "8dee3104-5753-45fa-acd2-d60585304619",
-                          "orderPosition": 1,
-                          "lessonType": "VIDEO",
-                          "contentUrl": "url-to-content",
-                          "durationMinutes": 30,
-                          "isPreview": true,
-                          "createdAt": "2025-08-13T23:02:19.6220275",
-                          "updatedAt": "2025-08-13T23:02:19.6270273",
-                          "translations": [
-                            {
-                              "id": "799dcfd9-db6f-47e1-8680-dc8d4a8d9a67",
-                              "language": "RU",
-                              "title": "Урок 1",
-                              "description": "Первый урок"
-                            },
-                            {
-                              "id": "47473dcb-0501-4139-b9f5-df8b1906bcac",
-                              "language": "EN",
-                              "title": "Lesson 1",
-                              "description": "First lesson"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
+                  "translations": [],
+                  "modules": []
                 }
                 """))),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации",
@@ -166,78 +113,7 @@ public class MentorController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Данные курса",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = CourseCreateRequestDto.class),
-                            examples = @ExampleObject(value = """
-                {
-                  "authorId": "e2f00427-fd76-41ad-940e-4624955f9384",
-                  "courseType": "BASE",
-                  "priceType": "PAID",
-                  "priceAmount": 99.99,
-                  "discountPercent": 10.0,
-                  "startTime": "2025-05-01T10:00:00Z",
-                  "endTime": "2025-07-01T10:00:00Z",
-                  "accessDurationMin": 1440,
-                  "courseStatus": "ACTIVE",
-                  "coverImageUrl": "",
-                  "translations": [
-                    {
-                      "language": "RU",
-                      "title": "Курс по Java",
-                      "description": "Углублённый курс по разработке на Java",
-                      "slug": "Курс по java для начинающих"
-                    },
-                    {
-                      "language": "EN",
-                      "title": "Java Course",
-                      "description": "Advanced Java development course",
-                      "slug": "Java junior course"
-                    }
-                  ],
-                  "modules": [
-                    {
-                      "moduleName": "Основы Java",
-                      "orderPosition": 1,
-                      "translations": [
-                        {
-                          "language": "RU",
-                          "title": "Введение",
-                          "description": "Первый модуль — знакомство с курсом",
-                          "slug": "vvedenie"
-                        },
-                        {
-                          "language": "EN",
-                          "title": "Introduction",
-                          "description": "First module — course overview",
-                          "slug": "introduction to module"
-                        }
-                      ],
-                      "lessons": [
-                        {
-                          "orderPosition": 1,
-                          "contentUrl": "url-to-content",
-                          "lessonType": "VIDEO",
-                          "isPreview": true,
-                          "durationMinutes": 30,
-                          "translations": [
-                            {
-                              "language": "RU",
-                              "title": "Урок 1",
-                              "description": "Первый урок",
-                              "slug": "urok-1"
-                            },
-                            {
-                              "language": "EN",
-                              "title": "Lesson 1",
-                              "description": "First lesson",
-                              "slug": "lesson-1"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-                """))
+                    content = @Content(schema = @Schema(implementation = CourseCreateRequestDto.class))
             )
             @RequestBody @Valid CourseCreateRequestDto dto
     ) {
@@ -250,7 +126,7 @@ public class MentorController {
     @Operation(
             operationId = "uploadVideo",
             summary = "Загрузить видео к уроку",
-            description = "Загрузка видео-файла и JSON-метаданных (см. пример)."
+            description = "Загрузка видео-файла и JSON-метаданных. " + VIDEO_RULES
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Видео загружено",
@@ -258,7 +134,9 @@ public class MentorController {
             @ApiResponse(responseCode = "400", description = "Ошибка валидации/формата",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "401", description = "Неавторизовано",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "413", description = "Размер файла превышает 1000MB"),
+            @ApiResponse(responseCode = "415", description = "Неподдерживаемый тип файла (разрешены: video/mp4, video/mpeg)")
     })
     public VideoUploadResponseDto uploadVideo(
             @Parameter(in = ParameterIn.PATH, name = "lessonId", required = true,
@@ -287,8 +165,12 @@ public class MentorController {
                     name = "file",
                     description = "Видео-файл",
                     required = true,
-                    content = @Content(mediaType = "multipart/form-data",
-                            schema = @Schema(type = "string", format = "binary")))
+                    content = {
+                            @Content(mediaType = "video/mp4",
+                                    schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = "video/mpeg",
+                                    schema = @Schema(type = "string", format = "binary"))
+                    })
             @RequestPart("file") MultipartFile file
     ) {
         return videoProxyService.uploadVideo(lessonId, metadataJson, file);
@@ -300,7 +182,7 @@ public class MentorController {
     @Operation(
             operationId = "uploadVideos",
             summary = "Загрузить несколько видео",
-            description = "Передай JSON с массивом объектов метаданных и такой же по длине массив файлов."
+            description = "Передай JSON с массивом метаданных и такой же по длине массив файлов. " + VIDEO_RULES
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Видео загружены",
@@ -308,7 +190,9 @@ public class MentorController {
             @ApiResponse(responseCode = "400", description = "Ошибка валидации/количества элементов",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "401", description = "Неавторизовано",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "413", description = "Размер одного из файлов превышает 1000MB"),
+            @ApiResponse(responseCode = "415", description = "Неподдерживаемый тип файла (разрешены: video/mp4, video/mpeg)")
     })
     public BulkVideoUploadResponseDto uploadVideos(
             @Parameter(in = ParameterIn.PATH, name = "lessonId", required = true,
@@ -337,9 +221,7 @@ public class MentorController {
                     required = true,
                     content = @Content(
                             mediaType = "multipart/form-data",
-                            array = @ArraySchema(
-                                    schema = @Schema(type = "string", format = "binary")
-                            )
+                            array = @ArraySchema(schema = @Schema(type = "string", format = "binary"))
                     )
             )
             @RequestPart("files") List<MultipartFile> files
@@ -350,12 +232,15 @@ public class MentorController {
     // ===== Загрузка изображений =====
     @PostMapping(value = "/lessons/{lessonId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(operationId = "uploadImage", summary = "Загрузить изображение к уроку")
+    @Operation(operationId = "uploadImage", summary = "Загрузить изображение к уроку",
+            description = IMAGE_RULES)
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Изображение загружено",
                     content = @Content(schema = @Schema(implementation = ImageUploadResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации/формата",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "413", description = "Размер файла превышает 100MB"),
+            @ApiResponse(responseCode = "415", description = "Неподдерживаемый тип файла (разрешены: image/jpeg, image/png)")
     })
     public ImageUploadResponseDto uploadImage(
             @Parameter(in = ParameterIn.PATH, name = "lessonId", required = true) @PathVariable UUID lessonId,
@@ -374,8 +259,12 @@ public class MentorController {
                     name = "file",
                     description = "Файл изображения",
                     required = true,
-                    content = @Content(mediaType = "multipart/form-data",
-                            schema = @Schema(type = "string", format = "binary")))
+                    content = {
+                            @Content(mediaType = "image/jpeg",
+                                    schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = "image/png",
+                                    schema = @Schema(type = "string", format = "binary"))
+                    })
             @RequestPart("file") MultipartFile file
     ) {
         return imageProxyService.uploadImage(lessonId, metadataJson, file);
@@ -383,12 +272,15 @@ public class MentorController {
 
     @PostMapping(value = "/lessons/{lessonId}/images/bulk", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(operationId = "uploadImages", summary = "Загрузить несколько изображений")
+    @Operation(operationId = "uploadImages", summary = "Загрузить несколько изображений",
+            description = IMAGE_RULES + " Длина массива файлов должна совпадать с metadata.images.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Изображения загружены",
                     content = @Content(schema = @Schema(implementation = BulkImageUploadResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации/количества элементов",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "413", description = "Размер одного из файлов превышает 100MB"),
+            @ApiResponse(responseCode = "415", description = "Неподдерживаемый тип файла (разрешены: image/jpeg, image/png)")
     })
     public BulkImageUploadResponseDto uploadImages(
             @Parameter(in = ParameterIn.PATH, name = "lessonId", required = true) @PathVariable UUID lessonId,
@@ -410,9 +302,7 @@ public class MentorController {
                     required = true,
                     content = @Content(
                             mediaType = "multipart/form-data",
-                            array = @ArraySchema(
-                                    schema = @Schema(type = "string", format = "binary")
-                            )
+                            array = @ArraySchema(schema = @Schema(type = "string", format = "binary"))
                     )
             )
             @RequestPart("files") List<MultipartFile> files
@@ -423,12 +313,15 @@ public class MentorController {
     // ===== Загрузка PDF =====
     @PostMapping(value = "/lessons/{lessonId}/pdfs", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(operationId = "uploadPdf", summary = "Загрузить PDF к уроку")
+    @Operation(operationId = "uploadPdf", summary = "Загрузить PDF к уроку",
+            description = PDF_RULES)
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "PDF загружен",
                     content = @Content(schema = @Schema(implementation = PdfFileUploadResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации/формата",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "413", description = "Размер файла превышает 20MB"),
+            @ApiResponse(responseCode = "415", description = "Неподдерживаемый тип файла (разрешён: application/pdf)")
     })
     public PdfFileUploadResponseDto uploadPdf(
             @Parameter(in = ParameterIn.PATH, name = "lessonId", required = true) @PathVariable UUID lessonId,
@@ -447,7 +340,7 @@ public class MentorController {
                     name = "file",
                     description = "PDF-файл",
                     required = true,
-                    content = @Content(mediaType = "multipart/form-data",
+                    content = @Content(mediaType = "application/pdf",
                             schema = @Schema(type = "string", format = "binary")))
             @RequestPart("file") MultipartFile file
     ) {
@@ -456,12 +349,15 @@ public class MentorController {
 
     @PostMapping(value = "/lessons/{lessonId}/pdfs/bulk", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(operationId = "uploadPdfs", summary = "Загрузить несколько PDF")
+    @Operation(operationId = "uploadPdfs", summary = "Загрузить несколько PDF",
+            description = PDF_RULES + " Длина массива файлов должна совпадать с metadata.pdfs.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "PDF-файлы загружены",
                     content = @Content(schema = @Schema(implementation = BulkPdfFilesUploadResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации/количества элементов",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "413", description = "Размер одного из файлов превышает 20MB"),
+            @ApiResponse(responseCode = "415", description = "Неподдерживаемый тип файла (разрешён: application/pdf)")
     })
     public BulkPdfFilesUploadResponseDto uploadPdfs(
             @Parameter(in = ParameterIn.PATH, name = "lessonId", required = true) @PathVariable UUID lessonId,
@@ -483,9 +379,7 @@ public class MentorController {
                     required = true,
                     content = @Content(
                             mediaType = "multipart/form-data",
-                            array = @ArraySchema(
-                                    schema = @Schema(type = "string", format = "binary")
-                            )
+                            array = @ArraySchema(schema = @Schema(type = "string", format = "binary"))
                     )
             )
             @RequestPart("files") List<MultipartFile> files
