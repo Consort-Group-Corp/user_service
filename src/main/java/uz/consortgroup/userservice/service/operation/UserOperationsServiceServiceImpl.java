@@ -11,6 +11,7 @@ import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.mapper.UserCacheMapper;
 import uz.consortgroup.userservice.repository.UserRepository;
 import uz.consortgroup.userservice.service.cache.UserCacheService;
+import uz.consortgroup.userservice.validator.UserValidator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,6 +31,7 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
     private final UserCacheService userCacheService;
     private final UserRepository userRepository;
     private final UserCacheMapper userCacheMapper;
+    private final UserValidator userValidator;
 
     @Transactional
     @Override
@@ -69,6 +71,8 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
 
     @Override
     public void saveUser(User user) {
+        userValidator.validateUniqueFields(user.getEmail(), user.getPinfl(), user.getPhoneNumber());
+
         log.info("Saving user with email: {}", user.getEmail());
         userCacheService.cacheUser(userCacheMapper.toUserCache(user));
         userRepository.save(user);

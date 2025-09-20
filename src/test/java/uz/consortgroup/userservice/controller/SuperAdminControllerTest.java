@@ -84,7 +84,7 @@ class SuperAdminControllerTest {
         UserCreateDto request = getUserCreateDto();
 
         UserResponseDto response = new UserResponseDto();
-        when(superAdminService.createNewUserWithMentorRole(any())).thenReturn(response);
+        when(superAdminService.createNewUser(any())).thenReturn(response);
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());

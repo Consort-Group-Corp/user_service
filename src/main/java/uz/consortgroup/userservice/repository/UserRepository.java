@@ -24,6 +24,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
 
     boolean existsByEmail(String email);
+    boolean existsByPinfl(String pinfl);
+    boolean existsByPhoneNumber(String phoneNumber);
 
     @Query("SELECT u FROM User u WHERE u.id > :lastId ORDER BY u.id ASC")
     List<User> findUsersByBatch(@Param("lastId") UUID lastId, @Param("size") int size);
@@ -109,4 +111,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             "    SELECT 1 FROM User u WHERE u.id = :userId AND u.status = 'BLOCKED'" +
             ") THEN true ELSE false END")
     boolean isUserBlocked(UUID userId);
+
 }
