@@ -69,8 +69,9 @@ dependencies {
     //Jackson Datatype
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
-    // Spring Security
-    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.security:spring-security-core")
+    implementation("org.springframework.security:spring-security-crypto")
+
 
     //JWT
     implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
