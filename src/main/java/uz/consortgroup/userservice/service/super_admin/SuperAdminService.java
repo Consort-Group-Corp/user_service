@@ -7,6 +7,6 @@ import java.util.UUID;
 
 public interface SuperAdminService {
     UserResponseDto findUserByEmailAndChangeUserRole(UserChangeRequestDto userChangeRequestDto);
-    UserResponseDto createNewUserWithMentorRole(UserCreateDto userCreateDto);
+    UserResponseDto createNewUser(UserCreateDto userCreateDto);
     UUID getSuperAdminId();
 }

@@ -14,7 +14,7 @@ import uz.consortgroup.userservice.event.admin.SuperAdminActionType;
 import uz.consortgroup.userservice.mapper.UserMapper;
 import uz.consortgroup.userservice.repository.SuperAdminRepository;
 import uz.consortgroup.userservice.service.event.admin.SuperAdminActionLogger;
-import uz.consortgroup.userservice.service.operation.UserOperationsServiceServiceImpl;
+import uz.consortgroup.userservice.service.operation.UserOperationsService;
 import uz.consortgroup.userservice.service.password.PasswordServiceImpl;
 
 import java.util.UUID;
@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class SuperAdminServiceImpl implements SuperAdminService {
-    private final UserOperationsServiceServiceImpl userOperationsServiceImpl;
+    private final UserOperationsService userOperationsService;
     private final UserMapper userMapper;
     private final SuperAdminRepository superAdminRepository;
     private final PasswordServiceImpl passwordServiceImpl;
@@ -33,7 +33,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     public UserResponseDto findUserByEmailAndChangeUserRole(UserChangeRequestDto userChangeRequestDto) {
         log.info("Changing user role by email: {}, new role: {}", userChangeRequestDto.getEmail(), userChangeRequestDto.getNewRole());
 
-        User user = userOperationsServiceImpl.changeUserRoleByEmail(userChangeRequestDto.getEmail(), userChangeRequestDto.getNewRole());
+        User user = userOperationsService.changeUserRoleByEmail(userChangeRequestDto.getEmail(), userChangeRequestDto.getNewRole());
         superAdminActionLogger.userRoleChangedEvent(user, getSuperAdminId(), SuperAdminActionType.USER_UPDATED);
 
         log.debug("User role successfully changed: userId={}, newRole={}", user.getId(), user.getRole());
@@ -41,13 +41,13 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Transactional
-    public UserResponseDto createNewUserWithMentorRole(UserCreateDto userCreateDto) {
+    public UserResponseDto createNewUser(UserCreateDto userCreateDto) {
         log.info("Creating a new user with role: {}", userCreateDto.getRole());
 
         UUID superAdminId = getSuperAdminId();
         User user = buildUserFromDto(userCreateDto);
 
-        userOperationsServiceImpl.saveUser(user);
+        userOperationsService.saveUser(user);
         passwordServiceImpl.savePassword(user, userCreateDto.getPassword());
 
         superAdminActionLogger.userRoleChangedEvent(user, superAdminId, SuperAdminActionType.USER_CREATED);

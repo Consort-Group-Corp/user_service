@@ -116,7 +116,7 @@ class SuperAdminServiceImplTest {
                 .thenReturn(responseDto);
 
 
-        UserResponseDto result = superAdminServiceImpl.createNewUserWithMentorRole(dto);
+        UserResponseDto result = superAdminServiceImpl.createNewUser(dto);
 
 
         assertEquals(responseDto, result);
@@ -133,7 +133,7 @@ class SuperAdminServiceImplTest {
     }
 
     @Test
-    void createNewUserWithMentorRole_NoSuperAdmin_ShouldThrow() {
+    void createNewUser_NoSuperAdmin_ShouldThrow() {
         UserCreateDto dto = new UserCreateDto();
         dto.setPassword("password");
 
@@ -141,7 +141,7 @@ class SuperAdminServiceImplTest {
                 .thenReturn(Stream.empty());
 
         RuntimeException ex = assertThrows(RuntimeException.class, () ->
-                superAdminServiceImpl.createNewUserWithMentorRole(dto)
+                superAdminServiceImpl.createNewUser(dto)
         );
         assertEquals("Super admin not found", ex.getMessage());
         verify(userOperationsServiceImpl, never()).saveUser(any());

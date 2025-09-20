@@ -18,6 +18,7 @@ import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.userservice.exception.AuthenticationFailedException;
 import uz.consortgroup.userservice.exception.CourseAlreadyPurchasedAndStillActiveException;
 import uz.consortgroup.userservice.exception.CourseNotPurchasableException;
+import uz.consortgroup.userservice.exception.DuplicateFieldException;
 import uz.consortgroup.userservice.exception.InvalidOrderIdFormatException;
 import uz.consortgroup.userservice.exception.InvalidPasswordException;
 import uz.consortgroup.userservice.exception.InvalidTokenException;
@@ -52,6 +53,13 @@ public class GlobalExceptionHandler {
         log.error("IllegalStateException: ", ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Illegal state", ex.getMessage()));
+    }
+
+    @ExceptionHandler(DuplicateFieldException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateFieldException(DuplicateFieldException ex) {
+        log.error("DuplicateFieldException: ", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Duplicate field", ex.getMessage()));
     }
 
     // Validation Handlers

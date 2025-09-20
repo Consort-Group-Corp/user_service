@@ -149,6 +149,6 @@ public class SuperAdminController {
             )
             @Valid @RequestBody UserCreateDto userCreateDto
     ) {
-        return superAdminService.createNewUserWithMentorRole(userCreateDto);
+        return superAdminService.createNewUser(userCreateDto);
     }
 }
