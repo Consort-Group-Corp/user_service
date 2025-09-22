@@ -1,6 +1,5 @@
 package uz.consortgroup.userservice.util;
 
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -15,11 +14,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import uz.consortgroup.userservice.service.impl.HasId;
-import uz.consortgroup.userservice.service.impl.UserDetailsImpl;
-import uz.consortgroup.userservice.service.impl.super_admin.SuperAdminDetailsImpl;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -38,6 +36,10 @@ public class JwtUtils {
                 .map(GrantedAuthority::getAuthority)
                 .orElse("");
 
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
         HasId user = (HasId) authentication.getPrincipal();
         UUID userId = user.getId();
 
@@ -48,6 +50,7 @@ public class JwtUtils {
                 .setSubject(username)
                 .claim("userType", userType)
                 .claim("userId", userId.toString())
+                .claim("roles", roles)
                 .setIssuedAt(now)
                 .setExpiration(exp)
                 .signWith(key(), SignatureAlgorithm.HS256)

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uz.consortgroup.core.api.v1.dto.forum.ForumAuthorDto;
+import uz.consortgroup.core.api.v1.dto.forum.moderation.response.ModerationUserInfoResponseDto;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.service.operation.UserOperationsService;
 
@@ -16,12 +16,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ForumAuthorDirectoryServiceImpl implements ForumAuthorDirectoryService {
+public class ModerationUserDirectoryServiceImpl implements ModerationUserDirectoryService {
     private final UserOperationsService userOperationsService;
 
     @Override
     @Transactional(readOnly = true)
-    public Map<UUID, ForumAuthorDto> getAuthors(List<UUID> ids) {
+    public Map<UUID, ModerationUserInfoResponseDto> getUsers(List<UUID> ids) {
         log.info("Fetching authors by ids: {}", ids);
 
         if (ids == null || ids.isEmpty()) {
@@ -35,12 +35,12 @@ public class ForumAuthorDirectoryServiceImpl implements ForumAuthorDirectoryServ
             List<User> users = userOperationsService.batchFindUsersById(ids);
             log.debug("Successfully retrieved {} users from userOperationsService", users.size());
 
-            Map<UUID, ForumAuthorDto> result = users.stream()
+            Map<UUID, ModerationUserInfoResponseDto> result = users.stream()
                     .collect(Collectors.toMap(
                             User::getId,
                             user -> {
                                 log.trace("Mapping user {} to ForumAuthorDto", user.getId());
-                                return ForumAuthorDto.builder()
+                                return ModerationUserInfoResponseDto .builder()
                                         .id(user.getId())
                                         .lastName(user.getLastName())
                                         .firstName(user.getFirstName())
