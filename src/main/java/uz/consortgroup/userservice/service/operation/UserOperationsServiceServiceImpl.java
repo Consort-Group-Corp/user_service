@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -175,6 +176,38 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
         return userRepository.isUserBlocked(userId);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<User> findByEmailIfExists(String emailRaw) {
+        final String email = (emailRaw == null) ? null : emailRaw.trim().toLowerCase();
+
+        if (email == null || email.isBlank()) {
+            log.debug("findByEmailIfExists: empty email");
+            return Optional.empty();
+        }
+        if (!isEmail(email)) {
+            log.debug("findByEmailIfExists: invalid email format: {}", maskEmail(email));
+            return Optional.empty();
+        }
+
+        log.debug("Getting user from cache by email: {}", maskEmail(email));
+        Optional<User> cached = userCacheService.findUserByEmail(email)
+                .map(userCacheMapper::toUserEntity);
+        if (cached.isPresent()) {
+            return cached;
+        }
+
+        log.debug("User not found in cache. Trying to get from DB: {}", maskEmail(email));
+        Optional<User> fromDb = userRepository.findByEmail(email);
+
+        fromDb.ifPresent(user -> {
+            cacheUser(user);
+            log.debug("User cached by email: {}", maskEmail(email));
+        });
+
+        return fromDb;
+    }
+
     public List<User> findUsersInCacheOrDbByEmails(List<String> emails) {
         return findUsersInCacheOrDb(
                 emails,
@@ -234,5 +267,9 @@ public class UserOperationsServiceServiceImpl implements UserOperationsService {
     private boolean isEmail(String value) {
         Pattern emailPattern = Pattern.compile("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,}$");
         return emailPattern.matcher(value).matches();
+    }
+
+    private String maskEmail(String email) {
+        return (email == null) ? "" : email.replaceAll("(^.).*(@.*$)", "$1***$2");
     }
 }
