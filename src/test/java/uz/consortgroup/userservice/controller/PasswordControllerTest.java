@@ -41,7 +41,7 @@ class PasswordControllerTest {
     @WithMockUser
     void resetPassword_ShouldReturnSuccessMessage() throws Exception {
         UUID userId = authContext.getCurrentUserId();
-        doNothing().when(passwordServiceImpl).requestPasswordReset();
+        doNothing().when(passwordServiceImpl).requestPasswordResetForCurrentUser();
 
         mockMvc.perform(post("/api/v1/password/recovery", userId))
                 .andExpect(status().isAccepted())
@@ -52,7 +52,7 @@ class PasswordControllerTest {
     @WithMockUser
     void resetPassword_ShouldHandleServiceException() throws Exception {
         UUID userId = UUID.randomUUID();
-        doThrow(new RuntimeException("Error")).when(passwordServiceImpl).requestPasswordReset();
+        doThrow(new RuntimeException("Error")).when(passwordServiceImpl).requestPasswordResetForCurrentUser();
 
         mockMvc.perform(post("/api/v1/password/recovery", userId))
                 .andExpect(status().is5xxServerError());

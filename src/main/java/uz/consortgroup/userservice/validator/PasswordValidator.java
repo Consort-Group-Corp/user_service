@@ -19,36 +19,22 @@ import java.util.UUID;
 public class PasswordValidator {
     private final PasswordOperationsService passwordOperationsService;
 
-    public void validateTokenUserMatch(UUID userId, String tokenSubject, User user) {
-        try {
-            UUID tokenUserId = UUID.fromString(tokenSubject);
-            if (!userId.equals(tokenUserId)) {
-                log.error("Token user ID {} does not match actual user ID {}", tokenUserId, userId);
-                throw new ResetTokenUserMismatchException("Token does not match user ID");
-            }
-            log.info("Token matches user ID {}", userId);
-        } catch (IllegalArgumentException e) {
-            if (!user.getEmail().equals(tokenSubject)) {
-                log.error("Token subject {} does not match user email {}", tokenSubject, user.getEmail());
-                throw new ResetTokenUserMismatchException("Token does not match user email");
-            }
-            log.info("Token matches user email {}", user.getEmail());
-        }
-    }
-
     public void validatePasswordAndToken(UpdatePasswordRequestDto request, String token) {
-        log.info("Validating password update request for token: {}", token);
-
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            log.error("New password and confirmation password do not match");
-            throw new PasswordsDoNotMatchException("Passwords do not match");
-        }
-
-        if (!passwordOperationsService.validatePasswordResetToken(token)) {
-            log.error("Invalid or expired token: {}", token);
+        if (request == null || token == null || token.isBlank()) {
             throw new InvalidOrExpiredResetTokenException("Invalid or expired token");
         }
 
-        log.info("Password and token are valid");
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            log.debug("Password confirmation mismatch");
+            throw new PasswordsDoNotMatchException("Passwords do not match");
+        }
+
+        boolean ok = passwordOperationsService.validatePasswordResetToken(token);
+        if (!ok) {
+            log.debug("Reset token validation failed");
+            throw new InvalidOrExpiredResetTokenException("Invalid or expired token");
+        }
+
+        log.debug("Reset token and password payload validated");
     }
 }

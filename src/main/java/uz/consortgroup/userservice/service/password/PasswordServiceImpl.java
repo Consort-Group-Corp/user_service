@@ -41,43 +41,56 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     @Transactional
-    public void requestPasswordReset() {
+    public void requestPasswordResetForCurrentUser() {
         UUID userId = authContext.getCurrentUserId();
-
         log.info("Requesting password reset for user ID: {}", userId);
+
         User user = userOperationsService.findUserById(userId);
-        String userEmail = user.getEmail();
-        String token = passwordOperationsService.generatePasswordResetToken(userEmail);
-        passwordEventService.sendPasswordEvent(userEmail, userId, token, user.getLanguage());
+        String token = passwordOperationsService.generatePasswordResetToken(user.getId().toString());
+        passwordEventService.sendPasswordEvent(user.getEmail(), userId, token, user.getLanguage());
+
         log.debug("Password reset event sent for user ID: {}", userId);
     }
 
     @Override
     @Transactional
     public void updatePassword(UpdatePasswordRequestDto request, String token) {
-        UUID userId = authContext.getCurrentUserId();
+        log.info("Updating password by reset token");
 
-        log.info("Updating password for user ID: {}", userId);
-        try {
-            passwordValidator.validatePasswordAndToken(request, token);
-            String tokenSubject = passwordOperationsService.extractUserIdFromToken(token);
-            User user = userOperationsService.findUserById(userId);
-            passwordValidator.validateTokenUserMatch(userId, tokenSubject, user);
+        passwordValidator.validatePasswordAndToken(request, token);
 
-            Password password = passwordRepository.findByUser(user)
-                    .orElseThrow(() -> {
-                        log.warn("Password record not found for user ID: {}", userId);
-                        return new PasswordMismatchException("Password record not found");
-                    });
+        UUID tokenUserId = passwordOperationsService.extractUserIdFromToken(token);
+        User user = userOperationsService.findUserById(tokenUserId);
 
-            password.setPasswordHash(passwordOperationsService.encodePassword(request.getNewPassword()));
-            password.setUpdatedAt(LocalDateTime.now());
-            passwordRepository.save(password);
+        Password password = passwordRepository.findByUser(user)
+                .orElseThrow(() -> {
+                    log.warn("Password record not found for user ID: {}", tokenUserId);
+                    return new PasswordMismatchException("Password record not found");
+                });
 
-            log.debug("Password updated successfully for user ID: {}", userId);
-        } catch (Exception e) {
-            log.error("Error occurred while updating password for user ID: {}", userId, e);
-            throw e;
+        password.setPasswordHash(passwordOperationsService.encodePassword(request.getNewPassword()));
+        password.setUpdatedAt(LocalDateTime.now());
+        passwordRepository.save(password);
+
+        log.debug("Password updated successfully for user ID: {}", tokenUserId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void requestPasswordResetByEmail(String emailRaw) {
+        final String email = (emailRaw == null) ? "" : emailRaw.trim().toLowerCase();
+        if (email.isBlank()) {
+            log.debug("Password reset requested with invalid/empty email");
+            return;
         }
+
+        final String masked = email.replaceAll("(^.).*(@.*$)", "$1***$2");
+        log.debug("Password reset requested for email={}", masked);
+
+        userOperationsService.findByEmailIfExists(email).ifPresent(user -> {
+            String token = passwordOperationsService.generatePasswordResetToken(user.getId().toString());
+            passwordEventService.sendPasswordEvent(user.getEmail(), user.getId(), token, user.getLanguage());
+            log.debug("Reset email enqueued for userId={}", user.getId());
+        });
     }
 }

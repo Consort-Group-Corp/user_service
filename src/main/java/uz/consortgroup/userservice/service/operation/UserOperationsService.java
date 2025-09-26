@@ -4,6 +4,7 @@ import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 import uz.consortgroup.userservice.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserOperationsService {
@@ -17,4 +18,5 @@ public interface UserOperationsService {
     User findUserByEmailOrPinfl(String query);
     List<User> findUsersBatch(List<String> emails, List<String> pinfls);
     boolean isUserBlocked(UUID userId);
+    Optional<User> findByEmailIfExists(String email);
 }

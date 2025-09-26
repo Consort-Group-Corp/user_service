@@ -26,47 +26,6 @@ class PasswordValidatorTest {
     private PasswordValidator passwordValidator;
 
     @Test
-    void validateTokenUserMatch_ShouldAcceptMatchingUserId() {
-        UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setId(userId);
-
-        assertDoesNotThrow(() -> 
-            passwordValidator.validateTokenUserMatch(userId, userId.toString(), user));
-    }
-
-    @Test
-    void validateTokenUserMatch_ShouldThrowWhenUserIdMismatch() {
-        UUID userId = UUID.randomUUID();
-        UUID tokenUserId = UUID.randomUUID();
-        User user = new User();
-        user.setId(userId);
-
-        assertThrows(RuntimeException.class, () -> 
-            passwordValidator.validateTokenUserMatch(userId, tokenUserId.toString(), user));
-    }
-
-    @Test
-    void validateTokenUserMatch_ShouldAcceptMatchingEmail() {
-        UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setEmail("test@example.com");
-
-        assertDoesNotThrow(() -> 
-            passwordValidator.validateTokenUserMatch(userId, "test@example.com", user));
-    }
-
-    @Test
-    void validateTokenUserMatch_ShouldThrowWhenEmailMismatch() {
-        UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setEmail("test@example.com");
-
-        assertThrows(RuntimeException.class, () -> 
-            passwordValidator.validateTokenUserMatch(userId, "wrong@example.com", user));
-    }
-
-    @Test
     void validatePasswordAndToken_ShouldAcceptValidInput() {
         UpdatePasswordRequestDto request = new UpdatePasswordRequestDto();
         request.setNewPassword("password123");
