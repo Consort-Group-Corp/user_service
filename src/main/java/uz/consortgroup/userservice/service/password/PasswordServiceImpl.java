@@ -9,6 +9,7 @@ import uz.consortgroup.userservice.entity.Password;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.exception.PasswordMismatchException;
 import uz.consortgroup.userservice.repository.PasswordRepository;
+import uz.consortgroup.userservice.security.AuthContext;
 import uz.consortgroup.userservice.service.event.user.PasswordEventService;
 import uz.consortgroup.userservice.service.operation.PasswordOperationsService;
 import uz.consortgroup.userservice.service.operation.UserOperationsService;
@@ -26,6 +27,7 @@ public class PasswordServiceImpl implements PasswordService {
     private final PasswordOperationsService passwordOperationsService;
     private final UserOperationsService userOperationsService;
     private final PasswordValidator passwordValidator;
+    private final AuthContext authContext;
 
     @Override
     @Transactional
@@ -39,7 +41,9 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     @Transactional
-    public void requestPasswordReset(UUID userId) {
+    public void requestPasswordReset() {
+        UUID userId = authContext.getCurrentUserId();
+
         log.info("Requesting password reset for user ID: {}", userId);
         User user = userOperationsService.findUserById(userId);
         String userEmail = user.getEmail();
@@ -50,7 +54,9 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     @Transactional
-    public void updatePassword(UUID userId, UpdatePasswordRequestDto request, String token) {
+    public void updatePassword(UpdatePasswordRequestDto request, String token) {
+        UUID userId = authContext.getCurrentUserId();
+
         log.info("Updating password for user ID: {}", userId);
         try {
             passwordValidator.validatePasswordAndToken(request, token);

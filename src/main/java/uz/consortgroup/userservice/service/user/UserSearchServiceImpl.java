@@ -37,8 +37,8 @@ public class UserSearchServiceImpl implements UserSearchService {
 
         User foundUser = userOperationService.findUserByEmailOrPinfl(dto.getQuery());
 
-        UserRole role = authContext.getActorRole();
-        UUID actorId = authContext.getActorId();
+        UserRole role = authContext.getCurrentUserRole();
+        UUID actorId = authContext.getCurrentUserId();
 
         strategyFactory.get(role).ifPresent(strategy -> strategy.log(actorId, foundUser));
 

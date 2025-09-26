@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uz.consortgroup.core.api.v1.dto.user.request.UpdatePasswordRequestDto;
 import uz.consortgroup.userservice.entity.User;
+import uz.consortgroup.userservice.exception.InvalidOrExpiredResetTokenException;
 import uz.consortgroup.userservice.exception.InvalidTokenException;
 import uz.consortgroup.userservice.service.operation.PasswordOperationsService;
 
@@ -98,7 +99,7 @@ class PasswordValidatorTest {
 
         when(passwordOperationsService.validatePasswordResetToken(token)).thenReturn(false);
 
-        assertThrows(InvalidTokenException.class, () -> 
+        assertThrows(InvalidOrExpiredResetTokenException.class, () ->
             passwordValidator.validatePasswordAndToken(request, token));
     }
 
@@ -108,7 +109,7 @@ class PasswordValidatorTest {
         request.setNewPassword("password123");
         request.setConfirmPassword("password123");
 
-        assertThrows(InvalidTokenException.class, () -> 
+        assertThrows(InvalidOrExpiredResetTokenException.class, () ->
             passwordValidator.validatePasswordAndToken(request, null));
     }
 }

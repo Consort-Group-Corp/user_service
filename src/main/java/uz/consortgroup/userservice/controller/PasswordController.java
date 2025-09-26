@@ -28,40 +28,29 @@ public class PasswordController {
 
     private final PasswordService passwordService;
 
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping(value = "/{userId}/recovery", produces = MediaType.TEXT_PLAIN_VALUE)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @PostMapping(value = "/recovery", produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(
             operationId = "requestPasswordReset",
-            summary = "Запросить сброс пароля",
-            description = "Отправляет пользователю код/ссылку для сброса пароля (e-mail/SMS/уведомление в приложении)."
+            summary = "Запросить сброс пароля (для текущего пользователя)",
+            description = "Отправляет на e-mail ссылку для сброса пароля."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Запрос на сброс пароля принят",
+            @ApiResponse(responseCode = "202", description = "Запрос принят",
                     content = @Content(mediaType = "text/plain",
-                            examples = @ExampleObject(value = "Password reset request sent successfully"))),
-            @ApiResponse(responseCode = "404", description = "Пользователь не найден",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "429", description = "Слишком много попыток (rate limit)",
+                            examples = @ExampleObject(value = "Password reset request sent"))),
+            @ApiResponse(responseCode = "429", description = "Слишком много попыток",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public String resetPassword(
-            @Parameter(
-                    in = ParameterIn.PATH,
-                    name = "userId",
-                    required = true,
-                    description = "Идентификатор пользователя, для которого инициируется сброс пароля",
-                    example = "e2f00427-fd76-41ad-940e-4624955f9384"
-            )
-            @PathVariable UUID userId
-    ) {
-        passwordService.requestPasswordReset(userId);
-        return "Password reset request sent successfully";
+    public String resetPassword() {
+        passwordService.requestPasswordReset();
+        return "Password reset request sent";
     }
 
     @PutMapping(
-            value = "/{userId}/new-password",
+            value = "/new-password",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.TEXT_PLAIN_VALUE
     )
@@ -100,15 +89,6 @@ public class PasswordController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public String updatePassword(
-            @Parameter(
-                    in = ParameterIn.PATH,
-                    name = "userId",
-                    required = true,
-                    description = "Идентификатор пользователя, чей пароль обновляется",
-                    example = "e2f00427-fd76-41ad-940e-4624955f9384"
-            )
-            @PathVariable UUID userId,
-
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     description = "Новый пароль и его подтверждение",
@@ -127,11 +107,11 @@ public class PasswordController {
                     name = "token",
                     required = true,
                     description = "Токен сброса пароля, присланный пользователю (из ссылки/письма)",
-                    example = "f9b1c4e1-2d3a-4b5c-8a9f-0123456789ab"
+                    example = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkb25peW9yLmt1cmJhbm92LjI0QGdtYWlsLmNvbSIsImlhdCI6MTc1ODkxNTIxNywiZXhwIjoxNzU4OTE4ODE3fQ.LWwBhR87lHdIX8UNTvlXt_cFIaa5IfWkkHabPsinDD4"
             )
             @RequestParam String token
     ) {
-        passwordService.updatePassword(userId, request, token);
+        passwordService.updatePassword(request, token);
         return "Password updated successfully";
     }
 }
