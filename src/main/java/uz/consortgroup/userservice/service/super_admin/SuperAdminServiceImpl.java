@@ -68,6 +68,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         return id;
     }
 
+
     private User buildUserFromDto(UserCreateDto userCreateDto) {
         log.debug("Building User entity from DTO: {}", userCreateDto.getEmail());
         return User.builder()

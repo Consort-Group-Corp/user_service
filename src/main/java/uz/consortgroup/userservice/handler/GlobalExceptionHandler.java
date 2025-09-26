@@ -19,6 +19,7 @@ import uz.consortgroup.userservice.exception.AuthenticationFailedException;
 import uz.consortgroup.userservice.exception.CourseAlreadyPurchasedAndStillActiveException;
 import uz.consortgroup.userservice.exception.CourseNotPurchasableException;
 import uz.consortgroup.userservice.exception.DuplicateFieldException;
+import uz.consortgroup.userservice.exception.InvalidOrExpiredResetTokenException;
 import uz.consortgroup.userservice.exception.InvalidOrderIdFormatException;
 import uz.consortgroup.userservice.exception.InvalidPasswordException;
 import uz.consortgroup.userservice.exception.InvalidTokenException;
@@ -27,6 +28,9 @@ import uz.consortgroup.userservice.exception.InvalidVerificationCodeException;
 import uz.consortgroup.userservice.exception.OrderAlreadyExistsException;
 import uz.consortgroup.userservice.exception.OrderCreationRollbackException;
 import uz.consortgroup.userservice.exception.PasswordMismatchException;
+import uz.consortgroup.userservice.exception.PasswordsDoNotMatchException;
+import uz.consortgroup.userservice.exception.ResetTokenUserMismatchException;
+import uz.consortgroup.userservice.exception.UnauthorizedException;
 import uz.consortgroup.userservice.exception.UserAlreadyExistsException;
 import uz.consortgroup.userservice.exception.UserNotFoundException;
 import uz.consortgroup.userservice.exception.UserRoleNotFoundException;
@@ -61,6 +65,35 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Duplicate field", ex.getMessage()));
     }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex) {
+        log.error("UnauthorizedException: ", ex);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidOrExpiredResetTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidOrExpiredResetTokenException(InvalidOrExpiredResetTokenException ex) {
+        log.error("InvalidOrExpiredResetTokenException: ", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid or expired reset token", ex.getMessage()));
+    }
+
+    @ExceptionHandler(PasswordsDoNotMatchException.class)
+    public ResponseEntity<ErrorResponse> handlePasswordsDoNotMatchException(PasswordsDoNotMatchException ex) {
+        log.error("PasswordsDoNotMatchException: ", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Passwords do not match", ex.getMessage()));
+    }
+
+    @ExceptionHandler(ResetTokenUserMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleResetTokenUserMismatchException(ResetTokenUserMismatchException ex) {
+        log.error("ResetTokenUserMismatchException: ", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Reset token user mismatch", ex.getMessage()));
+    }
+
 
     // Validation Handlers
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -7,6 +7,6 @@ import java.util.UUID;
 
 public interface PasswordService {
     void savePassword(User user, String rawPassword);
-    void requestPasswordReset(UUID userId);
-    void updatePassword(UUID userId, UpdatePasswordRequestDto request, String token);
+    void requestPasswordReset();
+    void updatePassword(UpdatePasswordRequestDto request, String token);
 }
