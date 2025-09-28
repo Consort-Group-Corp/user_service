@@ -112,4 +112,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             ") THEN true ELSE false END")
     boolean isUserBlocked(UUID userId);
 
+    Page<User> findAll(Pageable pageable);
 }
