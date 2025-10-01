@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -113,4 +114,20 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean isUserBlocked(UUID userId);
 
     Page<User> findAll(Pageable pageable);
+
+    @Query("select u from User u where lower(u.email) in :emails")
+    List<User> findByEmailInIgnoreCase(@Param("emails") Set<String> emails);
+
+    @Query("select u from User u where u.pinfl in :pinfls")
+    List<User> findByPinflIn(@Param("pinfls") Set<String> pinfls);
+
+    @Query("""
+           select u from User u
+           where lower(u.email) like concat('%', :emailPart, '%')
+              or u.pinfl like concat(:pinflPrefix, '%')
+           """)
+    Page<User> searchByEmailOrPinfl(@Param("emailPart") String emailPartLower,
+                                    @Param("pinflPrefix") String pinflPrefix,
+                                    Pageable pageable);
+
 }
