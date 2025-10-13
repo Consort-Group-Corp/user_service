@@ -30,7 +30,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users")
+    @RequestMapping("/api/v1/users")
 @Validated
 @Tag(name = "Users", description = "Регистрация, верификация и управление профилем пользователя")
 public class UserController {
@@ -69,7 +69,7 @@ public class UserController {
         return userService.registerNewUser(userRegistrationRequestDto);
     }
 
-    // ---------- Верификация ----------
+    // ---------- Верификация ------------
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirements(value = {})
     @PostMapping("/{userId}/verification")
