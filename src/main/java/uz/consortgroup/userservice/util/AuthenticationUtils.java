@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,10 +12,14 @@ import uz.consortgroup.core.api.v1.dto.user.auth.JwtResponse;
 import uz.consortgroup.core.api.v1.dto.user.auth.LoginRequest;
 import uz.consortgroup.core.api.v1.dto.user.enumeration.UserRole;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationUtils {
+
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
@@ -36,37 +39,35 @@ public class AuthenticationUtils {
                 );
 
         String jwt = jwtUtils.generateJwtToken(authentication);
-        String authority = userDetails.getAuthorities().stream()
-                .findFirst()
+
+        List<UserRole> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .orElseThrow();
+                .map(UserRole::valueOf)
+                .collect(Collectors.toList());
 
-        UserRole role = UserRole.valueOf(authority);
-
-        log.info("Authentication successful for user: {}, role: {}", loginRequest.getEmail(), role);
+        log.info("Authentication successful for user: {}, roles: {}", loginRequest.getEmail(), roles);
 
         return JwtResponse.builder()
                 .token(jwt)
-                .role(role)
+                .role(roles.isEmpty() ? null : roles.getFirst())
                 .build();
     }
 
-    public JwtResponse performAuthentication(String email, Authentication authentication) {
+    public JwtResponse performAuthentication(String email, org.springframework.security.core.Authentication authentication) {
         log.info("Generating JWT for authenticated user: {}", email);
 
         String jwt = jwtUtils.generateJwtToken(authentication);
-        String authority = authentication.getAuthorities().stream()
-                .findFirst()
+
+        List<UserRole> roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .orElseThrow();
+                .map(UserRole::valueOf)
+                .collect(Collectors.toList());
 
-        UserRole role = UserRole.valueOf(authority);
-
-        log.info("JWT generated successfully for user: {}, role: {}", email, role);
+        log.info("JWT generated successfully for user: {}, roles: {}", email, roles);
 
         return JwtResponse.builder()
                 .token(jwt)
-                .role(role)
+                .role(roles.isEmpty() ? null : roles.getFirst())
                 .build();
     }
 }

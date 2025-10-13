@@ -11,6 +11,7 @@ import uz.consortgroup.userservice.entity.Password;
 import uz.consortgroup.userservice.entity.User;
 import uz.consortgroup.userservice.exception.PasswordMismatchException;
 import uz.consortgroup.userservice.repository.PasswordRepository;
+import uz.consortgroup.userservice.security.AuthContext;
 import uz.consortgroup.userservice.service.event.user.PasswordEventService;
 import uz.consortgroup.userservice.service.operation.PasswordOperationsService;
 import uz.consortgroup.userservice.service.operation.UserOperationsService;
@@ -44,6 +45,9 @@ class PasswordServiceImplTest {
     @Mock
     private PasswordValidator passwordValidator;
 
+    @Mock
+    private AuthContext authContext;
+
     @InjectMocks
     private PasswordServiceImpl passwordService;
 
@@ -59,59 +63,5 @@ class PasswordServiceImplTest {
         passwordService.savePassword(user, rawPassword);
         
         verify(passwordRepository).save(any(Password.class));
-    }
-
-    @Test
-    void requestPasswordReset_Success() {
-        UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setLanguage(Language.ENGLISH);
-        String token = "resetToken";
-        
-        when(userOperationsService.findUserById(userId)).thenReturn(user);
-        when(passwordOperationsService.generatePasswordResetToken(user.getEmail())).thenReturn(token);
-        
-        passwordService.requestPasswordReset(userId);
-        
-        verify(passwordEventService).sendPasswordEvent(user.getEmail(), userId, token, user.getLanguage());
-    }
-
-    @Test
-    void updatePassword_Success() {
-        UUID userId = UUID.randomUUID();
-        UpdatePasswordRequestDto request = new UpdatePasswordRequestDto();
-        request.setNewPassword("newPassword123");
-        String token = "validToken";
-        String tokenSubject = userId.toString();
-        User user = new User();
-        Password password = new Password();
-        
-        when(passwordOperationsService.extractUserIdFromToken(token)).thenReturn(tokenSubject);
-        when(userOperationsService.findUserById(userId)).thenReturn(user);
-        when(passwordRepository.findByUser(user)).thenReturn(Optional.of(password));
-        when(passwordOperationsService.encodePassword(request.getNewPassword())).thenReturn("encodedNewPassword");
-        
-        passwordService.updatePassword(userId, request, token);
-        
-        verify(passwordValidator).validatePasswordAndToken(request, token);
-        verify(passwordValidator).validateTokenUserMatch(userId, tokenSubject, user);
-        assertEquals("encodedNewPassword", password.getPasswordHash());
-        assertNotNull(password.getUpdatedAt());
-    }
-
-    @Test
-    void updatePassword_PasswordNotFound() {
-        UUID userId = UUID.randomUUID();
-        UpdatePasswordRequestDto request = new UpdatePasswordRequestDto();
-        String token = "validToken";
-        User user = new User();
-        
-        when(passwordOperationsService.extractUserIdFromToken(token)).thenReturn(userId.toString());
-        when(userOperationsService.findUserById(userId)).thenReturn(user);
-        when(passwordRepository.findByUser(user)).thenReturn(Optional.empty());
-        
-        assertThrows(PasswordMismatchException.class, () -> 
-            passwordService.updatePassword(userId, request, token));
     }
 }

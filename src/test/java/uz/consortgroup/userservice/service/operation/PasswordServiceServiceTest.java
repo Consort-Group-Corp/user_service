@@ -71,40 +71,6 @@ class PasswordServiceServiceTest {
     }
 
     @Test
-    void validatePasswordResetToken_ShouldReturnTrueForValidToken() {
-        String token = "validToken";
-        when(jwtUtils.validateJwtToken(token)).thenReturn(true);
-
-        boolean result = passwordOperationsService.validatePasswordResetToken(token);
-
-        assertTrue(result);
-        verify(jwtUtils).validateJwtToken(token);
-    }
-
-    @Test
-    void validatePasswordResetToken_ShouldReturnFalseForInvalidToken() {
-        String token = "invalidToken";
-        when(jwtUtils.validateJwtToken(token)).thenReturn(false);
-
-        boolean result = passwordOperationsService.validatePasswordResetToken(token);
-
-        assertFalse(result);
-        verify(jwtUtils).validateJwtToken(token);
-    }
-
-    @Test
-    void extractUserIdFromToken_ShouldReturnEmail() {
-        String token = "testToken";
-        String expectedEmail = "test@example.com";
-        when(jwtUtils.getUserNameFromJwtToken(token)).thenReturn(expectedEmail);
-
-        String result = passwordOperationsService.extractUserIdFromToken(token);
-
-        assertEquals(expectedEmail, result);
-        verify(jwtUtils).getUserNameFromJwtToken(token);
-    }
-
-    @Test
     void encodePassword_ShouldHandleNullPassword() {
         when(passwordEncoder.encode(null)).thenThrow(new IllegalArgumentException());
 

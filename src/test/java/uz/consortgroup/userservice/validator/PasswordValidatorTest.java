@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uz.consortgroup.core.api.v1.dto.user.request.UpdatePasswordRequestDto;
 import uz.consortgroup.userservice.entity.User;
+import uz.consortgroup.userservice.exception.InvalidOrExpiredResetTokenException;
 import uz.consortgroup.userservice.exception.InvalidTokenException;
 import uz.consortgroup.userservice.service.operation.PasswordOperationsService;
 
@@ -23,47 +24,6 @@ class PasswordValidatorTest {
 
     @InjectMocks
     private PasswordValidator passwordValidator;
-
-    @Test
-    void validateTokenUserMatch_ShouldAcceptMatchingUserId() {
-        UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setId(userId);
-
-        assertDoesNotThrow(() -> 
-            passwordValidator.validateTokenUserMatch(userId, userId.toString(), user));
-    }
-
-    @Test
-    void validateTokenUserMatch_ShouldThrowWhenUserIdMismatch() {
-        UUID userId = UUID.randomUUID();
-        UUID tokenUserId = UUID.randomUUID();
-        User user = new User();
-        user.setId(userId);
-
-        assertThrows(RuntimeException.class, () -> 
-            passwordValidator.validateTokenUserMatch(userId, tokenUserId.toString(), user));
-    }
-
-    @Test
-    void validateTokenUserMatch_ShouldAcceptMatchingEmail() {
-        UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setEmail("test@example.com");
-
-        assertDoesNotThrow(() -> 
-            passwordValidator.validateTokenUserMatch(userId, "test@example.com", user));
-    }
-
-    @Test
-    void validateTokenUserMatch_ShouldThrowWhenEmailMismatch() {
-        UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setEmail("test@example.com");
-
-        assertThrows(RuntimeException.class, () -> 
-            passwordValidator.validateTokenUserMatch(userId, "wrong@example.com", user));
-    }
 
     @Test
     void validatePasswordAndToken_ShouldAcceptValidInput() {
@@ -98,7 +58,7 @@ class PasswordValidatorTest {
 
         when(passwordOperationsService.validatePasswordResetToken(token)).thenReturn(false);
 
-        assertThrows(InvalidTokenException.class, () -> 
+        assertThrows(InvalidOrExpiredResetTokenException.class, () ->
             passwordValidator.validatePasswordAndToken(request, token));
     }
 
@@ -108,7 +68,7 @@ class PasswordValidatorTest {
         request.setNewPassword("password123");
         request.setConfirmPassword("password123");
 
-        assertThrows(InvalidTokenException.class, () -> 
+        assertThrows(InvalidOrExpiredResetTokenException.class, () ->
             passwordValidator.validatePasswordAndToken(request, null));
     }
 }

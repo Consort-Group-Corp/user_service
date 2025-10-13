@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import uz.consortgroup.core.api.v1.dto.user.response.UserBulkSearchResponse;
+import uz.consortgroup.core.api.v1.dto.user.response.UserFullInfoResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserProfileResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserRegistrationResponseDto;
 import uz.consortgroup.core.api.v1.dto.user.response.UserSearchResponse;
@@ -23,10 +24,14 @@ public interface UserMapper {
 
     @Mapping(target = "role", source = "role")
     UserShortInfoResponseDto toUserShortInfoResponseDto(User user);
+
     List<UserShortInfoResponseDto> toUserShortInfoResponseDtos(List<User> users);
+
     @Mapping(target = "userId", source = "id")
     UserSearchResponse toUserSearchResponse(User user);
 
+    @Mapping(target = "verified", source = "isVerified")
+    UserFullInfoResponseDto toDto(User user);
 
     default UserBulkSearchResponse toUserBulkSearchResponse(List<User> users) {
         List<UserSearchResponse> userDtos = users.stream()

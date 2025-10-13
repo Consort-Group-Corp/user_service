@@ -56,8 +56,7 @@ public class KafkaConsumerConfig {
 
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
 
-        props.put(JsonSerializer.TYPE_MAPPINGS, "course-purchased:uz.consortgroup.userservice.event.coursepurchased.CoursePurchasedEvent," +
-                                                "course-forum-group:uz.consortgroup.userservice.event.course_group.CourseForumGroupCreatedEvent");
+        props.put(JsonSerializer.TYPE_MAPPINGS, "course-purchased:uz.consortgroup.userservice.event.coursepurchased.CoursePurchasedEvent");
         props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, sessionTimeoutMs);
         props.put(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, maxPartitionFetchBytes);
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);

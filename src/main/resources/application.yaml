@@ -55,11 +55,7 @@ kafka:
   verification-code-resent: verification-code-resent-topic
   password-reset-request: password-reset-request-topic
   super-admin-action: super-admin-action-topic
-  mentor-action: mentor-action-topic
-  course-group: course-group-opened-topic
   course-purchased: course-purchased-topic
-  course-forum-group: course-forum-group-created-topic
-  hr-action: hr-action-topic
   producer:
     enable: true
 
@@ -70,7 +66,7 @@ eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
-    service-url:
+    serviceUrl:
       defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true

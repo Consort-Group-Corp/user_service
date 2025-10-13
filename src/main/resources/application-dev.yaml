@@ -74,11 +74,7 @@ kafka:
   verification-code-resent: verification-code-resent-topic
   password-reset-request: password-reset-request-topic
   super-admin-action: super-admin-action-topic
-  mentor-action: mentor-action-topic
-  course-group: course-group-opened-topic
   course-purchased: course-purchased-topic
-  course-forum-group: course-forum-group-created-topic
-  hr-action: hr-action-topic
 
 app:
   link: ${APP_LINK:http://consort-user-service:8081/index.html}
